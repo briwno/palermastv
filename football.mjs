@@ -1,3 +1,4 @@
+import {geSeries,geCompetition,geStandings,markGELive} from './ge-feed.mjs';
 export const leagues=[
  {id:'bra.1',name:'Brasileirão Série A',region:'brasil'},
  {id:'bra.2',name:'Brasileirão Série B',region:'brasil'},
@@ -77,8 +78,9 @@ export function projectStandings(groups,games,leagueId){
 }
 export async function leagueTable(id,fetcher=fetch){
  const league=leagues.find(l=>l.id===id);if(!league)throw Error('Competição inválida');
- const data=await feed(`https://site.api.espn.com/apis/v2/sports/soccer/${id}/standings?region=br&lang=pt`,60,fetcher);
- const groups=normalizeStandings(data);if(!groups.length)throw Error('Classificação indisponível para esta competição.');
+ const [espn,ge]=await Promise.allSettled([feed(`https://site.api.espn.com/apis/v2/sports/soccer/${id}/standings?region=br&lang=pt`,60,fetcher),geSeries[id]?geCompetition(geSeries[id],fetcher):Promise.resolve(null)]);
+ const data=espn.status==='fulfilled'?espn.value:{},geData=ge.status==='fulfilled'?ge.value:null;
+ const groups=geData?geStandings(geData,normalizeStandings(data)):normalizeStandings(data);if(!groups.length)throw Error('Classificação indisponível para esta competição.');
  let games=[],liveAvailable=true;try{const date=brazilDate(new Date()),next=new Date(date+'T12:00:00Z');next.setUTCDate(next.getUTCDate()+1);const pages=await Promise.all([date.replaceAll('-',''),next.toISOString().slice(0,10).replaceAll('-','')].map(value=>feed(`https://site.api.espn.com/apis/site/v2/sports/soccer/${id}/scoreboard?dates=${value}&limit=200&lang=pt&region=br`,60,fetcher)));games=[...new Map(pages.flatMap(p=>p.events||[]).map(e=>normalizeEvent(e,league)).filter(Boolean).map(g=>[g.id,g])).values()]}catch{liveAvailable=false}
- return{league,season:data.season?.displayName||data.season?.year||null,groups:projectStandings(groups,games,id),liveGames:games.filter(g=>g.state==='in'),liveAvailable,source:'ESPN',checkedAt:new Date().toISOString(),refreshSeconds:60};
+ return{league,season:geData?.competition.season||data.season?.displayName||data.season?.year||null,groups:geData?markGELive(groups,games):projectStandings(groups,games,id),pointsMode:geData?'source':'projected',liveGames:games.filter(g=>g.state==='in'),liveAvailable,source:geData?'ge · biblioteca ezefranca':'ESPN',fallback:!!geSeries[id]&&!geData,checkedAt:new Date().toISOString(),refreshSeconds:60};
 }

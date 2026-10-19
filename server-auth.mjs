@@ -1,4 +1,5 @@
 import {dailyGames,nextClubGames,leagueTable,brazilDate} from './football.mjs';
+import {geCompetition,publicGERound} from './ge-feed.mjs';
 import {clubHub} from './club-hub.mjs';
 import {matchCenter} from './match-center.mjs';
 import {groupAPI} from './group-api.mjs';
@@ -59,7 +60,8 @@ export async function handleSite(request,env,assets,fetcher=fetch){
  if(path.startsWith('/api/group/')){const r=await groupAPI(request,env,fetcher);return json(r.body,r.status)}
  if(path.startsWith('/api/football/')){
    try{let value;
-     if(path==='/api/football/games')value=await dailyGames(url.searchParams.get('date')||brazilDate(new Date()),fetcher);
+     if(path==='/api/football/brasileirao')value=publicGERound(await geCompetition(url.searchParams.get('serie')||'a',fetcher));
+     else if(path==='/api/football/games')value=await dailyGames(url.searchParams.get('date')||brazilDate(new Date()),fetcher);
      else if(path==='/api/football/clubs')value=await nextClubGames(fetcher);
      else if(path==='/api/football/hub')value=await clubHub(fetcher);
      else if(path==='/api/football/match')value=await matchCenter(url.searchParams.get('league'),url.searchParams.get('id'),fetcher);

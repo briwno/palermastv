@@ -46,7 +46,7 @@ Ao alterar o domínio, atualize os endereços permitidos em `signaling/worker.mj
 
 Dados esportivos e notícias dependem da disponibilidade da ESPN. Este repositório não contém as senhas, credenciais, dados dos palpites nem arquivos de configuração locais.
 
-Snapshot do projeto publicado: `5e79484aeb98769bdda313918133b01b2f429b22`.
+Snapshot do projeto publicado: `3fe8e2d5c789e98b1fc69f57aa1fe871d6194aef`.
 
 ## Expansão da sala e central
 
@@ -60,4 +60,15 @@ Snapshot do projeto publicado: `5e79484aeb98769bdda313918133b01b2f429b22`.
 
 Defina `API_FOOTBALL_KEY` como segredo opcional no servidor. O plano gratuito consultado só liberou temporadas de 2022 a 2024; notas indisponíveis são sinalizadas, sem dados substitutos.
 
-Verificação desta expansão: 37 testes automatizados, compilação e revisão no navegador. A qualidade de mídia entre seis computadores e a instalação no Windows dependem de teste com o grupo.
+Verificação desta expansão: 40 testes automatizados, compilação e revisão no navegador. A qualidade de mídia entre seis computadores e a instalação no Windows dependem de teste com o grupo.
+
+## Dados ge e widgets Sofascore
+
+- Classificação das Séries A e B pelo ge, com ESPN como alternativa automática.
+- Jogos da rodada atual na página Jogos, com CAP e CFC destacados.
+- Parser MIT de ezefranca/campeonato-brasileiro-api fixado no commit c4080b7c7b2647bea73caf7713103cf48cb71edf, com licença em vendor/.
+- Widgets oficiais de escalações e notas do Sofascore na aba Notas. Dez partidas da rodada 31/2026 verificadas e associadas por mandante, visitante e data de Brasília.
+- Para outras partidas, cole o link público completo do jogo no Sofascore ou o iframe oficial. O vínculo é compartilhado com o grupo. A descoberta automática de novas partidas ainda não está disponível.
+- Notícias e central da partida continuam pela ESPN. Nenhuma chave é enviada ao navegador.
+
+Validado com 40 testes, build e navegador; widgets do Athletico e Coritiba conferidos com notas reais.

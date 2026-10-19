@@ -46,4 +46,18 @@ Ao alterar o domínio, atualize os endereços permitidos em `signaling/worker.mj
 
 Dados esportivos e notícias dependem da disponibilidade da ESPN. Este repositório não contém as senhas, credenciais, dados dos palpites nem arquivos de configuração locais.
 
-Snapshot do projeto publicado: `5e3c60a158b268a7c962c2af2aba08defb8746a3`.
+Snapshot do projeto publicado: `c766df69d54935649a3f54b2c91caf3391ebfedd`.
+
+## Expansão da sala e central
+
+- Qualidade automática por espectador, diagnóstico e tentativas de reconexão.
+- Troca de transmissor aprovada por quem está transmitindo.
+- Aplicativo instalável no navegador, sem cache de conteúdo privado.
+- Campo esquemático de escalações e comentário minuto a minuto da ESPN.
+- Enquetes persistentes por partida e na sala.
+- Busca no X por jogo ou jogador e mural de posts compartilhados.
+- Integração de notas API-Football e associação manual do widget oficial gratuito de escalações/notas do Sofascore.
+
+Defina `API_FOOTBALL_KEY` como segredo opcional no servidor. O plano gratuito consultado só liberou temporadas de 2022 a 2024; notas indisponíveis são sinalizadas, sem dados substitutos.
+
+Verificação desta expansão: 37 testes automatizados, compilação e revisão no navegador. A qualidade de mídia entre seis computadores e a instalação no Windows dependem de teste com o grupo.

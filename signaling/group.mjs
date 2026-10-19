@@ -1,7 +1,9 @@
+import {lounge} from './lounge.mjs';
 const response=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const digest=async token=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token)))).map(b=>b.toString(16).padStart(2,'0')).join('');
 export function predictionPoints(vote,result){if(vote.home===result.home&&vote.away===result.away)return 5;return Math.sign(vote.home-vote.away)===Math.sign(result.home-result.away)?2:0}
 export async function handleGroup(room,data){
+ if(data.action==='lounge')return lounge(room,data);
  const store=room.ctx.storage;
  if(data.action==='status'){const state=room.snapshot(),publisher=state.members.find(m=>m.id===state.publisher);return response({members:state.members,publisher:publisher?{name:publisher.name}:null,viewers:publisher?state.members.length-1:0,capacity:6})}
  if(data.action==='pending'){const entries=await store.list({prefix:'pickgame:',limit:400});return response({games:[...entries.values()].filter(g=>Date.parse(g.date)<Date.now()&&!g.result).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8).map(g=>({league:g.league,id:g.id}))})}

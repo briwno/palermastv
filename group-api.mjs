@@ -4,6 +4,13 @@ export async function groupAPI(request,env,fetcher=fetch){
  const url=new URL(request.url);
  async function call(data){const r=await fetcher(SIGNAL+'/group',{method:'POST',headers:{Origin:url.origin,'Content-Type':'application/json'},body:JSON.stringify({...data,code:env.ROOM_CODE}),signal:AbortSignal.timeout(12000)});let body;try{body=await r.json()}catch{throw Error('Serviço do grupo indisponível.')}return{status:r.status,body}}
  try{
+   if(url.pathname==='/api/group/lounge'){
+     if(request.method==='GET')return await call({action:'lounge',operation:'read',context:url.searchParams.get('context')||'sala'});
+     if(request.method!=='POST')return{status:405,body:{error:'method_not_allowed'}};
+     const raw=await request.text();if(raw.length>4000)return{status:413,body:{error:'too_large'}};
+     let body;try{body=JSON.parse(raw)}catch{return{status:400,body:{error:'invalid_json'}}}
+     return await call({action:'lounge',operation:body.operation,context:body.context,token:body.token,name:body.name,question:body.question,options:body.options,pollId:body.pollId,choice:body.choice,url:body.url});
+   }
    if(url.pathname==='/api/group/status'&&request.method==='GET')return await call({action:'status'});
    if(url.pathname==='/api/group/ranking'&&request.method==='GET'){
      const pending=await call({action:'pending'});if(pending.status!==200)return pending;

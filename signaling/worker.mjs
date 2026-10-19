@@ -57,6 +57,7 @@ export class PalermasRoom {
       if(Number(request.headers.get('Content-Length')||0)>4096)return json({error:'too_large'},413);
       const raw=await request.text();if(raw.length>4096)return json({error:'too_large'},413);
       let body;try{body=JSON.parse(raw)}catch{return json({error:'invalid_json'},400)}
+      const resumeKey=typeof body.resumeToken==='string'&&/^[a-zA-Z0-9_-]{32,100}$/.test(body.resumeToken)?Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(body.resumeToken)))).map(b=>b.toString(16).padStart(2,'0')).join(''):null;
       const name=typeof body.name==='string'?body.name.trim().slice(0,24):'';
       if(!name||typeof body.code!=='string')return json({error:'invalid_join'},400);
       return this.ctx.blockConcurrencyWhile(async()=>{
@@ -68,6 +69,7 @@ export class PalermasRoom {
         if(rate.count>=6)return json({error:'try_later'},429);
         rate.count++;await this.ctx.storage.put(rateKey,rate);
         if(!await sameSecret(body.code,this.env.ROOM_CODE))return json({error:'wrong_code'},401);
+        if(resumeKey)for(const [socket,member]of this.members)if(member.resumeKey===resumeKey){this.members.delete(socket);try{socket.close(1000,'Reconectado')}catch{}}
         if(this.members.size>=MAX_PEOPLE)return json({error:'room_full'},409);
         // Keep short-lived tickets and login-attempt records bounded.
         const entries=await this.ctx.storage.list();
@@ -76,7 +78,7 @@ export class PalermasRoom {
         }
         if((await this.ctx.storage.list({prefix:'ticket:'})).size>=12)return json({error:'try_later'},429);
         const ticket=crypto.randomUUID()+crypto.randomUUID();
-        await this.ctx.storage.put('ticket:'+ticket,{name,expires:now+30000});
+        await this.ctx.storage.put('ticket:'+ticket,{name,resumeKey,expires:now+30000});
         return json({ticket});
       });
     }
@@ -91,7 +93,7 @@ export class PalermasRoom {
       await this.ctx.storage.delete(key);
       if(this.members.size>=MAX_PEOPLE)return json({error:'room_full'},409);
       const [client,server]=Object.values(new WebSocketPair());
-      const member={id:crypto.randomUUID(),name:grant.name,publishing:false,window:Date.now(),messages:0};
+      const member={id:crypto.randomUUID(),name:grant.name,resumeKey:grant.resumeKey,publishing:false,window:Date.now(),messages:0};
       this.ctx.acceptWebSocket(server);server.serializeAttachment(member);this.members.set(server,member);
       this.send(server,{type:'welcome',id:member.id,iceServers:[{urls:'stun:stun.cloudflare.com:3478'}],hasTurn:false});
       this.broadcast();
@@ -105,6 +107,24 @@ export class PalermasRoom {
     if(++member.messages>180){ws.close(1008,'Muitas mensagens');this.remove(ws);return;}
     let data;try{data=JSON.parse(raw)}catch{return;}
     if(!data||typeof data!=='object')return;
+    if(data.type==='repair'){
+      if(now-(member.repairAt||0)<5000)return;member.repairAt=now;ws.serializeAttachment(member);
+      const host=[...this.members].find(([,m])=>m.publishing);if(host&&host[0]!==ws)this.send(host[0],{type:'repair',from:member.id});return;
+    }
+    if(data.type==='cancel-handoff'){member.handoffExpires=0;ws.serializeAttachment(member);return;}
+    if(data.type==='request-handoff'){
+      const host=[...this.members].find(([,m])=>m.publishing);if(!host||host[0]===ws){this.send(ws,{type:'error',message:'A transmissão mudou. Tente novamente.'});return;}
+      if(now-(member.handoffAt||0)<10000)return;member.handoffAt=now;member.handoffExpires=now+45000;ws.serializeAttachment(member);
+      this.send(host[0],{type:'handoff-request',from:member.id,name:member.name});return;
+    }
+    if(data.type==='handoff-response'){
+      if(!member.publishing||typeof data.to!=='string')return;
+      const target=[...this.members].find(([,m])=>m.id===data.to);if(!target||target[1].handoffExpires<now||!target[1].handoffExpires)return;
+      target[1].handoffExpires=0;target[0].serializeAttachment(target[1]);
+      if(data.accept!==true){this.send(target[0],{type:'handoff-declined'});return;}
+      member.publishing=false;target[1].publishing=true;ws.serializeAttachment(member);target[0].serializeAttachment(target[1]);
+      this.send(ws,{type:'handoff-complete',publisher:target[1].id});this.send(target[0],{type:'claimed'});this.broadcast();return;
+    }
     if(data.type==='reaction'){
       if(!['⚽','🔥','👏','😂','😱','🤡'].includes(data.emoji)||now-(member.reactionAt||0)<1000)return;
       member.reactionAt=now;ws.serializeAttachment(member);

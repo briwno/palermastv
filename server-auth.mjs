@@ -53,7 +53,7 @@ export async function handleSite(request,env,assets,fetcher=fetch){
  if(request.method!=='GET'&&request.method!=='HEAD')return json({error:'method_not_allowed'},405);
  const signedIn=await authorized(request,env);
  if(path==='/logo.png'&&assets['logo.png'])return new Response(unb64(assets['logo.png'].body),{headers:{'Content-Type':'image/png','Cache-Control':'public, max-age=3600'}});
- if(['/manifest.webmanifest','/sw.js'].includes(path)&&assets[path.slice(1)]){const asset=assets[path.slice(1)];return new Response(asset.body,{headers:{...privateHeaders,'Content-Type':asset.type,...(path==='/sw.js'?{'Service-Worker-Allowed':'/'}:{})}})}
+ if(['/manifest.webmanifest','/sw.js','/app-icon.svg'].includes(path)&&assets[path.slice(1)]){const asset=assets[path.slice(1)];return new Response(asset.base64?unb64(asset.body):asset.body,{headers:{...privateHeaders,'Content-Type':asset.type,...(path==='/sw.js'?{'Service-Worker-Allowed':'/'}:{})}})}
  if(path==='/api/session')return json({authenticated:signedIn},signedIn?200:401);
  if(!signedIn){if(path==='/'||path==='/index.html')return loginPage();return json({error:'unauthorized'},401)}
  if(path.startsWith('/api/group/')){const r=await groupAPI(request,env,fetcher);return json(r.body,r.status)}

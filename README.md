@@ -46,7 +46,7 @@ Ao alterar o domínio, atualize os endereços permitidos em `signaling/worker.mj
 
 Dados esportivos e notícias dependem da disponibilidade da ESPN. Este repositório não contém as senhas, credenciais, dados dos palpites nem arquivos de configuração locais.
 
-Snapshot do projeto publicado: `3fe8e2d5c789e98b1fc69f57aa1fe871d6194aef`.
+Snapshot do projeto publicado: `bc8ce6699da666ff5f2f66f345ce0cd12e4be3df`.
 
 ## Expansão da sala e central
 
@@ -72,3 +72,9 @@ Verificação desta expansão: 40 testes automatizados, compilação e revisão 
 - Notícias e central da partida continuam pela ESPN. Nenhuma chave é enviada ao navegador.
 
 Validado com 40 testes, build e navegador; widgets do Athletico e Coritiba conferidos com notas reais.
+
+## Correção de qualidade
+
+Padrão 1080p/30 até 12 Mb/s por espectador; modo 60 fps até 16 Mb/s. Ajuste automático só reduz após dificuldade medida e persistente, recupera mesmo com o indicador de banda ativo e preserva resolução em sobrecarga de CPU. Preferência H.264 com demais codecs mantidos como alternativa. Parâmetros reaplicados após negociação. Diagnóstico de captura, codec e upload total; botão para restaurar limites.
+
+Validação: 44 testes e conexão WebRTC local real em 1920×1080, H.264, cerca de 28 fps. Desempenho na rede dos amigos ainda depende de teste com o grupo.

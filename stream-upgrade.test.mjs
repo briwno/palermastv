@@ -1,14 +1,21 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {nextQuality,connectionLabel} from './site-assets/stream-health.mjs';
+import {nextQuality,connectionLabel,preferVideoCodecs,qualityProfiles} from './site-assets/stream-health.mjs';
 import {sameTeams,normalizeRatings,playerRatings} from './player-ratings.mjs';
 import {PalermasP2P} from './site-assets/p2p.js';
 import {tacticalLines} from './site-assets/formation.mjs';
-test('quality steps down under sustained packet loss and recovers gradually after thirty seconds',()=>{
- let q=null;for(let i=0;i<6;i++)q=nextQuality(q,{loss:.12,rtt:.9,limited:'bandwidth'},5000000);assert.ok(q.bitrate<2200000);assert.ok(q.scale>1);const low=q.bitrate;
- for(let i=0;i<5;i++)q=nextQuality(q,{loss:0,rtt:.05,limited:'none'},5000000);assert.equal(q.bitrate,low);
- q=nextQuality(q,{loss:0,rtt:.05,limited:'none'},5000000);assert.ok(q.bitrate>low);for(let i=0;i<80;i++)q=nextQuality(q,{loss:0,rtt:.05,limited:'none'},5000000);assert.equal(q.bitrate,5000000);assert.equal(q.scale,1);
+test('sustained loss lowers gently and a persistent bandwidth flag does not prevent recovery',()=>{
+ let q=null;for(let i=0;i<12;i++)q=nextQuality(q,{loss:.12,rtt:.9,limited:'bandwidth'},5000000);assert.ok(q.bitrate<2200000);assert.ok(q.scale>1);const low=q.bitrate;
+ for(let i=0;i<3;i++)q=nextQuality(q,{loss:0,rtt:.05,limited:'bandwidth'},5000000);assert.equal(q.bitrate,low);
+ q=nextQuality(q,{loss:0,rtt:.05,limited:'bandwidth'},5000000);assert.ok(q.bitrate>low);for(let i=0;i<40;i++)q=nextQuality(q,{loss:0,rtt:.05,limited:'bandwidth'},5000000);assert.equal(q.bitrate,5000000);assert.equal(q.scale,1);
  assert.equal(connectionLabel({state:'connected',loss:null,rtt:null}),'Medindo');
 });
+test('bandwidth flag alone, missing data, isolated loss and CPU pressure never destroy resolution',()=>{
+ for(const sample of [{loss:null,rtt:null,limited:'bandwidth'},{loss:0,rtt:.04,limited:'bandwidth'},{loss:.2,rtt:.1,limited:'cpu'}]){let q=null;for(let i=0;i<100;i++)q=nextQuality(q,sample,12000000);assert.equal(q.bitrate,12000000);assert.equal(q.scale,1)}
+ let q=nextQuality(null,{loss:.2,rtt:.1},12000000);q=nextQuality(q,{loss:0,rtt:.1},12000000);assert.equal(q.bitrate,12000000);assert.equal(qualityProfiles.auto.frameRate,30);assert.equal(qualityProfiles.sports.frameRate,60);
+});
+test('severely weak links remain bounded and can recover to full resolution',()=>{let q=null;for(let i=0;i<100;i++)q=nextQuality(q,{loss:.2,rtt:.2,limited:'bandwidth',available:400000},12000000);assert.equal(q.bitrate,1500000);assert.equal(q.scale,2);for(let i=0;i<60;i++)q=nextQuality(q,{loss:0,rtt:.1,limited:'none',available:20000000},12000000);assert.equal(q.bitrate,12000000);assert.equal(q.scale,1)});
+test('codec preference retains every codec as fallback',()=>{const codecs=[{mimeType:'video/AV1'},{mimeType:'video/VP8'},{mimeType:'video/H264'},{mimeType:'video/rtx'}],sorted=preferVideoCodecs(codecs);assert.equal(sorted[0].mimeType,'video/H264');assert.equal(sorted[1].mimeType,'video/VP8');assert.equal(sorted.length,codecs.length);assert.equal(codecs[0].mimeType,'video/AV1')});
+test('video sender receives full resolution and parameters are reapplied after answer',async()=>{const c=new PalermasP2P('https://signal.example');c.bitrate=12000000;const calls=[];c.peers.set('viewer',{pc:{signalingState:'have-local-offer',setRemoteDescription:async()=>{},addIceCandidate:async()=>{},getSenders:()=>[{track:{kind:'video',getSettings:()=>({frameRate:30})},getParameters:()=>({encodings:[{}]}),setParameters:async p=>calls.push(p)}]},candidates:[]});await c.handle({type:'signal',from:'viewer',payload:{type:'answer',sdp:'test'}});assert.equal(calls.length,1);assert.equal(calls[0].encodings[0].maxBitrate,12000000);assert.equal(calls[0].encodings[0].scaleResolutionDownBy,1);assert.equal(calls[0].degradationPreference,'maintain-resolution');});
 test('network cleanup preserves screen permission and explicit leave stops captured tracks',()=>{const c=new PalermasP2P('https://signal.example');let stopped=0;c.stream={getTracks:()=>[{stop:()=>stopped++}]};c.cleanup(false);assert.equal(stopped,0);assert.ok(c.stream);c.leave();assert.equal(stopped,1);assert.equal(c.stream,null)});
 test('professional ratings preserve missing ratings and require exact fixture teams and time',()=>{const teams=normalizeRatings([{team:{name:'Casa'},players:[{player:{name:'A'},statistics:[{games:{rating:null}}]},{player:{name:'B'},statistics:[{games:{rating:'7.4',minutes:90}}]}]}]);assert.equal(teams[0].players.length,1);assert.equal(teams[0].players[0].rating,7.4);const game={home:{name:'Athletico-PR'},away:{name:'Coritiba'},date:'2026-10-18T20:00:00Z'};const fixture={teams:{home:{name:'Athletico Paranaense'},away:{name:'Coritiba'}},fixture:{date:game.date}};assert.equal(sameTeams(fixture,game),true);assert.equal(sameTeams({...fixture,fixture:{date:'2026-10-18T22:00:00Z'}},game),false);assert.equal(sameTeams({...fixture,teams:{home:{name:'Coritiba'},away:{name:'Athletico-PR'}}},game),false)});
 test('ratings without a configured key do not contact third parties',async()=>{const d=await playerRatings('bra.1','1',{},()=>{throw Error('must not call')});assert.equal(d.state,'unconfigured');assert.deepEqual(d.teams,[])});

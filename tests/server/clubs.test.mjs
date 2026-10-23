@@ -1,0 +1,86 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { projectStandings } from '../../src/server/features/football/service.mjs';
+import { normalizeNews } from '../../src/server/features/clubs/service.mjs';
+const row = (id, points, played = 10) => ({
+  id,
+  rank: id === 'a' ? 1 : 2,
+  points,
+  played,
+  wins: 4,
+  draws: 2,
+  losses: 4,
+  goalDifference: 0,
+  goalsFor: 10,
+  goalsAgainst: 10,
+});
+const live = {
+  id: 'live1',
+  state: 'in',
+  clock: "70'",
+  status: 'Em progresso',
+  home: { id: 'a', name: 'Casa', recordPlayed: 10 },
+  away: { id: 'b', name: 'Fora', recordPlayed: 10 },
+  homeScore: '1',
+  awayScore: '2',
+};
+test('live projection adds current points once and moves the winning side', () => {
+  const base = [{ name: 'Table', rows: [row('a', 20), row('b', 19)] }];
+  const result = projectStandings(base, [live], 'bra.1');
+  assert.equal(result[0].rows[0].id, 'b');
+  assert.equal(result[0].rows[0].points, 22);
+  assert.equal(result[0].rows[0].played, 11);
+  assert.equal(result[0].rows[0].goalDifference, 1);
+  assert.equal(result[0].rows[0].live.projected, true);
+  assert.equal(base[0].rows[1].points, 19);
+  const again = projectStandings(result, [live], 'bra.1');
+  assert.equal(again[0].rows[0].points, 22);
+  assert.equal(again[0].rows[0].live.projected, false);
+});
+test('a draw projects one point each; finished matches never add provisional points', () => {
+  const base = [{ rows: [row('a', 20), row('b', 19)] }];
+  assert.deepEqual(
+    projectStandings(base, [{ ...live, homeScore: '2' }], 'bra.1')[0].rows.map(
+      (r) => r.points,
+    ),
+    [21, 20],
+  );
+  const ended = projectStandings(base, [{ ...live, state: 'post' }], 'bra.1');
+  assert.deepEqual(
+    ended[0].rows.map((r) => r.points),
+    [20, 19],
+  );
+  assert.equal(ended[0].rows[0].live, undefined);
+});
+test('missing baseline record marks live but does not guess additional points', () => {
+  const data = projectStandings(
+    [{ rows: [row('a', 20)] }],
+    [{ ...live, home: { ...live.home, recordPlayed: null } }],
+    'bra.1',
+  );
+  assert.equal(data[0].rows[0].points, 20);
+  assert.equal(data[0].rows[0].live.projected, false);
+});
+test('news filters club membership and rejects unsafe links', () => {
+  const article = {
+    id: '1',
+    headline: '<b>Últimas do clube</b>',
+    published: '2026-10-18T12:00:00Z',
+    categories: [{ type: 'team', teamId: 3458 }],
+    links: { web: { href: 'https://www.espn.com.br/futebol/artigo/1' } },
+    images: [{ url: 'https://espnmedia-cdn.akamaized.net/photo.jpg' }],
+  };
+  const club = { id: '3458', key: 'cap', short: 'Athletico' };
+  const news = normalizeNews(
+    [
+      article,
+      { ...article, id: '2', links: { web: { href: 'javascript:alert(1)' } } },
+      { ...article, id: '3', categories: [] },
+    ],
+    club,
+  );
+  assert.equal(news.length, 1);
+  assert.equal(news[0].title, 'Últimas do clube');
+  assert.ok(news[0].image);
+  assert.equal(news[0].club, 'cap');
+});

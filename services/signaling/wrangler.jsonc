@@ -1,0 +1,12 @@
+{
+  "name": "palermastv-sinalizacao",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-18",
+  "workers_dev": true,
+  "vars": { "ALLOWED_ORIGINS": "https://palermastv.vercel.app" },
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "PALERMAS_ROOM", "class_name": "PalermasRoom" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PalermasRoom"] }],
+}

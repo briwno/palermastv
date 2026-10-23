@@ -1,0 +1,146 @@
+<section id="page-partida" class="page" hidden>
+  <div class="match-top">
+    <button class="text-button" data-go="jogos">← Jogos do dia</button
+    ><span class="eyebrow" id="match-league">CENTRAL DA PARTIDA</span
+    ><button class="button subtle" id="match-refresh">Atualizar ↻</button>
+  </div>
+  <div id="match-scoreboard" class="match-scoreboard" aria-live="polite">
+    <div class="empty-message">Selecione uma partida na agenda.</div>
+  </div>
+  <div class="match-toolbar">
+    <span id="match-source" class="data-note"></span
+    ><button class="button lime" id="match-watch">Assistir na sala ↗</button>
+  </div>
+  <div class="match-tabs" role="tablist" aria-label="Informações da partida">
+    <button
+      id="tab-overview"
+      role="tab"
+      data-match-tab="overview"
+      aria-selected="true"
+      aria-controls="match-overview"
+    >
+      Resumo</button
+    ><button
+      id="tab-lineups"
+      role="tab"
+      data-match-tab="lineups"
+      aria-selected="false"
+      aria-controls="match-lineups"
+      tabindex="-1"
+    >
+      Escalações</button
+    ><button
+      id="tab-statistics"
+      role="tab"
+      data-match-tab="statistics"
+      aria-selected="false"
+      aria-controls="match-statistics"
+      tabindex="-1"
+    >
+      Estatísticas</button
+    ><button
+      id="tab-events"
+      role="tab"
+      data-match-tab="events"
+      aria-selected="false"
+      aria-controls="match-events"
+      tabindex="-1"
+    >
+      Lances</button
+    ><button
+      id="tab-picks"
+      role="tab"
+      data-match-tab="picks"
+      aria-selected="false"
+      aria-controls="match-picks"
+      tabindex="-1"
+    >
+      Palpites</button
+    ><button
+      id="tab-polls"
+      role="tab"
+      data-match-tab="polls"
+      aria-selected="false"
+      aria-controls="match-polls"
+      tabindex="-1"
+    >
+      Enquetes</button
+    ><button
+      id="tab-social"
+      role="tab"
+      data-match-tab="social"
+      aria-selected="false"
+      aria-controls="match-social"
+      tabindex="-1"
+    >
+      Tweets / X</button
+    ><button
+      id="tab-ratings"
+      role="tab"
+      data-match-tab="ratings"
+      aria-selected="false"
+      aria-controls="match-ratings"
+      tabindex="-1"
+    >
+      Notas
+    </button>
+  </div>
+  <div
+    id="match-overview"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-overview"
+  ></div>
+  <div
+    id="match-lineups"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-lineups"
+    hidden
+  ></div>
+  <div
+    id="match-statistics"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-statistics"
+    hidden
+  ></div>
+  <div
+    id="match-events"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-events"
+    hidden
+  ></div>
+  <div
+    id="match-picks"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-picks"
+    hidden
+  >
+    <div id="match-picks-content"></div>
+  </div>
+  <div
+    id="match-polls"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-polls"
+    hidden
+    data-lounge
+  ></div>
+  <div
+    id="match-social"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-social"
+    hidden
+  ></div>
+  <div
+    id="match-ratings"
+    class="match-tab-panel"
+    role="tabpanel"
+    aria-labelledby="tab-ratings"
+    hidden
+  ></div>
+</section>

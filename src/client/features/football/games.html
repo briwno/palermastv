@@ -1,0 +1,52 @@
+<section id="page-jogos" class="page" hidden>
+  <div class="heading">
+    <div>
+      <div class="eyebrow">CALENDÁRIO</div>
+      <h1>Jogos<span>.</span></h1>
+      <p>
+        Futebol brasileiro e principais ligas europeias. Horários de Brasília.
+      </p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="section-head">
+      <h2 id="agenda-date-label">Jogos do dia</h2>
+      <div class="filter-row" id="day-filters">
+        <button class="chip" data-day="ontem">Ontem</button
+        ><button class="chip selected" data-day="hoje">Hoje</button
+        ><button class="chip" data-day="amanha">Amanhã</button>
+      </div>
+    </div>
+    <div class="filter-row" id="agenda-filters">
+      <button class="chip selected" data-filter="todos">Todos</button
+      ><button class="chip" data-filter="brasil">Brasil</button
+      ><button class="chip" data-filter="europa">Europa</button
+      ><button class="chip" data-filter="favoritos">★ Meus times</button>
+    </div>
+    <div class="agenda-tools">
+      <label for="game-date">Data <input type="date" id="game-date" /></label
+      ><button class="button subtle" id="refresh-games">Atualizar jogos</button>
+    </div>
+    <div id="agenda-fixtures" aria-live="polite"></div>
+    <div class="data-note">
+      <span id="agenda-data">Consultando ESPN…</span>
+    </div>
+  </div>
+  <section class="panel ge-round-panel">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">BRASILEIRÃO · GE</span>
+        <h2>Jogos da rodada</h2>
+      </div>
+      <label class="league-field"
+        >Série
+        <select id="ge-serie">
+          <option value="a">Série A</option>
+          <option value="b">Série B</option>
+        </select></label
+      >
+    </div>
+    <div id="ge-round-games" aria-live="polite"></div>
+    <p class="data-note" id="ge-round-source"></p>
+  </section>
+</section>

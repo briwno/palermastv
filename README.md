@@ -14,7 +14,7 @@ npm ci
 
 Copie `.env.example` para `.env.local`, escolha uma senha local e um ROOM_CODE local. Rode `npm run dev` e abra http://localhost:3000. Interface e dados esportivos funcionam sem credenciais de produção.
 
-Para testar a sala, crie `signaling/.dev.vars`, ignorado pelo Git:
+Para testar a sala, crie `services/signaling/.dev.vars`, ignorado pelo Git:
 
 ```dotenv
 ROOM_CODE=mesmo-valor-de-env-local
@@ -25,30 +25,39 @@ Mantenha `SIGNALING_URL=http://127.0.0.1:8787` em `.env.local` e execute `npm ru
 
 ## Onde editar
 
-- `site-assets/`: interface, player, PWA e WebRTC.
-- `server-auth.mjs`: senha, sessão e APIs privadas.
-- `football.mjs`, `match-center.mjs`, `club-hub.mjs`, `ge-feed.mjs`: futebol.
-- `app/`: adaptação para Next.js/Vercel.
-- `signaling/`: Worker e Durable Object da sala, enquetes e palpites.
-- `vendor/`: parser do Brasileirão e licença MIT.
+- `src/client/features/`: telas e funcionalidades, com HTML, CSS e módulos próprios.
+- `src/client/main.js`: entrada da interface e inicialização das funcionalidades.
+- `src/client/shell/`: estrutura comum e navegação.
+- `src/server/`: autenticação, HTTP, regras por funcionalidade e integrações externas.
+- `src/app/`: adaptador Next.js/Vercel.
+- `services/signaling/`: Worker Cloudflare, sala, enquetes e palpites.
+- `public/`: imagens e manifest públicos.
+- `tests/`: testes de interface, servidor e integração.
+- `scripts/`: compilação, desenvolvimento e verificação de produção.
 
-`server-assets.ts` é gerado automaticamente. Edite os arquivos de `site-assets/`.
+Veja o [guia de arquitetura e edição](docs/architecture.md) para localizar cada tela, entender os módulos e adicionar funcionalidades. O navegador usa imports explícitos; os testes impedem dependências circulares e imports de código do servidor.
+
+`npm run dev` recompila a interface ao editar `src/client/`; atualize a página após a compilação. `src/generated/` contém apenas arquivos gerados e fica fora do Git. O parser de terceiros e sua licença ficam em `src/server/vendor/`.
+
+No PowerShell, se a política de execução bloquear `npm.ps1`, use `npm.cmd` no lugar de `npm` (por exemplo, `npm.cmd run dev`).
 
 ## Testar e publicar
 
 ```sh
-npm test
-npm run build
+npm run check
+npm run smoke
 npm start
 ```
+
+`check` executa ESLint, Prettier, testes e build. `smoke` inicia uma instância temporária da versão compilada, testa login e recursos protegidos e encerra o processo. Para formatar alterações, execute `npm run format`.
 
 Produção: https://palermastv.vercel.app
 
 A integração GitHub/Vercel acompanha a branch `main`. Configure SITE_PASSWORD e ROOM_CODE como segredos na Vercel; ROOM_CODE deve coincidir com o Worker. SIGNALING_URL é opcional em produção: o padrão é o Worker existente. API_FOOTBALL_KEY é opcional para notas e depende da cobertura do plano.
 
-Mudanças no Worker exigem publicação separada com `npm run deploy:signal` e conta Cloudflare autorizada. Ao adicionar domínio, inclua a origem exata em ALLOWED_ORIGINS de `signaling/wrangler.jsonc` e publique o Worker.
+Mudanças no Worker exigem publicação separada com `npm run deploy:signal` e conta Cloudflare autorizada. Ao adicionar domínio, inclua a origem exata em ALLOWED_ORIGINS de `services/signaling/wrangler.jsonc` e publique o Worker.
 
-Nunca versione `.env.local`, `.dev.vars`, `.vercel/` ou credenciais. O endereço anterior do Sites continua independente. Esta migração partiu do snapshot publicado 55680e004fa50a482d7cf972a93213db188c658a.
+Nunca versione `.env.local`, `.dev.vars`, `.vercel/` ou credenciais.
 
 Fontes esportivas e widgets dependem de disponibilidade externa. Teste vídeo e áudio entre computadores reais após mudanças na transmissão.
 

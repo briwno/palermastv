@@ -1,1 +1,1 @@
-export default {poweredByHeader:false};
+export default { poweredByHeader: false };

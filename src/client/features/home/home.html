@@ -1,0 +1,139 @@
+<section id="page-inicio" class="page">
+  <div class="heading">
+    <div>
+      <div class="eyebrow">PALERMAS FC</div>
+      <h1>Palermas<span>TV</span></h1>
+      <p id="today-heading">Jogos, notícias e a transmissão do grupo.</p>
+    </div>
+    <button class="button lime" data-go="sala">
+      Entrar na sala <span>↗</span>
+    </button>
+  </div>
+  <section class="home-room-banner" aria-label="Estado da sala">
+    <span class="home-room-icon">▶</span>
+    <div>
+      <strong id="home-room-title">Sala dos Palermas</strong>
+      <p id="home-room-status">Consultando a sala…</p>
+      <div id="home-room-people"></div>
+    </div>
+    <button class="button lime" data-go="sala" id="home-room-watch">
+      Abrir sala ↗
+    </button>
+  </section>
+  <div id="live-strip" class="live-strip" hidden></div>
+  <div class="hero-grid">
+    <article class="club-card cap">
+      <div class="club-top">
+        <span class="pill">ATHLETICO</span
+        ><button
+          class="favorite"
+          data-team="cap"
+          aria-label="Favoritar Athletico"
+          aria-pressed="false"
+        >
+          ☆
+        </button>
+      </div>
+      <img
+        class="club-crest-art"
+        src="https://a.espncdn.com/i/teamlogos/soccer/500/3458.png"
+        alt="Escudo do Athletico"
+      />
+      <div class="club-content">
+        <span class="club-kicker">FURACÃO</span>
+        <div class="club-mini-stats" id="cap-mini-stats"></div>
+        <h2>Athletico<span>Paranaense</span></h2>
+        <div class="club-match">
+          <span class="tiny-label">PRÓXIMO JOGO</span
+          ><strong>Carregando próximo jogo…</strong
+          ><span>Consultando calendário</span>
+        </div>
+        <button class="club-link" data-detail="cap">
+          Ver o jogo <span>↗</span>
+        </button>
+      </div>
+    </article>
+    <article class="club-card coxa">
+      <div class="club-top">
+        <span class="pill">CORITIBA</span
+        ><button
+          class="favorite"
+          data-team="coxa"
+          aria-label="Favoritar Coritiba"
+          aria-pressed="false"
+        >
+          ☆
+        </button>
+      </div>
+      <img
+        class="club-crest-art"
+        src="https://a.espncdn.com/i/teamlogos/soccer/500/3456.png"
+        alt="Escudo do Coritiba"
+      />
+      <div class="club-content">
+        <span class="club-kicker">COXA-BRANCA</span>
+        <div class="club-mini-stats" id="coxa-mini-stats"></div>
+        <h2>Coritiba<span>Foot Ball Club</span></h2>
+        <div class="club-match">
+          <span class="tiny-label">PRÓXIMO JOGO</span
+          ><strong>Carregando próximo jogo…</strong
+          ><span>Consultando calendário</span>
+        </div>
+        <button class="club-link" data-detail="coxa">
+          Ver o jogo <span>↗</span>
+        </button>
+      </div>
+    </article>
+  </div>
+  <div class="lower-grid">
+    <section class="schedule panel">
+      <div class="section-head">
+        <h2>Jogos de hoje <span class="count" id="today-count">—</span></h2>
+        <button class="text-button" data-go="jogos">
+          Ver agenda <span>↗</span>
+        </button>
+      </div>
+      <div class="filter-row" id="home-filters">
+        <button class="chip selected" data-filter="todos">Todos</button
+        ><button class="chip" data-filter="brasil">Brasil</button
+        ><button class="chip" data-filter="europa">Europa</button
+        ><button class="chip" data-filter="favoritos">★ Meus times</button>
+      </div>
+      <div id="home-fixtures"></div>
+      <div class="data-note">
+        <span id="home-data">Consultando ESPN…</span>
+      </div>
+    </section>
+    <aside class="room-teaser panel">
+      <div class="eyebrow"><span class="green-dot"></span> TRANSMISSÃO</div>
+      <div class="room-illustration" aria-hidden="true">
+        <div class="screen">
+          <div class="pitch"><span></span></div>
+          <span class="play-icon">▶</span>
+        </div>
+        <div class="screen-base"></div>
+      </div>
+      <h2>Sala dos Palermas</h2>
+      <p>
+        Compartilhe a tela com até cinco espectadores. A conversa continua no
+        Discord.
+      </p>
+      <button class="button lime full" data-go="sala">
+        Abrir sala dos Palermas <span>↗</span></button
+      ><small>Se já tiver jogo rolando, entre e assista</small>
+    </aside>
+  </div>
+
+  <section class="home-news">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">CAP &amp; CFC</span>
+        <h2>Últimas notícias</h2>
+      </div>
+      <button class="text-button" data-go="clubes">Ver todas ↗</button>
+    </div>
+    <div id="home-news" class="news-grid">
+      <div class="empty-message">Carregando notícias…</div>
+    </div>
+  </section>
+</section>

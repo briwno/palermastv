@@ -1,0 +1,7 @@
+node_modules/
+.next/
+.wrangler/
+.vercel/
+src/server/vendor/
+src/generated/
+package-lock.json

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Entrar · PalermasTV</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0c1729" />
+    <link rel="stylesheet" href="/assets/login-styles.css" />
+  </head>
+  <body>
+    <main class="card">
+      <img
+        src="/logo.png"
+        alt="Palermas FC"
+        style="
+          display: block;
+          width: 180px;
+          border-radius: 18px;
+          margin: 0 auto 28px;
+        "
+      />
+      <h1>PalermasTV</h1>
+      <p>Digite a senha para acessar o site.</p>
+      <form id="login">
+        <label for="password">Senha do grupo</label
+        ><input
+          type="password"
+          id="password"
+          autocomplete="current-password"
+          required
+          autofocus
+          placeholder="Digite a senha"
+        /><button type="submit" id="submit">Entrar no PalermasTV ↗</button>
+        <div id="error" role="alert"></div>
+      </form>
+    </main>
+    <script type="module" src="/assets/login.js"></script>
+  </body>
+</html>

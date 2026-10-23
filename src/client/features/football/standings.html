@@ -1,0 +1,53 @@
+<section id="page-tabelas" class="page" hidden>
+  <div class="heading">
+    <div>
+      <div class="eyebrow">CAMPEONATOS</div>
+      <h1>Classificação<span>.</span></h1>
+      <p>Athletico e Coritiba destacados nas tabelas de suas competições.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="section-head">
+      <h2 id="table-title">Brasileirão Série A</h2>
+      <label class="league-field"
+        >Competição
+        <select id="table-league">
+          <option value="bra.1">Brasileirão Série A</option>
+          <option value="bra.2">Brasileirão Série B</option>
+          <option value="eng.1">Premier League</option>
+          <option value="esp.1">La Liga</option>
+          <option value="ita.1">Serie A italiana</option>
+          <option value="uefa.champions">Champions League</option>
+        </select></label
+      >
+    </div>
+    <div class="table-legend">
+      <span class="live-dot"></span> Pontos em dourado: jogo em andamento
+      <span>· Atualização a cada minuto</span>
+    </div>
+    <div id="table-live-games" class="table-live-games"></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Clube</th>
+            <th>PTS</th>
+            <th>J</th>
+            <th>V</th>
+            <th>E</th>
+            <th>D</th>
+            <th>SG</th>
+            <th>GP</th>
+            <th>GC</th>
+            <th>Agora</th>
+          </tr>
+        </thead>
+        <tbody id="standings"></tbody>
+      </table>
+    </div>
+    <div class="data-note">
+      <span id="table-data">Consultando ESPN…</span>
+    </div>
+  </div>
+</section>

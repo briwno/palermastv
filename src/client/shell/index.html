@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0c1729" />
+    <title>PalermasTV · Futebol e transmissão</title>
+    <meta
+      name="description"
+      content="Jogos, classificação e sala de transmissão dos Palermas."
+    />
+    <link rel="icon" href="/logo.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="stylesheet" href="/assets/main.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a href="#inicio" class="brand" aria-label="PalermasTV início"
+        ><img src="/logo.png" alt="Palermas FC" class="group-logo" /><span
+          >palermas<span class="brand-tv">tv</span></span
+        ></a
+      >
+      <div class="nav-label">MENU</div>
+      <nav aria-label="Menu principal">
+        <button class="nav active" data-page="inicio">
+          <span>◫</span>Visão geral</button
+        ><button class="nav" data-page="jogos">
+          <span>◷</span>Jogos do dia</button
+        ><button class="nav" data-page="tabelas">
+          <span>▤</span>Classificação</button
+        ><button class="nav" data-page="clubes">
+          <span>◈</span>CAP &amp; CFC</button
+        ><button class="nav" data-page="sala">
+          <span>▻</span>Sala dos Palermas <i></i>
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button
+          class="button subtle full install-app"
+          id="install-app"
+          aria-controls="install-help"
+          aria-expanded="false"
+        >
+          Instalar aplicativo ↓
+        </button>
+        <p class="data-note" id="install-help" hidden>
+          No Chrome ou Edge: abra o menu do navegador e escolha Instalar
+          PalermasTV ou Aplicativos → Instalar este site como aplicativo.
+        </p>
+        <div class="profile">
+          <span class="avatar">P</span>
+          <div><strong>Palermas FC</strong><small>Acesso do grupo</small></div>
+          <span class="profile-dot"></span>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <span class="breadcrumb"
+          >PalermasTV <span>/</span> <b id="crumb">Visão geral</b></span
+        >
+        <div class="top-actions">
+          <button class="text-button" id="site-logout">Sair do site</button
+          ><span class="prototype"><i></i> FUTEBOL</span
+          ><button
+            class="alerts-toggle"
+            id="alerts-toggle"
+            aria-label="Abrir avisos"
+            aria-expanded="false"
+            aria-controls="alerts-panel"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              aria-hidden="true"
+            >
+              <path
+                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+              />
+            </svg>
+            <span>Avisos</span><b id="alerts-count" hidden>0</b></button
+          ><button class="icon-btn" id="help" aria-label="Sobre os dados">
+            ?
+          </button>
+        </div>
+      </header>
+      <div class="content">
+        <!-- include: ../features/home/home.html -->
+        <!-- include: ../features/football/games.html -->
+        <!-- include: ../features/football/standings.html -->
+        <!-- include: ../features/clubs/clubs.html -->
+        <!-- include: ../features/match/match.html -->
+        <!-- include: ../features/room/room.html -->
+        <footer>
+          <span class="footer-brand">palermas<span>tv</span></span
+          ><span>Palermas FC</span
+          ><span
+            >Dados: ESPN · ge · Sofascore <b>·</b> Horário de Brasília</span
+          >
+        </footer>
+      </div>
+    </main>
+    <dialog id="details">
+      <button class="dialog-close icon-btn" aria-label="Fechar detalhes">
+        ×</button
+      ><span class="eyebrow">DETALHES DO JOGO</span>
+      <h2 id="detail-title"></h2>
+      <p id="detail-info"></p>
+      <div class="notice" id="detail-broadcast"></div>
+      <a
+        id="detail-source"
+        class="source-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Ver na ESPN ↗</a
+      ><button class="button lime full" id="watch-game">
+        Levar para a sala <span>↗</span>
+      </button>
+    </dialog>
+    <aside
+      id="alerts-panel"
+      class="alerts-panel"
+      aria-label="Avisos do grupo"
+      hidden
+    >
+      <div class="section-head">
+        <h2>Avisos</h2>
+        <button class="icon-btn" id="alerts-close" aria-label="Fechar avisos">
+          ×
+        </button>
+      </div>
+      <label class="alerts-preference"
+        ><input type="checkbox" id="alerts-enabled" checked /> Mostrar pop-ups
+        de jogos</label
+      >
+      <div id="alerts-list">
+        <p class="empty-message">Nenhum aviso no momento.</p>
+      </div>
+      <p class="data-note">
+        Avisos neste navegador, enquanto o site estiver aberto.
+      </p>
+    </aside>
+    <div
+      id="important-popup"
+      class="important-popup"
+      role="status"
+      hidden
+    ></div>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <script type="module" src="/assets/main.js"></script>
+  </body>
+</html>

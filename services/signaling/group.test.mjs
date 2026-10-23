@@ -1,0 +1,104 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { handleGroup, predictionPoints } from './group.mjs';
+class Store extends Map {
+  async put(k, v) {
+    this.set(k, structuredClone(v));
+  }
+  async list({ prefix = '', limit = 1000 } = {}) {
+    return new Map(
+      [...this].filter(([k]) => k.startsWith(prefix)).slice(0, limit),
+    );
+  }
+}
+const makeRoom = () => ({
+  ctx: { storage: new Store() },
+  snapshot: () => ({
+    members: [{ id: 'a', name: 'Amigo', publishing: true }],
+    publisher: 'a',
+  }),
+});
+const game = {
+  id: '900',
+  league: 'bra.1',
+  date: new Date(Date.now() + 3600000).toISOString(),
+  state: 'pre',
+  homeName: 'Casa',
+  awayName: 'Fora',
+};
+const vote = {
+  action: 'vote',
+  game,
+  token: 'test_token_long_enough_for_group_player',
+  name: 'Amigo',
+  home: 2,
+  away: 1,
+};
+test('room discovery reports host and count without admitting a viewer', async () => {
+  const r = await handleGroup(makeRoom(), { action: 'status' });
+  const d = await r.json();
+  assert.equal(d.publisher.name, 'Amigo');
+  assert.equal(d.members.length, 1);
+  assert.equal(d.viewers, 0);
+});
+test('votes persist by hashed identity and cannot be changed after kickoff', async () => {
+  const room = makeRoom();
+  const saved = await handleGroup(room, vote);
+  assert.equal(saved.status, 200);
+  const result = await saved.json();
+  assert.equal(result.id.length, 64);
+  assert.notEqual(result.id, vote.token);
+  const picks = await (
+    await handleGroup(room, { action: 'picks', game })
+  ).json();
+  assert.equal(picks.votes.length, 1);
+  assert.equal(picks.votes[0].home, 2);
+  assert.ok(!JSON.stringify(picks).includes(vote.token));
+  assert.equal(
+    (await handleGroup(room, { ...vote, game: { ...game, state: 'in' } }))
+      .status,
+    409,
+  );
+  assert.equal(
+    (
+      await handleGroup(room, {
+        ...vote,
+        game: { ...game, date: new Date(Date.now() - 1000).toISOString() },
+      })
+    ).status,
+    409,
+  );
+});
+test('ranking uses only settled scores and awards five or two points', async () => {
+  const room = makeRoom();
+  await handleGroup(room, vote);
+  await handleGroup(room, {
+    ...vote,
+    token: 'another_token_long_enough_for_group_player',
+    name: 'Outro',
+    home: 1,
+    away: 0,
+  });
+  let ranking = await (await handleGroup(room, { action: 'ranking' })).json();
+  assert.ok(ranking.ranking.every((p) => p.points === 0 && p.pending === 1));
+  await handleGroup(room, {
+    action: 'settle',
+    results: [{ id: game.id, league: game.league, home: 2, away: 1 }],
+  });
+  ranking = await (await handleGroup(room, { action: 'ranking' })).json();
+  assert.equal(ranking.ranking[0].points, 5);
+  assert.equal(ranking.ranking[0].exact, 1);
+  assert.equal(ranking.ranking[1].points, 2);
+  assert.equal(predictionPoints({ home: 1, away: 1 }, { home: 0, away: 0 }), 2);
+  assert.equal(predictionPoints({ home: 1, away: 0 }, { home: 0, away: 2 }), 0);
+});
+test('invalid scores and tokens never create votes', async () => {
+  const room = makeRoom();
+  assert.equal((await handleGroup(room, { ...vote, home: -1 })).status, 400);
+  assert.equal((await handleGroup(room, { ...vote, away: 21 })).status, 400);
+  assert.equal(
+    (await handleGroup(room, { ...vote, token: 'short' })).status,
+    400,
+  );
+  assert.equal(room.ctx.storage.size, 0);
+});

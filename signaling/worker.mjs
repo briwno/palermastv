@@ -1,6 +1,9 @@
 // Signaling only: media is never sent to this Worker.
 import {handleGroup} from './group.mjs';
 const ORIGIN = 'https://palermastv.solargrass4.chatgpt.site';
+export function allowedOrigins(env={}){
+ return new Set([ORIGIN,...String(env.ALLOWED_ORIGINS||'').split(',').map(s=>s.trim()).filter(s=>{try{const u=new URL(s);return u.origin===s&&(u.protocol==='https:'||u.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(u.hostname))}catch{return false}})]);
+}
 const MAX_PEOPLE = 6;
 const encoder = new TextEncoder();
 function json(value, status = 200, origin = ORIGIN) {
@@ -26,8 +29,8 @@ export function validSignal(payload) {
 export default {
   async fetch(request,env) {
     const origin=request.headers.get('Origin');
-    if(origin!==ORIGIN)return json({error:'origin_denied'},403);
-    if(request.method==='OPTIONS')return json({ok:true});
+    if(!allowedOrigins(env).has(origin))return json({error:'origin_denied'},403);
+    if(request.method==='OPTIONS')return json({ok:true},200,origin);
     const path=new URL(request.url).pathname;
     if(!['/join','/ws','/group'].includes(path))return json({error:'not_found'},404);
     if(!env.ROOM_CODE||env.ROOM_CODE.length<16)return json({error:'not_configured'},503);

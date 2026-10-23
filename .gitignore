@@ -61,3 +61,10 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# Next/Vercel e arquivos locais
+.next/
+.vercel/
+.env*
+!.env.example
+server-assets.ts

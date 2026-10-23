@@ -1,19 +1,23 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {nextQuality,connectionLabel,preferVideoCodecs,qualityProfiles} from './site-assets/stream-health.mjs';
+import {lossAdvice,connectionLabel,preferVideoCodecs,qualityProfiles} from './site-assets/stream-health.mjs';
 import {sameTeams,normalizeRatings,playerRatings} from './player-ratings.mjs';
 import {PalermasP2P} from './site-assets/p2p.js';
 import {tacticalLines} from './site-assets/formation.mjs';
-test('sustained loss lowers gently and a persistent bandwidth flag does not prevent recovery',()=>{
- let q=null;for(let i=0;i<12;i++)q=nextQuality(q,{loss:.12,rtt:.9,limited:'bandwidth'},5000000);assert.ok(q.bitrate<2200000);assert.ok(q.scale>1);const low=q.bitrate;
- for(let i=0;i<3;i++)q=nextQuality(q,{loss:0,rtt:.05,limited:'bandwidth'},5000000);assert.equal(q.bitrate,low);
- q=nextQuality(q,{loss:0,rtt:.05,limited:'bandwidth'},5000000);assert.ok(q.bitrate>low);for(let i=0;i<40;i++)q=nextQuality(q,{loss:0,rtt:.05,limited:'bandwidth'},5000000);assert.equal(q.bitrate,5000000);assert.equal(q.scale,1);
- assert.equal(connectionLabel({state:'connected',loss:null,rtt:null}),'Medindo');
+test('persistent packet loss suggests lower quality only after three consecutive samples',()=>{
+ let state=null;for(let i=0;i<2;i++){state=lossAdvice(state,{state:'connected',loss:.12});assert.equal(state.active,false)}state=lossAdvice(state,{state:'connected',loss:.12});assert.equal(state.active,true);
+ for(let i=0;i<5;i++){state=lossAdvice(state,{state:'connected',loss:0});assert.equal(state.active,true)}state=lossAdvice(state,{state:'connected',loss:0});assert.equal(state.active,false);
+ assert.equal(connectionLabel({state:'connected',loss:null,rtt:null}),'Medindo');assert.equal(qualityProfiles.auto,undefined);assert.equal(qualityProfiles.high.frameRate,30);
 });
-test('bandwidth flag alone, missing data, isolated loss and CPU pressure never destroy resolution',()=>{
- for(const sample of [{loss:null,rtt:null,limited:'bandwidth'},{loss:0,rtt:.04,limited:'bandwidth'},{loss:.2,rtt:.1,limited:'cpu'}]){let q=null;for(let i=0;i<100;i++)q=nextQuality(q,sample,12000000);assert.equal(q.bitrate,12000000);assert.equal(q.scale,1)}
- let q=nextQuality(null,{loss:.2,rtt:.1},12000000);q=nextQuality(q,{loss:0,rtt:.1},12000000);assert.equal(q.bitrate,12000000);assert.equal(qualityProfiles.auto.frameRate,30);assert.equal(qualityProfiles.sports.frameRate,60);
+test('isolated loss, missing stats and disconnected peers do not trigger stale suggestions',()=>{
+ let state=lossAdvice(null,{state:'connected',loss:.2});state=lossAdvice(state,{state:'connected',loss:null});state=lossAdvice(state,{state:'connected',loss:.2});assert.equal(state.active,false);
+ state=lossAdvice({bad:4,active:true},{state:'disconnected',loss:.2});assert.equal(state.active,false);
 });
-test('severely weak links remain bounded and can recover to full resolution',()=>{let q=null;for(let i=0;i<100;i++)q=nextQuality(q,{loss:.2,rtt:.2,limited:'bandwidth',available:400000},12000000);assert.equal(q.bitrate,1500000);assert.equal(q.scale,2);for(let i=0;i<60;i++)q=nextQuality(q,{loss:0,rtt:.1,limited:'none',available:20000000},12000000);assert.equal(q.bitrate,12000000);assert.equal(q.scale,1)});
+test('stats suggest a reduction without applying any automatic sender change',async()=>{
+ const c=new PalermasP2P('https://signal.example');c.closed=false;c.bitrate=12000000;c.stream={};let i=0,changes=0,samples;
+ c.addEventListener('stats',e=>samples=e.detail);
+ c.peers.set('viewer',{pc:{connectionState:'connected',getStats:async()=>{i++;return new Map([['v',{type:'outbound-rtp',kind:'video',remoteId:'r',timestamp:i*5000,packetsSent:i*1000,bytesSent:i*100000,frameWidth:1920,frameHeight:1080}],['r',{packetsLost:i*100}],['t',{type:'transport',selectedCandidatePairId:'p'}],['p',{currentRoundTripTime:.1}]]);},getSenders:()=>[{track:{kind:'video'},setParameters:()=>changes++}]}});
+ for(let n=0;n<5;n++)await c.collectStats();assert.equal(samples[0].suggestLower,true);assert.equal(samples[0].scale,1);assert.equal(samples[0].cap,12000000);assert.equal(c.bitrate,12000000);assert.equal(changes,0);
+});
 test('codec preference retains every codec as fallback',()=>{const codecs=[{mimeType:'video/AV1'},{mimeType:'video/VP8'},{mimeType:'video/H264'},{mimeType:'video/rtx'}],sorted=preferVideoCodecs(codecs);assert.equal(sorted[0].mimeType,'video/H264');assert.equal(sorted[1].mimeType,'video/VP8');assert.equal(sorted.length,codecs.length);assert.equal(codecs[0].mimeType,'video/AV1')});
 test('video sender receives full resolution and parameters are reapplied after answer',async()=>{const c=new PalermasP2P('https://signal.example');c.bitrate=12000000;const calls=[];c.peers.set('viewer',{pc:{signalingState:'have-local-offer',setRemoteDescription:async()=>{},addIceCandidate:async()=>{},getSenders:()=>[{track:{kind:'video',getSettings:()=>({frameRate:30})},getParameters:()=>({encodings:[{}]}),setParameters:async p=>calls.push(p)}]},candidates:[]});await c.handle({type:'signal',from:'viewer',payload:{type:'answer',sdp:'test'}});assert.equal(calls.length,1);assert.equal(calls[0].encodings[0].maxBitrate,12000000);assert.equal(calls[0].encodings[0].scaleResolutionDownBy,1);assert.equal(calls[0].degradationPreference,'maintain-resolution');});
 test('network cleanup preserves screen permission and explicit leave stops captured tracks',()=>{const c=new PalermasP2P('https://signal.example');let stopped=0;c.stream={getTracks:()=>[{stop:()=>stopped++}]};c.cleanup(false);assert.equal(stopped,0);assert.ok(c.stream);c.leave();assert.equal(stopped,1);assert.equal(c.stream,null)});

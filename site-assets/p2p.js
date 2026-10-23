@@ -1,15 +1,15 @@
-import {nextQuality,connectionLabel,preferVideoCodecs} from './stream-health.mjs';
+import {lossAdvice,connectionLabel,preferVideoCodecs} from './stream-health.mjs';
 /* Host makes one peer connection per viewer. No camera or microphone is requested. */
 export class PalermasP2P extends EventTarget {
-  constructor(endpoint){super();this.endpoint=endpoint.replace(/\/$/,'');this.peers=new Map();this.id=null;this.publisher=null;this.members=[];this.stream=null;this.iceServers=[];this.socket=null;this.timer=null;this.closed=true;this.queue=Promise.resolve();this.pendingClaim=null;this.offerJobs=new Set();this.adaptive=true;this.lastPong=0;}
+  constructor(endpoint){super();this.endpoint=endpoint.replace(/\/$/,'');this.peers=new Map();this.id=null;this.publisher=null;this.members=[];this.stream=null;this.iceServers=[];this.socket=null;this.timer=null;this.closed=true;this.queue=Promise.resolve();this.pendingClaim=null;this.offerJobs=new Set();this.lastPong=0;}
   emit(type,detail){this.dispatchEvent(new CustomEvent(type,{detail}));}
   send(value){if(this.socket?.readyState!==WebSocket.OPEN)throw Error('A sala está desconectada.');this.socket.send(JSON.stringify(value));}
   async join(name,resumeToken){
     if(!this.closed)throw Error('Você já está conectado.');
-    const url=new URL(this.endpoint);if(url.protocol!=='https:')throw Error('O serviço da sala precisa usar HTTPS.');
+    const url=new URL(this.endpoint);if(url.protocol!=='https:'&&!(url.protocol==='http:'&&['localhost','127.0.0.1'].includes(url.hostname)&&['localhost','127.0.0.1'].includes(location.hostname)))throw Error('O serviço da sala precisa usar HTTPS.');
     const res=await fetch('/api/room/join',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,resumeToken}),signal:AbortSignal.timeout(12000)});
     const data=await res.json();if(!res.ok)throw Error(({unauthorized:'Sua entrada expirou. Atualize a página para entrar novamente.',room_full:'Os seis lugares já estão ocupados.',try_later:'Aguarde um minuto antes de tentar novamente.',not_configured:'A sala ainda não foi configurada.'})[data.error]||'Não foi possível entrar na sala.');
-    const socketURL=new URL(this.endpoint+'/ws');socketURL.protocol='wss:';
+    const socketURL=new URL(this.endpoint+'/ws');socketURL.protocol=url.protocol==='https:'?'wss:':'ws:';
     this.closed=false;this.socket=new WebSocket(socketURL,['palermas-v1','ticket.'+data.ticket]);
     await new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>{reject(Error('Tempo de conexão esgotado.'));this.leave();},15000);
@@ -91,10 +91,10 @@ export class PalermasP2P extends EventTarget {
     }catch(error){this.stream=null;throw error}finally{this.pendingClaim=null;}
   }
   configureCodecs(pc){try{const codecs=RTCRtpSender.getCapabilities?.('video')?.codecs;if(!codecs?.length)return;for(const t of pc.getTransceivers())if((t.sender.track||t.receiver.track)?.kind==='video')t.setCodecPreferences?.(preferVideoCodecs(codecs));}catch{}}
-  async applyQuality(id){const e=this.peers.get(id);if(!e)return;const q=this.adaptive?(e.quality||{bitrate:this.bitrate||12000000,scale:1}):{bitrate:this.bitrate||12000000,scale:1};
+  async applyQuality(id){const e=this.peers.get(id);if(!e)return;const q={bitrate:this.bitrate||12000000,scale:1};
     for(const sender of e.pc.getSenders())if(sender.track?.kind==='video'){const p=sender.getParameters();if(!p.encodings?.length)continue;p.encodings[0].maxBitrate=Math.min(q.bitrate,this.bitrate||12000000);p.encodings[0].scaleResolutionDownBy=q.scale;p.encodings[0].maxFramerate=sender.track.getSettings?.().frameRate||30;p.degradationPreference=this.bitrate>=16000000?'maintain-framerate':'maintain-resolution';try{await sender.setParameters(p);e.parameterError=false}catch{delete p.degradationPreference;try{await sender.setParameters(p);e.parameterError=false}catch{if(!e.parameterError)this.emit('error','O navegador não aplicou o ajuste de qualidade. Encerre a transmissão e compartilhe novamente.');e.parameterError=true;}}}
   }
-  async limitBitrate(bitrate,adaptive=this.adaptive){this.bitrate=bitrate;this.adaptive=adaptive;for(const [id,e]of this.peers){e.quality=null;await this.applyQuality(id)}}
+  async limitBitrate(bitrate){this.bitrate=bitrate;for(const id of this.peers.keys())await this.applyQuality(id)}
   async collectStats(){if(this.collecting||this.closed)return;this.collecting=true;const samples=[];
     try{for(const [id,e]of this.peers){try{const reports=await e.pc.getStats();let video,pair;
       for(const r of reports.values()){if(r.type===(this.stream?'outbound-rtp':'inbound-rtp')&&(r.kind==='video'||r.mediaType==='video'))video=r;if(r.type==='transport'&&r.selectedCandidatePairId)pair=reports.get(r.selectedCandidatePairId);}
@@ -103,9 +103,8 @@ export class PalermasP2P extends EventTarget {
       const packets=this.stream?video?.packetsSent:video?.packetsReceived,lost=this.stream?remote?.packetsLost:video?.packetsLost,bytes=this.stream?video?.bytesSent:video?.bytesReceived;
       const dp=prev&&Number.isFinite(packets)&&Number.isFinite(prev.packets)?Math.max(0,packets-prev.packets):null,dl=prev&&Number.isFinite(lost)&&Number.isFinite(prev.lost)?Math.max(0,lost-prev.lost):null;
       const codec=video?.codecId?reports.get(video.codecId):null,frames=this.stream?video?.framesEncoded:video?.framesDecoded,frameDelta=prev&&Number.isFinite(frames)&&Number.isFinite(prev.frames)?frames-prev.frames:null;
-      const sample={id,name:this.members.find(m=>m.id===id)?.name||'Participante',state:e.pc.connectionState,width:video?.frameWidth||null,height:video?.frameHeight||null,fps:video?.framesPerSecond??(ms>0&&frameDelta!==null?frameDelta*1000/ms:null),bitrate:ms>0&&Number.isFinite(bytes)&&Number.isFinite(prev.bytes)?Math.max(0,(bytes-prev.bytes)*8000/ms):null,loss:dp!==null&&dl!==null&&dp>=100?(this.stream?dl/dp:dl/(dp+dl)):null,rtt:pair?.currentRoundTripTime??remote?.roundTripTime??null,previousRtt:prev?.rtt??null,available:pair?.availableOutgoingBitrate??null,codec:codec?.mimeType?.replace('video/','')||null,jitter:video?.jitter??null,limited:video?.qualityLimitationReason||null,scale:e.quality?.scale||1,cap:this.adaptive?(e.quality?.bitrate||this.bitrate):this.bitrate};
-      sample.label=connectionLabel(sample);samples.push(sample);if(video)e.previous={timestamp:video.timestamp,bytes,packets,lost,frames,rtt:sample.rtt};
-      if(this.stream&&this.adaptive&&sample.state==='connected'&&(sample.loss!==null||sample.rtt!==null||sample.available!==null)){e.quality=nextQuality(e.quality,sample,this.bitrate||12000000);await this.applyQuality(id);}
+      const sample={id,name:this.members.find(m=>m.id===id)?.name||'Participante',state:e.pc.connectionState,width:video?.frameWidth||null,height:video?.frameHeight||null,fps:video?.framesPerSecond??(ms>0&&frameDelta!==null?frameDelta*1000/ms:null),bitrate:ms>0&&Number.isFinite(bytes)&&Number.isFinite(prev.bytes)?Math.max(0,(bytes-prev.bytes)*8000/ms):null,loss:dp!==null&&dl!==null&&dp>=100?(this.stream?dl/dp:dl/(dp+dl)):null,rtt:pair?.currentRoundTripTime??remote?.roundTripTime??null,previousRtt:prev?.rtt??null,available:pair?.availableOutgoingBitrate??null,codec:codec?.mimeType?.replace('video/','')||null,jitter:video?.jitter??null,limited:video?.qualityLimitationReason||null,scale:1,cap:this.bitrate};
+      e.advice=lossAdvice(e.advice,sample);sample.suggestLower=e.advice.active;sample.label=connectionLabel(sample);samples.push(sample);if(video)e.previous={timestamp:video.timestamp,bytes,packets,lost,frames,rtt:sample.rtt};
     }catch{}}this.emit('stats',samples);}finally{this.collecting=false;}
   }
   stop(){this.pendingClaim?.reject(Error('Compartilhamento encerrado.'));this.pendingClaim=null;this.stream=null;this.closePeers();if(this.publisher===this.id){try{this.send({type:'release'})}catch{}}}

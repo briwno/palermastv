@@ -4,10 +4,10 @@ import {clubHub} from './club-hub.mjs';
 import {matchCenter} from './match-center.mjs';
 import {groupAPI} from './group-api.mjs';
 import {playerRatings} from './player-ratings.mjs';
+import {signalingEndpoint} from './signaling-endpoint.mjs';
 const enc=new TextEncoder();
 const COOKIE='palermas_session';
 const MAX_AGE=7*24*60*60;
-const SIGNAL='https://palermastv-sinalizacao.brunoalvesbezerra-ba.workers.dev';
 const attempts=new Map();
 const privateHeaders={'Cache-Control':'no-store, private','X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'same-origin','X-Robots-Tag':'noindex, nofollow, noarchive'};
 function json(body,status=200,extra={}){return new Response(JSON.stringify(body),{status,headers:{...privateHeaders,'Content-Type':'application/json',...extra}})}
@@ -46,7 +46,7 @@ export async function handleSite(request,env,assets,fetcher=fetch){
      const raw=await request.text();if(raw.length>2048)return json({error:'too_large'},413);
      let data;try{data=JSON.parse(raw)}catch{return json({error:'invalid_json'},400)}
      const name=typeof data.name==='string'?data.name.trim().slice(0,24):'';if(!name)return json({error:'invalid_name'},400);
-     const remote=await fetcher(SIGNAL+'/join',{method:'POST',headers:{Origin:url.origin,'Content-Type':'application/json'},body:JSON.stringify({name,resumeToken:typeof data.resumeToken==='string'?data.resumeToken.slice(0,100):undefined,code:env.ROOM_CODE})});
+     const remote=await fetcher(signalingEndpoint(env)+'/join',{method:'POST',headers:{Origin:url.origin,'Content-Type':'application/json'},body:JSON.stringify({name,resumeToken:typeof data.resumeToken==='string'?data.resumeToken.slice(0,100):undefined,code:env.ROOM_CODE})});
      return new Response(await remote.text(),{status:remote.status,headers:{...privateHeaders,'Content-Type':'application/json'}});
    }
    return json({error:'not_found'},404);
@@ -71,6 +71,7 @@ export async function handleSite(request,env,assets,fetcher=fetch){
      return json(value);
    }catch(error){return json({error:error.message||'Dados indisponíveis'},502)}
  }
+ if(path==='/room-config.json')return json({signalingUrl:signalingEndpoint(env)});
  const name=path==='/'?'index.html':path.slice(1);const asset=assets[name];
  if(!asset)return json({error:'not_found'},404);
  return new Response(request.method==='HEAD'?null:asset.base64?unb64(asset.body):asset.body,{headers:{...privateHeaders,'Content-Type':asset.type}});

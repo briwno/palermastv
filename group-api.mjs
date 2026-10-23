@@ -1,8 +1,8 @@
 import {matchCenter} from './match-center.mjs';
-const SIGNAL='https://palermastv-sinalizacao.brunoalvesbezerra-ba.workers.dev';
+import {signalingEndpoint} from './signaling-endpoint.mjs';
 export async function groupAPI(request,env,fetcher=fetch){
  const url=new URL(request.url);
- async function call(data){const r=await fetcher(SIGNAL+'/group',{method:'POST',headers:{Origin:url.origin,'Content-Type':'application/json'},body:JSON.stringify({...data,code:env.ROOM_CODE}),signal:AbortSignal.timeout(12000)});let body;try{body=await r.json()}catch{throw Error('Serviço do grupo indisponível.')}return{status:r.status,body}}
+ async function call(data){const r=await fetcher(signalingEndpoint(env)+'/group',{method:'POST',headers:{Origin:url.origin,'Content-Type':'application/json'},body:JSON.stringify({...data,code:env.ROOM_CODE}),signal:AbortSignal.timeout(12000)});let body;try{body=await r.json()}catch{throw Error('Serviço do grupo indisponível.')}return{status:r.status,body}}
  try{
    if(url.pathname==='/api/group/lounge'){
      if(request.method==='GET')return await call({action:'lounge',operation:'read',context:url.searchParams.get('context')||'sala'});

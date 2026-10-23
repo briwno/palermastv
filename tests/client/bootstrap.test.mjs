@@ -19,7 +19,10 @@ for (const route of [
   'jogos',
   'tabelas',
   'clubes',
+  'clubes/noticias',
   'sala',
+  'perfil',
+  'athletiba',
   'partida/bra.1/123',
 ]) {
   test(`the modular app starts and navigates from #${route} without globals`, async () => {
@@ -61,6 +64,23 @@ for (const route of [
         body = { publisher: null, members: [], viewers: 0 };
       else if (url.startsWith('/api/group/lounge'))
         body = { polls: [], posts: [] };
+      else if (url.startsWith('/api/group/profile'))
+        body = {
+          profile: null,
+          stats: { predictions: 0, awards: 0, messages: 0 },
+        };
+      else if (url.startsWith('/api/group/history')) body = { games: [] };
+      else if (url.startsWith('/api/group/chat')) body = { messages: [] };
+      else if (url.startsWith('/api/group/room-game')) body = { game: null };
+      else if (url.startsWith('/api/football/athletiba'))
+        body = {
+          summary: { cap: 0, coxa: 0, draws: 0, counted: 0 },
+          seasons: [2026, 2025, 2024],
+          history: [],
+          upcoming: [],
+          clubs: [],
+          checkedAt,
+        };
       else if (url.startsWith('/api/football/brasileirao'))
         body = { rounds: [], checkedAt };
       else if (url === '/room-config.json') body = { signalingUrl: null };
@@ -80,7 +100,11 @@ for (const route of [
         window.document.querySelectorAll('.page:not([hidden])').length,
         1,
       );
-      const page = route.startsWith('partida/') ? 'partida' : route;
+      const page = route.startsWith('partida/')
+        ? 'partida'
+        : route === 'athletiba' || route.startsWith('clubes/')
+          ? 'clubes'
+          : route;
       assert.equal(
         window.document.querySelector(`#page-${page}`).hidden,
         false,
@@ -88,7 +112,14 @@ for (const route of [
       assert.ok(requests.some((url) => url.startsWith('/api/football/games')));
       assert.equal(window.navigate, undefined);
       assert.equal(window.openMatch, undefined);
-      for (const target of ['jogos', 'tabelas', 'clubes', 'sala', 'inicio']) {
+      for (const target of [
+        'jogos',
+        'tabelas',
+        'clubes',
+        'sala',
+        'perfil',
+        'inicio',
+      ]) {
         window.document.querySelector(`[data-page="${target}"]`).click();
         assert.equal(
           window.document.querySelector(`#page-${target}`).hidden,

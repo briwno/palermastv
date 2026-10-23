@@ -1,5 +1,17 @@
-import { feed, normalizeEvent, leagues } from '../football/service.mjs';
-const clubs = [
+import {
+  feed,
+  normalizeEvent,
+  leagues,
+  nextClubGames,
+} from '../football/service.mjs';
+import { geClubNews, relevantClubText } from '../../integrations/ge-news.mjs';
+import {
+  fotmobTeam,
+  fotmobClubs,
+  normalizeAbsences,
+  recentForm,
+} from '../../integrations/fotmob.mjs';
+export const clubs = [
   {
     key: 'cap',
     id: '3458',
@@ -58,10 +70,13 @@ function safeURL(value, image = false) {
 }
 export function normalizeNews(articles, club) {
   return (articles || [])
-    .filter((a) =>
-      a.categories?.some(
-        (c) => c.type === 'team' && String(c.teamId || c.team?.id) === club.id,
-      ),
+    .filter(
+      (a) =>
+        relevantClubText(a.headline + ' ' + (a.description || ''), club.key) &&
+        a.categories?.some(
+          (c) =>
+            c.type === 'team' && String(c.teamId || c.team?.id) === club.id,
+        ),
     )
     .map((a) => ({
       id: String(a.id),
@@ -79,23 +94,28 @@ export function normalizeNews(articles, club) {
     .slice(0, 4);
 }
 export async function clubHub(fetcher = fetch) {
+  const upcomingPromise = nextClubGames(fetcher);
   const results = await Promise.all(
     clubs.map(async (club) => {
       const base =
         'https://site.api.espn.com/apis/site/v2/sports/soccer/bra.1/';
-      const [news, profile, results] = await Promise.allSettled([
-        feed(
-          base + `news?team=${club.id}&limit=12&lang=pt&region=br`,
-          600,
-          fetcher,
-        ),
-        feed(base + `teams/${club.id}?lang=pt&region=br`, 600, fetcher),
-        feed(
-          base + `teams/${club.id}/schedule?lang=pt&region=br`,
-          300,
-          fetcher,
-        ),
-      ]);
+      const [news, profile, results, geNews, fotmob] = await Promise.allSettled(
+        [
+          feed(
+            base + `news?team=${club.id}&limit=12&lang=pt&region=br`,
+            600,
+            fetcher,
+          ),
+          feed(base + `teams/${club.id}?lang=pt&region=br`, 600, fetcher),
+          feed(
+            base + `teams/${club.id}/schedule?lang=pt&region=br`,
+            300,
+            fetcher,
+          ),
+          geClubNews(club, fetcher),
+          fotmobTeam(fotmobClubs[club.key], fetcher),
+        ],
+      );
       const team = profile.status === 'fulfilled' ? profile.value.team : null,
         record = team?.record?.items?.find((r) => r.type === 'total');
       const stats = Object.fromEntries(
@@ -112,7 +132,7 @@ export async function clubHub(fetcher = fetch) {
               )
               .filter((g) => g?.state === 'post')
               .sort((a, b) => b.date.localeCompare(a.date))
-              .slice(0, 3)
+              .slice(0, 5)
           : [];
       return {
         ...club,
@@ -126,18 +146,41 @@ export async function clubHub(fetcher = fetch) {
           losses: stats.losses ?? null,
         },
         lastGames,
-        articles:
-          news.status === 'fulfilled'
-            ? normalizeNews(news.value.articles, club)
+        nextGame:
+          (await upcomingPromise).clubs.find((c) => c.key === club.key)?.game ||
+          null,
+        form:
+          fotmob.status === 'fulfilled'
+            ? recentForm(
+                fotmob.value.fixtures?.allFixtures?.fixtures || [],
+                fotmobClubs[club.key],
+              )
             : [],
-        newsUnavailable: news.status === 'rejected',
+        absences:
+          fotmob.status === 'fulfilled'
+            ? normalizeAbsences(fotmob.value)
+            : { available: false, players: [] },
+        articles: [
+          ...(geNews.status === 'fulfilled' ? geNews.value : []),
+          ...(news.status === 'fulfilled'
+            ? normalizeNews(news.value.articles, club)
+            : []),
+        ]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, 8),
+        newsUnavailable:
+          news.status === 'rejected' && geNews.status === 'rejected',
+        newsSources: [
+          geNews.status === 'fulfilled' ? 'ge' : null,
+          news.status === 'fulfilled' ? 'ESPN' : null,
+        ].filter(Boolean),
         profileUnavailable: profile.status === 'rejected',
       };
     }),
   );
   return {
     clubs: results,
-    source: 'ESPN',
+    source: 'ESPN · ge · FotMob',
     checkedAt: new Date().toISOString(),
     refreshSeconds: 600,
   };

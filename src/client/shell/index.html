@@ -24,15 +24,96 @@
       <div class="nav-label">MENU</div>
       <nav aria-label="Menu principal">
         <button class="nav active" data-page="inicio">
-          <span>◫</span>Visão geral</button
+          <svg
+            class="ui-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" /></svg
+          >Visão geral</button
         ><button class="nav" data-page="jogos">
-          <span>◷</span>Jogos do dia</button
+          <svg
+            class="ui-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M7 3v4m10-4v4M3 11h18m-13 5h2m4 0h2" /></svg
+          >Jogos do dia</button
         ><button class="nav" data-page="tabelas">
-          <span>▤</span>Classificação</button
+          <svg
+            class="ui-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M4 20V10h4v10m2 0V4h4v16m2 0v-7h4v7M2 20h20" /></svg
+          >Classificação</button
         ><button class="nav" data-page="clubes">
-          <span>◈</span>CAP &amp; CFC</button
+          <svg
+            class="ui-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z" />
+            <path d="M12 7v10M8 12h8" /></svg
+          >CAP &amp; CFC</button
+        ><button class="nav" data-page="perfil">
+          <svg
+            class="ui-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg
+          >Meu perfil</button
         ><button class="nav" data-page="sala">
-          <span>▻</span>Sala dos Palermas <i></i>
+          <svg
+            class="ui-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect x="3" y="4" width="18" height="13" rx="2" />
+            <path d="m10 8 5 3-5 3V8Zm-2 13h8m-4-4v4" /></svg
+          >Sala dos Palermas <i></i>
         </button>
       </nav>
       <div class="sidebar-bottom">
@@ -48,11 +129,18 @@
           No Chrome ou Edge: abra o menu do navegador e escolha Instalar
           PalermasTV ou Aplicativos → Instalar este site como aplicativo.
         </p>
-        <div class="profile">
-          <span class="avatar">P</span>
-          <div><strong>Palermas FC</strong><small>Acesso do grupo</small></div>
+        <button
+          class="profile"
+          id="sidebar-profile"
+          aria-label="Abrir meu perfil"
+        >
+          <span class="avatar" id="sidebar-profile-avatar">⚽</span>
+          <span
+            ><strong id="sidebar-profile-name">Meu perfil</strong
+            ><small id="sidebar-profile-team">Palermas FC</small></span
+          >
           <span class="profile-dot"></span>
-        </div>
+        </button>
       </div>
     </aside>
     <main>
@@ -96,11 +184,13 @@
         <!-- include: ../features/clubs/clubs.html -->
         <!-- include: ../features/match/match.html -->
         <!-- include: ../features/room/room.html -->
+        <!-- include: ../features/group/profile.html -->
         <footer>
           <span class="footer-brand">palermas<span>tv</span></span
           ><span>Palermas FC</span
           ><span
-            >Dados: ESPN · ge · Sofascore <b>·</b> Horário de Brasília</span
+            >Dados: ESPN · ge · FotMob · Sofascore <b>·</b> Horário de
+            Brasília</span
           >
         </footer>
       </div>
@@ -152,6 +242,33 @@
       hidden
     ></div>
     <div class="toast" id="toast" role="status" hidden></div>
+    <aside
+      id="miniplayer"
+      class="miniplayer"
+      aria-label="Transmissão em miniplayer"
+      hidden
+    >
+      <div class="mini-heading">
+        <strong>Ao vivo · PalermasTV</strong
+        ><button
+          class="icon-btn"
+          id="miniplayer-close"
+          aria-label="Recolher miniplayer e voltar à sala"
+        >
+          ↗
+        </button>
+      </div>
+      <div id="miniplayer-video"></div>
+      <div class="mini-actions">
+        <button class="text-button" id="miniplayer-return">Voltar à sala</button
+        ><button class="text-button" id="miniplayer-mute">
+          Silenciar / som</button
+        ><button class="text-button" id="miniplayer-pip">
+          Janela flutuante
+        </button>
+      </div>
+      <p class="data-note" id="mini-status" role="status"></p>
+    </aside>
     <script type="module" src="/assets/main.js"></script>
   </body>
 </html>

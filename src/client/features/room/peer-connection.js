@@ -3,6 +3,7 @@ import {
   connectionLabel,
   preferVideoCodecs,
 } from './stream-health.mjs';
+import { groupToken } from '../group/identity.js';
 /* Host makes one peer connection per viewer. No camera or microphone is requested. */
 export class PalermasP2P extends EventTarget {
   constructor(endpoint) {
@@ -46,7 +47,7 @@ export class PalermasP2P extends EventTarget {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, resumeToken }),
+      body: JSON.stringify({ name, resumeToken, playerToken: groupToken }),
       signal: AbortSignal.timeout(12000),
     });
     const data = await res.json();

@@ -1,7 +1,14 @@
 import { all, $ } from '../shared/dom.js';
 function navigate(page) {
+  if (page === 'athletiba') page = 'clubes/classico';
   let route = page;
   const parts = page.split('/');
+  if (
+    parts.length === 2 &&
+    parts[0] === 'clubes' &&
+    ['noticias', 'classico', 'historia'].includes(parts[1])
+  )
+    page = 'clubes';
   if (
     parts.length === 3 &&
     parts[0] === 'partida' &&
@@ -10,7 +17,15 @@ function navigate(page) {
   )
     page = 'partida';
   if (
-    !['inicio', 'jogos', 'tabelas', 'clubes', 'sala', 'partida'].includes(page)
+    ![
+      'inicio',
+      'jogos',
+      'tabelas',
+      'clubes',
+      'sala',
+      'partida',
+      'perfil',
+    ].includes(page)
   ) {
     page = 'inicio';
     route = page;
@@ -28,6 +43,7 @@ function navigate(page) {
     clubes: 'CAP & CFC',
     partida: 'Central da partida',
     sala: 'Sala dos Palermas',
+    perfil: 'Meu perfil',
   }[page];
   if (location.hash !== '#' + route)
     history.replaceState(null, '', '#' + route);

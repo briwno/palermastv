@@ -19,6 +19,10 @@ export async function joinRoom(request, env, fetcher) {
     headers: { Origin: url.origin, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name,
+      playerToken:
+        typeof data.playerToken === 'string'
+          ? data.playerToken.slice(0, 100)
+          : undefined,
       resumeToken:
         typeof data.resumeToken === 'string'
           ? data.resumeToken.slice(0, 100)

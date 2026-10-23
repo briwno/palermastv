@@ -10,6 +10,13 @@ import { initLounge } from './features/lounge/controller.js';
 import { initBrasileiraoRound } from './features/football/brasileirao-round.js';
 import { initInstall } from './pwa/install.js';
 import { initRoom } from './features/room/room-controller.js';
+import { initProfile } from './features/group/profile.js';
+import { initAwards } from './features/group/awards.js';
+import { initChat } from './features/room/chat.js';
+import { initMiniplayer } from './features/room/miniplayer.js';
+import { initRoomMatch } from './features/room/match-context.js';
+import { initAthletiba } from './features/clubs/athletiba.js';
+import { initMatchInsights } from './features/match/insights.js';
 
 initNavigation();
 initRoomPreferences();
@@ -22,5 +29,12 @@ initPredictions();
 initLounge();
 initBrasileiraoRound();
 initInstall();
+initProfile();
+initAwards();
+initChat();
+initMiniplayer();
+initRoomMatch();
+initAthletiba();
+initMatchInsights();
 
 initRoom();

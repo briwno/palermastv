@@ -92,6 +92,26 @@ O Next encaminha requisições de `src/app/[[...path]]/route.js` para `src/serve
 
 ## Regras para novas alterações
 
+### Perfis, chat e votação pós-jogo
+
+`features/group/identity.js` contém a identidade persistente compartilhada pelos palpites, perfis, chat e votos. O servidor guarda apenas o hash do código pessoal. `features/group/api.js` acessa as rotas autenticadas de comunidade; `profile.js` e `awards.js` cuidam das telas. `services/signaling/community.mjs` persiste esses dados no mesmo Durable Object da sala, sob o bloqueio de concorrência existente. Contadores de palpites e votos são derivados dos registros mantidos; mensagens possuem contador acumulado e histórico limitado.
+
+O proxy `server/features/group/proxy.mjs` obtém da ESPN o estado da partida e os jogadores elegíveis antes de encaminhar uma votação. Campos de partida ou escalação enviados pelo navegador não são usados como fonte. O vínculo de transmissão exige que o hash do ingresso de reconexão corresponda a um participante que esteja transmitindo.
+
+`room/miniplayer.js` move o mesmo player entre a sala e o contêiner flutuante, preservando seu stream. `room/chat.js` consulta mensagens apenas com a sala visível; `room/match-context.js` sincroniza o vínculo a cada dez segundos e consulta os detalhes por minuto apenas com o painel aberto. O chat é comum à sala, independente da partida vinculada.
+
+`server/features/clubs/athletiba.mjs` consulta o calendário do Athletico de três temporadas. Os confrontos são reconhecidos pelos IDs de ambos os times e deduplicados por evento. A interface distingue ausência de jogos retornados, falha de consulta e recorte parcial. Curiosidades reutilizam os dados editoriais dos perfis dos clubes.
+
+As rotas incluem `#perfil`, `#clubes/noticias`, `#clubes/classico` e `#clubes/historia`; `#athletiba` redireciona para o clássico dentro de CAP & CFC. A aba de votação é `awards` na central da partida. O Worker e a interface precisam ser publicados juntos para disponibilizar essas funções.
+
+### Enriquecimento esportivo
+
+`integrations/fotmob.mjs` consulta JSON público com cache e timeout. `features/match/insights.mjs` associa os jogos por equipes normalizadas, horário e competição, sem confundir IDs entre provedores. Dados ausentes mantêm a experiência ESPN. `probabilities.mjs` calcula uma distribuição de Poisson apenas com jogos anteriores ao início da partida e pelo menos cinco resultados por equipe. A interface identifica a estimativa como pré-jogo e distingue o consenso do grupo.
+
+`integrations/ge-news.mjs` extrai somente arrays JSON de matérias das páginas dos clubes, sem executar scripts. Valida domínio, caminho específico do time, relevância textual e imagens; deduplica as matérias. A tabela recebe zonas da legenda do provedor e forma recente, sem posições de classificação fixadas no código. A montagem do shell resolve includes relativos recursivamente e rejeita ciclos.
+
+### Convenções de edição
+
 - Coloque código de uma funcionalidade junto do HTML e CSS correspondente. Evite novas pastas chamadas `extras` ou arquivos com funções sem relação entre si.
 - Compartilhe código em `shared/` somente quando ele não depender de uma funcionalidade.
 - Não importe código do servidor no navegador. Não crie imports circulares nem variáveis globais como forma de comunicação.

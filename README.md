@@ -61,6 +61,20 @@ Nunca versione `.env.local`, `.dev.vars`, `.vercel/` ou credenciais.
 
 Fontes esportivas e widgets dependem de disponibilidade externa. Teste vídeo e áudio entre computadores reais após mudanças na transmissão.
 
+## Recursos do grupo
+
+- **Meu perfil:** apelido, avatar, time e contagem de palpites, votos pós-jogo e mensagens. A identificação existente dos palpites é preservada. O código pessoal permite levar o perfil para outro navegador; quem tiver esse código poderá usá-lo.
+- **Craque e bagre:** na central de uma partida encerrada, cada pessoa escolhe dois jogadores diferentes que entraram em campo. O servidor consulta o estado e os participantes na ESPN. Alterar o voto substitui o anterior. Empates são exibidos sem desempate artificial; as parciais ficam no histórico do grupo.
+- **Chat da sala:** mensagens de texto com atualização a cada cinco segundos enquanto a sala estiver aberta. Mantém as últimas 100 mensagens; o contador pessoal registra todos os envios. O chat é compartilhado pelo grupo e pode conter spoilers.
+- **Partida da transmissão:** depois de começar a transmitir, selecione um jogo e use **Vincular para a sala**. Só o transmissor atual pode alterar ou remover o vínculo. Todos consultam o mesmo jogo; estatísticas e escalações são abertas por escolha do espectador.
+- **Miniplayer:** ao navegar com o vídeo ativo, o mesmo player acompanha a navegação. Voltar à sala restaura sua posição. Picture-in-Picture também aparece quando o navegador oferece suporte.
+- **CAP & CFC:** reúne panorama dos clubes, notícias, Athletiba e curiosidades. O clássico consulta calendários da ESPN das últimas três temporadas; os números descrevem apenas o recorte retornado. As notícias do ge passam por filtros de domínio, caminho do clube e conteúdo. O FotMob complementa forma recente, próximo compromisso e boletim do elenco quando disponíveis.
+- **Central da partida:** os próximos jogos de CAP & CFC abrem dentro do PalermasTV, usando o calendário e os IDs da ESPN. A integração FotMob associa adversários, horário e competição antes de exibir xG, mapa de chutes, notas e confrontos. Também fornece titulares, reservas, formação e técnico quando falta a escalação da ESPN; esses jogadores não substituem os IDs usados nas votações. Falhas nessa fonte preservam os dados principais da ESPN.
+- **Probabilidades:** estimativa pré-jogo do site por modelo de Poisson, usando até dez resultados anteriores de cada equipe, com mínimo de cinco. Não considera força dos adversários, mando ou escalações e não representa odds de apostas. O consenso dos palpites é mostrado separadamente.
+- **Tabela e palpites:** faixas de classificação conforme a fonte, legenda e últimos cinco resultados; placares com botões de ajuste, sugestões, rascunho durante a navegação, consenso e ranking do grupo.
+
+Perfis, votos, chat e vínculo da partida ficam no Durable Object do Worker. O armazenamento comporta 32 identidades e 400 partidas com votos pós-jogo. Nenhuma nova chave de API é necessária. Para ativar as alterações em produção, publique **o Worker e a interface**; publicar só a interface deixa as novas rotas do grupo indisponíveis. Os testes automatizados simulam provedores e conexões: ainda é necessário validar mídia, áudio e Picture-in-Picture com navegadores reais e dados esportivos ao vivo.
+
 ## Colaborar
 
 O dono concede acesso em GitHub → Settings → Collaborators. Cada amigo clona o projeto, cria uma branch e abre um pull request. Execute testes e build antes de integrar à main. O responsável pela hospedagem acompanha os deploys; permissões de previews dependem do plano Vercel. Usem segredos locais e contas individuais.

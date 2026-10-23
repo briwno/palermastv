@@ -64,7 +64,7 @@ test('missing baseline record marks live but does not guess additional points', 
 test('news filters club membership and rejects unsafe links', () => {
   const article = {
     id: '1',
-    headline: '<b>Últimas do clube</b>',
+    headline: '<b>Últimas do Athletico</b>',
     published: '2026-10-18T12:00:00Z',
     categories: [{ type: 'team', teamId: 3458 }],
     links: { web: { href: 'https://www.espn.com.br/futebol/artigo/1' } },
@@ -80,7 +80,7 @@ test('news filters club membership and rejects unsafe links', () => {
     club,
   );
   assert.equal(news.length, 1);
-  assert.equal(news[0].title, 'Últimas do clube');
+  assert.equal(news[0].title, 'Últimas do Athletico');
   assert.ok(news[0].image);
   assert.equal(news[0].club, 'cap');
 });

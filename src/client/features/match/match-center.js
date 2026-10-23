@@ -102,12 +102,11 @@ function renderMatch() {
   $('#match-source').textContent =
     sourceNote(d) + (g.state === 'in' ? ' · Atualiza a cada minuto' : '');
   $('#match-watch').disabled = false;
-  window.dispatchEvent(new CustomEvent('football:match', { detail: d }));
   const goals = d.events.filter((e) =>
     ['goal', 'own-goal', 'penalty-goal'].includes(e.type),
   );
   $('#match-overview').innerHTML =
-    `<div class="match-overview-grid"><section class="panel"><div class="section-head"><h2>Informações do jogo</h2></div><dl class="match-facts"><div><dt>Competição</dt><dd>${esc(g.league)}</dd></div><div><dt>Estádio</dt><dd>${esc(g.venue || 'Não informado')}</dd></div>${g.city ? `<div><dt>Cidade</dt><dd>${esc(g.city)}</dd></div>` : ''}<div><dt>Onde assistir</dt><dd>${g.broadcasts.length ? esc(g.broadcasts.join(', ')) : 'Não informado pela fonte'}</dd></div>${g.referee ? `<div><dt>Arbitragem</dt><dd>${esc(g.referee)}</dd></div>` : ''}${g.attendance ? `<div><dt>Público</dt><dd>${g.attendance.toLocaleString('pt-BR')}</dd></div>` : ''}</dl>${g.sourceUrl ? `<a class="source-link" href="${esc(g.sourceUrl)}" target="_blank" rel="noopener noreferrer">Partida na ESPN ↗</a>` : ''}</section><section class="panel"><div class="section-head"><h2>${g.state === 'pre' ? 'Antes da partida' : 'Gols'}</h2></div>${g.state === 'pre' ? '<p class="empty-message">Escalações e estatísticas aparecem quando forem divulgadas pela fonte.</p>' : goals.length ? `<ol class="match-timeline">${timeline(goals)}</ol>` : `<p class="empty-message">${d.eventsAvailable ? 'Nenhum gol informado.' : 'Eventos indisponíveis na fonte.'}</p>`}</section></div>${d.statistics.length ? `<section class="panel overview-stats"><div class="section-head"><h2>Estatísticas principais</h2><button class="text-button" data-match-switch="statistics">Ver todas ↗</button></div>${statRows(d.statistics, 5)}</section>` : ''}`;
+    `<div class="match-overview-grid"><section class="panel"><div class="section-head"><h2>Informações do jogo</h2></div><dl class="match-facts"><div><dt>Competição</dt><dd>${esc(g.league)}</dd></div><div><dt>Estádio</dt><dd>${esc(g.venue || 'Não informado')}</dd></div>${g.city ? `<div><dt>Cidade</dt><dd>${esc(g.city)}</dd></div>` : ''}<div><dt>Onde assistir</dt><dd>${g.broadcasts.length ? esc(g.broadcasts.join(', ')) : 'Não informado pela fonte'}</dd></div>${g.referee ? `<div><dt>Arbitragem</dt><dd>${esc(g.referee)}</dd></div>` : ''}${g.attendance ? `<div><dt>Público</dt><dd>${g.attendance.toLocaleString('pt-BR')}</dd></div>` : ''}</dl><p class="data-note">Dados da partida: ESPN · complementos: FotMob</p></section><section class="panel"><div class="section-head"><h2>${g.state === 'pre' ? 'Antes da partida' : 'Gols'}</h2></div>${g.state === 'pre' ? '<p class="empty-message">Escalações e estatísticas aparecem quando forem divulgadas pela fonte.</p>' : goals.length ? `<ol class="match-timeline">${timeline(goals)}</ol>` : `<p class="empty-message">${d.eventsAvailable ? 'Nenhum gol informado.' : 'Eventos indisponíveis na fonte.'}</p>`}</section></div>${d.statistics.length ? `<section class="panel overview-stats"><div class="section-head"><h2>Estatísticas principais</h2><button class="text-button" data-match-switch="statistics">Ver todas ↗</button></div>${statRows(d.statistics, 5)}</section>` : ''}`;
   $('#match-lineups').innerHTML = `<div class="lineups-grid">${d.lineups
     .map(
       (l) =>
@@ -134,6 +133,23 @@ function renderMatch() {
     `<section class="panel full-match-stats"><div class="stat-team-head"><span>${crest(g.home)}${esc(g.home.name)}</span><span>${crest(g.away)}${esc(g.away.name)}</span></div>${d.statistics.length ? statRows(d.statistics) : `<div class="empty-message">${g.state === 'pre' ? 'As estatísticas ficam disponíveis após o início do jogo.' : 'Estatísticas indisponíveis na fonte.'}</div>`}</section>`;
   $('#match-events').innerHTML =
     `<section class="panel events-panel"><div class="section-head"><h2>Lances da partida</h2><span class="data-note">Mais recentes primeiro</span></div><div class="event-filters"><button class="chip selected" data-event-filter="all">Todos</button><button class="chip" data-event-filter="goals">Gols</button><button class="chip" data-event-filter="cards">Cartões</button><button class="chip" data-event-filter="subs">Substituições</button></div><ol class="match-timeline" id="match-event-list">${d.events.length ? timeline(d.events) : `<li class="empty-message">${g.state === 'pre' ? 'A partida ainda não começou.' : d.eventsAvailable ? 'Nenhum lance informado.' : 'Lances indisponíveis na fonte.'}</li>`}</ol>${d.commentary?.length ? `<details class="commentary" open><summary>Minuto a minuto · ${d.commentary.length} atualizações</summary><ol>${d.commentary.map((c) => `<li><time>${esc(c.clock || '—')}</time><p>${esc(c.text)}</p></li>`).join('')}</ol></details>` : ''}${d.videos?.length ? `<div class="match-clips"><h3>Vídeos na ESPN</h3>${d.videos.map((v) => `<a class="source-link" target="_blank" rel="noopener noreferrer" href="${esc(v.url)}">▶ ${esc(v.title)} ↗</a>`).join('')}</div>` : ''}</section>`;
+  $('#match-overview').insertAdjacentHTML(
+    'afterbegin',
+    '<div id="match-analysis"></div>',
+  );
+  $('#match-statistics').insertAdjacentHTML(
+    'afterbegin',
+    '<div id="match-advanced-prime"></div>',
+  );
+  $('#match-statistics').insertAdjacentHTML(
+    'beforeend',
+    '<div id="match-advanced"></div>',
+  );
+  $('#match-lineups').insertAdjacentHTML(
+    'beforeend',
+    '<div id="match-lineup-supplement"></div>',
+  );
+  window.dispatchEvent(new CustomEvent('football:match', { detail: d }));
 }
 
 async function loadMatch(quiet = false) {
@@ -238,6 +254,9 @@ export function initMatchCenter() {
     const game = activeMatch?.game || findGame(activeMatchKey.split('/')[1]);
     if (!game) return;
     setRoomGame(game);
+    window.dispatchEvent(
+      new CustomEvent('palermas:roomselection', { detail: game }),
+    );
     $('#selected-game').textContent = game.home.name + ' × ' + game.away.name;
     updateScore();
     navigate('sala');

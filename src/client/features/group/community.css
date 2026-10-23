@@ -1,0 +1,201 @@
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.community-grid > *,
+.room-chat {
+  min-width: 0;
+}
+.community-history {
+  margin-top: 24px;
+}
+.community-result {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.community-result small {
+  display: block;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.community-result p {
+  line-height: 1.7;
+}
+.community-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.community-grid .text-input,
+#award-form .text-input,
+.room-game .text-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 18px;
+}
+select.text-input {
+  color-scheme: dark;
+  font: inherit;
+}
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+#profile-form {
+  max-width: 480px;
+}
+#sidebar-profile {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+}
+#sidebar-profile small {
+  display: block;
+}
+.participation-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.participation-stats b {
+  display: block;
+  font-size: 34px;
+  color: var(--lime);
+}
+.athletiba-score {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+  text-align: center;
+}
+.athletiba-score b {
+  display: block;
+  font-size: 44px;
+  color: var(--lime);
+}
+.athletiba-score span {
+  color: var(--muted);
+}
+.room-chat {
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+.chat-messages {
+  height: 310px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.chat-messages article {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.chat-messages strong {
+  font-size: 12px;
+}
+.chat-messages time {
+  float: right;
+  font-size: 10px;
+  color: var(--muted);
+}
+.chat-messages p {
+  margin: 8px 0 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#chat-text {
+  width: 100%;
+  resize: vertical;
+  margin-bottom: 10px;
+  font: inherit;
+}
+.room-stat {
+  display: grid;
+  grid-template-columns: 45px 1fr 45px;
+  text-align: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+#room-match-details p {
+  line-height: 1.7;
+}
+.miniplayer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: min(390px, calc(100vw - 32px));
+  z-index: 90;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 16px 50px #0009;
+  overflow: hidden;
+}
+.mini-heading,
+.mini-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+}
+.mini-actions {
+  flex-wrap: wrap;
+}
+.miniplayer .player {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 0;
+}
+.miniplayer .player video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.miniplayer .player-badge {
+  display: none;
+}
+.miniplayer #mini-status:empty {
+  display: none;
+}
+.miniplayer #mini-status {
+  padding: 0 12px;
+}
+@media (max-width: 760px) {
+  .community-grid {
+    grid-template-columns: 1fr;
+  }
+  .miniplayer {
+    bottom: 78px;
+    right: 12px;
+    width: min(320px, calc(100vw - 24px));
+  }
+  .athletiba-score span {
+    font-size: 11px;
+  }
+}
+@media (max-width: 800px) {
+  .sidebar {
+    flex-wrap: wrap;
+  }
+  .sidebar nav {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .sidebar .nav {
+    flex-shrink: 0;
+  }
+}

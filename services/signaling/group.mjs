@@ -1,4 +1,5 @@
 import { lounge } from './lounge.mjs';
+import { community } from './community.mjs';
 const response = (body, status = 200) =>
   Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const digest = async (token) =>
@@ -17,6 +18,7 @@ export function predictionPoints(vote, result) {
     : 0;
 }
 export async function handleGroup(room, data) {
+  if (data.action?.startsWith('community-')) return community(room, data);
   if (data.action === 'lounge') return lounge(room, data);
   const store = room.ctx.storage;
   if (data.action === 'status') {
@@ -72,6 +74,7 @@ export async function handleGroup(room, data) {
           scores.set(id, {
             id,
             name: profiles[id]?.name || vote.name,
+            avatar: profiles[id]?.avatar || '⚽',
             points: 0,
             exact: 0,
             results: 0,
@@ -111,10 +114,12 @@ export async function handleGroup(room, data) {
   const key = 'pickgame:' + g.league + ':' + g.id;
   if (data.action === 'picks') {
     const saved = await store.get(key);
+    const profiles = (await store.get('pickprofiles')) || {};
     return response({
       votes: Object.entries(saved?.votes || {}).map(([id, v]) => ({
         id,
-        name: v.name,
+        name: profiles[id]?.name || v.name,
+        avatar: profiles[id]?.avatar || '⚽',
         home: v.home,
         away: v.away,
         points: saved.result ? predictionPoints(v, saved.result) : null,
@@ -161,7 +166,7 @@ export async function handleGroup(room, data) {
   if (game.result || Date.parse(game.date) <= Date.now())
     return response({ error: 'picks_closed' }, 409);
   const name = data.name.trim().slice(0, 24);
-  profiles[id] = { name, updatedAt: Date.now() };
+  profiles[id] = { ...profiles[id], name, updatedAt: Date.now() };
   game.votes[id] = { name, home: data.home, away: data.away };
   await store.put('pickprofiles', profiles);
   await store.put(key, game);

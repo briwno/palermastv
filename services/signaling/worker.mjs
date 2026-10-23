@@ -93,6 +93,8 @@ export class PalermasRoom {
       members: [...this.members.values()].map((m) => ({
         id: m.id,
         name: m.name,
+        avatar: m.avatar || '⚽',
+        team: m.team || '',
         publishing: m.publishing,
       })),
       publisher:
@@ -202,8 +204,28 @@ export class PalermasRoom {
         if ((await this.ctx.storage.list({ prefix: 'ticket:' })).size >= 12)
           return json({ error: 'try_later' }, 429);
         const ticket = crypto.randomUUID() + crypto.randomUUID();
+        const playerId =
+          typeof body.playerToken === 'string' &&
+          /^[a-zA-Z0-9_-]{32,100}$/.test(body.playerToken)
+            ? Array.from(
+                new Uint8Array(
+                  await crypto.subtle.digest(
+                    'SHA-256',
+                    encoder.encode(body.playerToken),
+                  ),
+                ),
+              )
+                .map((v) => v.toString(16).padStart(2, '0'))
+                .join('')
+            : null;
+        const profile = playerId
+          ? ((await this.ctx.storage.get('pickprofiles')) || {})[playerId]
+          : null;
         await this.ctx.storage.put('ticket:' + ticket, {
-          name,
+          name: profile?.name || name,
+          avatar: profile?.avatar || '⚽',
+          team: profile?.team || '',
+          playerId,
           resumeKey,
           expires: now + 30000,
         });
@@ -240,6 +262,9 @@ export class PalermasRoom {
       const member = {
         id: crypto.randomUUID(),
         name: grant.name,
+        avatar: grant.avatar,
+        team: grant.team,
+        playerId: grant.playerId,
         resumeKey: grant.resumeKey,
         publishing: false,
         window: Date.now(),

@@ -1,3 +1,5 @@
+import { navigate } from '../../shell/navigation.js';
+import { formBadges } from '../../shared/football-visuals.js';
 import { timezone, dateText } from '../../shared/dates.js';
 import { esc, $, all } from '../../shared/dom.js';
 import { sourceNote, api } from '../../shared/football-api.js';
@@ -19,7 +21,7 @@ function newsDate(date) {
 }
 
 function newsCard(n) {
-  return `<article class="news-card ${esc(n.club)}"><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer"><div class="news-image">${n.image ? `<img src="${esc(n.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<img class="news-fallback" src="https://a.espncdn.com/i/teamlogos/soccer/500/${n.club === 'cap' ? '3458' : '3456'}.png" alt="">`}<span class="news-club">${esc(n.clubName)}</span>${n.type === 'Vídeo' ? '<span class="news-video">▶ Vídeo</span>' : ''}</div><div class="news-copy"><div class="news-meta">ESPN <span>·</span> ${esc(newsDate(n.date))}</div><h3>${esc(n.title)}</h3><span class="news-read">${n.type === 'Vídeo' ? 'Assistir na ESPN' : 'Ler na ESPN'} <b>↗</b></span></div></a></article>`;
+  return `<article class="news-card ${esc(n.club)}"><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer"><div class="news-image">${n.image ? `<img src="${esc(n.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<img class="news-fallback" src="https://a.espncdn.com/i/teamlogos/soccer/500/${n.club === 'cap' ? '3458' : '3456'}.png" alt="">`}<span class="news-club">${esc(n.clubName)}</span>${n.type === 'Vídeo' ? '<span class="news-video">▶ Vídeo</span>' : ''}</div><div class="news-copy"><div class="news-meta">${esc(n.source || 'ESPN')} <span>·</span> ${esc(newsDate(n.date))}</div><h3>${esc(n.title)}</h3><span class="news-read">${n.type === 'Vídeo' ? 'Assistir' : 'Ler no ' + esc(n.source || 'ESPN')} <b>↗</b></span></div></a></article>`;
 }
 
 function renderHub() {
@@ -55,7 +57,21 @@ function renderHub() {
     .filter((c) => newsFilter === 'todos' || c.key === newsFilter)
     .map(
       (c) =>
-        `<article class="club-profile ${esc(c.key)}"><header><img src="${esc(c.logo)}" alt="Escudo do ${esc(c.short)}"><div><span class="eyebrow">${esc(c.nickname)} · ${esc(c.city)}</span><h2>${esc(c.name)}</h2><a href="${esc(c.official)}" target="_blank" rel="noopener noreferrer">Site oficial ↗</a></div></header><div class="profile-stats"><div><b>${c.stats.rank ?? '—'}º</b><span>na Série A</span></div><div><b>${c.stats.points ?? '—'}</b><span>pontos</span></div><div><b>${c.stats.played ?? '—'}</b><span>jogos</span></div><div><b>${c.stats.wins ?? '—'}</b><span>vitórias</span></div></div><p class="profile-source">Campanha informada pela ESPN · placares provisórios na Classificação</p><div class="profile-facts"><div><span>Fundação</span><strong>${esc(c.founded)}</strong></div><div><span>Estádio</span><strong>${esc(c.stadium)}</strong></div></div><details><summary>Conquistas em destaque</summary><ul>${c.highlights.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details><div class="recent-results"><h3>Últimos resultados</h3>${
+        `<article class="club-profile ${esc(c.key)}"><header><img src="${esc(c.logo)}" alt="Escudo do ${esc(c.short)}"><div><span class="eyebrow">${esc(c.nickname)} · ${esc(c.city)}</span><h2>${esc(c.name)}</h2><a href="${esc(c.official)}" target="_blank" rel="noopener noreferrer">Site oficial ↗</a></div></header><div class="club-momentum"><span>Últimos jogos</span>${formBadges(
+          c.form?.length
+            ? c.form
+            : c.lastGames.map((g) => {
+                const home = g.home.id === c.id;
+                const a = Number(home ? g.homeScore : g.awayScore),
+                  b = Number(home ? g.awayScore : g.homeScore);
+                return {
+                  result: a > b ? 'V' : a === b ? 'E' : 'D',
+                  own: a,
+                  against: b,
+                  opponent: home ? g.away.name : g.home.name,
+                };
+              }),
+        )}</div><div class="profile-stats"><div><b>${c.stats.rank ?? '—'}º</b><span>na Série A</span></div><div><b>${c.stats.points ?? '—'}</b><span>pontos</span></div><div><b>${c.stats.played ?? '—'}</b><span>jogos</span></div><div><b>${c.stats.wins ?? '—'}</b><span>vitórias</span></div></div><div class="club-efficiency"><span>Aproveitamento</span><b>${c.stats.played > 0 && c.stats.points !== null ? Math.round((c.stats.points / (c.stats.played * 3)) * 100) + '%' : '—'}</b><i><span style="width:${c.stats.played > 0 ? Math.max(0, Math.min(100, (c.stats.points / (c.stats.played * 3)) * 100)) : 0}%"></span></i></div><p class="profile-source">Campanha: ESPN · Forma: FotMob / resultados ESPN</p>${c.nextGame ? `<section class="club-next-game"><span class="eyebrow">PRÓXIMO COMPROMISSO</span><strong>${esc(c.nextGame.home.name)} × ${esc(c.nextGame.away.name)}</strong><small>${new Date(c.nextGame.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</small><a class="button subtle" href="#partida/${esc(c.nextGame.leagueId)}/${esc(c.nextGame.id)}">Abrir partida no PalermasTV →</a></section>` : ''}<div class="profile-facts"><div><span>Fundação</span><strong>${esc(c.founded)}</strong></div><div><span>Estádio</span><strong>${esc(c.stadium)}</strong></div></div><details><summary>Conquistas em destaque</summary><ul>${c.highlights.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details><div class="recent-results"><h3>Últimos resultados</h3>${
           c.lastGames.length
             ? c.lastGames
                 .map((g) => {
@@ -67,7 +83,7 @@ function renderHub() {
                 })
                 .join('')
             : '<p class="data-note">Resultados indisponíveis.</p>'
-        }</div></article>`,
+        }</div><section class="club-absences"><div class="section-head"><h3>Boletim do elenco</h3><span class="status-pill">${c.absences?.players?.length ?? '—'} registros</span></div>${c.absences?.players?.map((p) => `<div class="absence-row"><span class="absence-dot"></span><strong>${esc(p.name)}</strong><small>${esc(p.reason)}</small></div>`).join('') || `<p class="data-note">${c.absences?.available ? 'Nenhuma ausência registrada no FotMob; isso não confirma elenco completo.' : 'Boletim indisponível no FotMob.'}</p>`}<p class="data-note">Situação atual · FotMob. Consulte a aba Notícias para atualizações de escalação.</p></section></article>`,
     )
     .join('');
   for (const c of hubData.clubs) {
@@ -101,6 +117,40 @@ async function loadHub() {
 }
 
 export function initClubHub() {
+  const sections = {
+    noticias: 'news',
+    classico: 'classic',
+    historia: 'history',
+  };
+  function showSection(section) {
+    all('[data-hub-section]').forEach((b) => {
+      const selected = b.dataset.hubSection === section;
+      b.classList.toggle('selected', selected);
+      b.setAttribute('aria-pressed', String(selected));
+    });
+    all('[data-hub-panel]').forEach(
+      (panel) => (panel.hidden = panel.dataset.hubPanel !== section),
+    );
+    $('#news-filters').hidden = !['overview', 'news'].includes(section);
+    window.dispatchEvent(
+      new CustomEvent('palermas:hubsection', { detail: { section } }),
+    );
+  }
+  all('[data-hub-section]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const slug = {
+        news: 'noticias',
+        classic: 'classico',
+        history: 'historia',
+      }[b.dataset.hubSection];
+      navigate('clubes' + (slug ? '/' + slug : ''));
+    }),
+  );
+  window.addEventListener('palermas:navigate', (e) => {
+    if (e.detail.page === 'clubes')
+      showSection(sections[e.detail.route?.split('/')[1]] || 'overview');
+  });
+  showSection(sections[location.hash.split('/')[1]] || 'overview');
   all('#news-filters button').forEach((b) =>
     b.addEventListener('click', () => {
       newsFilter = b.dataset.club;

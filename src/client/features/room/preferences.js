@@ -5,12 +5,16 @@ import { timeText } from '../../shared/dates.js';
 import { navigate } from '../../shell/navigation.js';
 import { findGame } from '../football/game-store.js';
 import { gameState } from '../football/presentation.js';
+import { communityRequest } from '../group/api.js';
 let selected = null;
 
 let roomGame = null;
 
 function updateScore() {
-  if (!roomGame) return;
+  if (!roomGame) {
+    $('#room-score').textContent = 'Nenhuma partida selecionada';
+    return;
+  }
   const fresh = findGame(roomGame.id) || roomGame;
   $('#room-score').textContent = $('#spoiler-toggle').checked
     ? 'Placar oculto'
@@ -32,6 +36,10 @@ try {
 
 function setRoomGame(game) {
   roomGame = game;
+  $('#selected-game').textContent = game
+    ? game.home.name + ' × ' + game.away.name
+    : 'Escolha um jogo na agenda';
+  updateScore();
 }
 
 export function initRoomPreferences() {
@@ -60,7 +68,10 @@ export function initRoomPreferences() {
   });
   $('#watch-game').addEventListener('click', () => {
     if (!selected) return;
-    roomGame = selected;
+    setRoomGame(selected);
+    window.dispatchEvent(
+      new CustomEvent('palermas:roomselection', { detail: selected }),
+    );
     $('#selected-game').textContent =
       selected.home.name + ' × ' + selected.away.name;
     updateScore();
@@ -76,11 +87,34 @@ export function initRoomPreferences() {
       toast('Tela cheia indisponível neste navegador.');
     }
   });
-  $('#save-nickname').addEventListener('click', () => {
+  $('#save-nickname').addEventListener('click', async () => {
     const name = $('#nickname').value.trim();
-    updateNickname(name);
-    save('palermas-nickname', name);
-    toast('Apelido salvo.');
+    if (!name) {
+      toast('Informe seu apelido.');
+      return;
+    }
+    const button = $('#save-nickname');
+    button.disabled = true;
+    try {
+      const { profile } = await communityRequest('profile', {
+        operation: 'read',
+      });
+      const data = await communityRequest('profile', {
+        name,
+        avatar: profile?.avatar || '⚽',
+        team: profile?.team || '',
+      });
+      updateNickname(data.profile.name);
+      save('palermas-nickname', data.profile.name);
+      window.dispatchEvent(
+        new CustomEvent('palermas:profile', { detail: data.profile }),
+      );
+      toast('Apelido salvo no seu perfil.');
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      button.disabled = false;
+    }
   });
 }
 export { setRoomGame, updateScore };

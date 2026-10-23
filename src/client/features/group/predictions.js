@@ -2,32 +2,12 @@ import { $, esc, all } from '../../shared/dom.js';
 import { activeMatch, activeMatchKey } from '../match/match-center.js';
 import { save } from '../../shared/storage.js';
 import { toast } from '../../shared/feedback.js';
-let groupToken = '';
-
-let groupPlayerId = '';
-
+import { groupToken, groupPlayerId, groupIdentity } from './identity.js';
+import { picksView } from './picks-view.js';
+const drafts = new Map();
 let picksBusy = false;
-
 let picksKey = '';
-
 let reactionSentAt = 0;
-
-try {
-  groupToken =
-    localStorage.getItem('palermas-player-token') || crypto.randomUUID();
-  localStorage.setItem('palermas-player-token', groupToken);
-} catch {
-  groupToken = crypto.randomUUID();
-}
-
-const groupIdentity = crypto.subtle
-  .digest('SHA-256', new TextEncoder().encode(groupToken))
-  .then(
-    (bytes) =>
-      (groupPlayerId = Array.from(new Uint8Array(bytes))
-        .map((v) => v.toString(16).padStart(2, '0'))
-        .join('')),
-  );
 
 const groupMessages = {
   picks_closed: 'Os palpites fecharam porque a partida já começou.',
@@ -97,23 +77,21 @@ async function loadRoomStatus() {
   }
 }
 
-function rankRows(data) {
-  return data.ranking.length
-    ? `<ol class="picks-ranking">${data.ranking.map((r, i) => `<li class="${r.id === groupPlayerId ? 'own-pick' : ''}"><span class="rank-number">${i + 1}</span><div><strong>${esc(r.name)}${r.id === groupPlayerId ? ' (você)' : ''}</strong><small>${r.exact} ${r.exact === 1 ? 'placar exato' : 'placares exatos'} · ${r.played} ${r.played === 1 ? 'jogo apurado' : 'jogos apurados'}${r.pending ? ' · ' + r.pending + ' pendente(s)' : ''}</small></div><b>${r.points}<small> pts</small></b></li>`).join('')}</ol>`
-    : '<p class="empty-message">O ranking aparece quando o grupo começar a palpitar.</p>';
-}
-
 async function loadPicks() {
   if (!activeMatch || picksBusy) return;
   const g = activeMatch.game,
     key = g.leagueId + '/' + g.id;
   picksKey = key;
   picksBusy = true;
-  $('#match-picks-content').innerHTML =
-    '<div class="panel empty-message">Consultando os palpites do grupo…</div>';
+  if (
+    !document.querySelector('#pick-form') ||
+    document.querySelector('#pick-form').dataset.key !== key
+  )
+    $('#match-picks-content').innerHTML =
+      '<div class="panel empty-message">Preparando o bolão da galera…</div>';
   try {
     await groupIdentity;
-    const [picks, ranking] = await Promise.all([
+    const [picks, ranking] = await Promise.allSettled([
       groupRequest(
         'predictions?league=' +
           encodeURIComponent(g.leagueId) +
@@ -123,19 +101,27 @@ async function loadPicks() {
       groupRequest('ranking'),
     ]);
     if (activeMatchKey !== key) return;
-    const own = picks.votes.find((v) => v.id === groupPlayerId),
-      locked =
-        picks.locked || g.state !== 'pre' || Date.parse(g.date) <= Date.now();
+    if (picks.status !== 'fulfilled') throw picks.reason;
     let name = '';
     try {
       name = localStorage.getItem('palermas-nickname') || '';
     } catch {}
-    $('#match-picks-content').innerHTML =
-      `<div class="picks-grid"><section class="panel"><div class="section-head"><h2>Palpites desta partida</h2><button class="text-button" data-refresh-picks>Atualizar ↻</button></div>${locked ? '<div class="notice">Palpites encerrados para esta partida.</div>' : `<form id="pick-form"><label class="field-label" for="pick-name">Seu apelido</label><input class="text-input" id="pick-name" maxlength="24" required value="${esc(name || own?.name || '')}" placeholder="Seu apelido"><div class="pick-score-inputs"><label>${esc(g.home.name)}<input id="pick-home" type="number" min="0" max="20" step="1" required value="${own?.home ?? ''}"></label><span>×</span><label>${esc(g.away.name)}<input id="pick-away" type="number" min="0" max="20" step="1" required value="${own?.away ?? ''}"></label></div><button class="button lime full" type="submit" id="pick-save">${own ? 'Alterar palpite' : 'Salvar palpite'}</button><p id="pick-error" role="status"></p></form><p class="data-note">Pode alterar até o início do jogo. Sua identificação fica neste navegador; use o mesmo para editar seus palpites.</p>`}<ul class="pick-votes">${picks.votes.length ? picks.votes.map((v) => `<li class="${v.id === groupPlayerId ? 'own-pick' : ''}"><span>${esc(v.name)}${v.id === groupPlayerId ? ' (você)' : ''}</span><strong>${v.home} × ${v.away}</strong>${v.points !== null ? `<small>${v.points} pts</small>` : ''}</li>`).join('') : '<li>Nenhum palpite para esta partida.</li>'}</ul></section><section class="panel"><div class="section-head"><h2>Ranking dos Palermas</h2></div><p class="picks-rules">5 pontos por placar exato · 2 por acertar vitória ou empate · 0 por erro. Vale o placar final, sem a disputa de pênaltis.</p>${rankRows(ranking)}<p class="data-note">Resultados apurados pela ESPN ao abrir ou atualizar os palpites.</p></section></div>`;
+    $('#match-picks-content').innerHTML = picksView(
+      g,
+      picks.value,
+      ranking.status === 'fulfilled' ? ranking.value : null,
+      groupPlayerId,
+      name,
+      drafts.get(key),
+    );
+    const form = $('#pick-form');
+    if (form) form.dataset.key = key;
   } catch (error) {
     if (activeMatchKey === key)
       $('#match-picks-content').innerHTML =
-        `<div class="panel empty-message">${esc(error.message)}<br><button class="button subtle" data-refresh-picks>Tentar novamente</button></div>`;
+        '<div class="panel empty-message">' +
+        esc(error.message) +
+        '<br><button class="button subtle" data-refresh-picks>Tentar novamente</button></div>';
   } finally {
     picksBusy = false;
     if (activeMatchKey !== key && !$('#match-picks').hidden)
@@ -159,6 +145,35 @@ try {
 } catch {}
 
 export function initPredictions() {
+  function saveDraft() {
+    if ($('#pick-home') && picksKey === activeMatchKey)
+      drafts.set(picksKey, {
+        home: Number($('#pick-home').value),
+        away: Number($('#pick-away').value),
+        name: $('#pick-name').value,
+      });
+  }
+  document.addEventListener('input', (e) => {
+    if (e.target.closest('#pick-form')) saveDraft();
+  });
+  document.addEventListener('click', (e) => {
+    const step = e.target.closest('[data-pick-step]'),
+      preset = e.target.closest('[data-pick-preset]');
+    if (step) {
+      const input = $('#pick-' + step.dataset.side);
+      input.value = Math.max(
+        0,
+        Math.min(20, Number(input.value) + Number(step.dataset.pickStep)),
+      );
+      saveDraft();
+    }
+    if (preset) {
+      const [h, a] = preset.dataset.pickPreset.split(',');
+      $('#pick-home').value = h;
+      $('#pick-away').value = a;
+      saveDraft();
+    }
+  });
   document.addEventListener('submit', async (e) => {
     if (e.target.id !== 'pick-form') return;
     e.preventDefault();
@@ -177,6 +192,7 @@ export function initPredictions() {
         home: Number($('#pick-home').value),
         away: Number($('#pick-away').value),
       });
+      drafts.delete(key);
       save('palermas-nickname', name);
       $('#nickname').value = name;
       if (activeMatchKey === key) {

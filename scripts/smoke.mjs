@@ -83,7 +83,15 @@ try {
   const headers = { Cookie: signedIn.headers.get('set-cookie').split(';')[0] };
   const page = await fetch(origin, { headers });
   const html = await page.text();
-  for (const id of ['inicio', 'jogos', 'tabelas', 'clubes', 'partida', 'sala'])
+  for (const id of [
+    'inicio',
+    'jogos',
+    'tabelas',
+    'clubes',
+    'partida',
+    'sala',
+    'perfil',
+  ])
     assert.ok(html.includes(`id="page-${id}"`), id);
   for (const resource of [
     '/assets/main.js',
@@ -104,7 +112,7 @@ try {
   assert.equal(head.status, 200);
   assert.equal(await head.text(), '');
   console.log(
-    'Production smoke passed: login, protected bundles, six views, public resources and room configuration.',
+    'Production smoke passed: login, protected bundles, seven views, public resources and room configuration.',
   );
 } finally {
   const exited = new Promise((resolve) => server.once('exit', resolve));

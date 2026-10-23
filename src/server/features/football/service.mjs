@@ -1,4 +1,5 @@
 import { feed } from '../../integrations/espn.mjs';
+import { fotmobLeague, enrichStandings } from '../../integrations/fotmob.mjs';
 export { feed } from '../../integrations/espn.mjs';
 import {
   geSeries,
@@ -346,6 +347,14 @@ export async function leagueTable(id, fetcher = fetch) {
   } catch {
     liveAvailable = false;
   }
+  let finalGroups = geData
+    ? markGELive(groups, games)
+    : projectStandings(groups, games, id);
+  let enhancementSource = null;
+  try {
+    finalGroups = enrichStandings(finalGroups, await fotmobLeague(id, fetcher));
+    enhancementSource = 'FotMob';
+  } catch {}
   return {
     league,
     season:
@@ -353,9 +362,8 @@ export async function leagueTable(id, fetcher = fetch) {
       data.season?.displayName ||
       data.season?.year ||
       null,
-    groups: geData
-      ? markGELive(groups, games)
-      : projectStandings(groups, games, id),
+    groups: finalGroups,
+    enhancementSource,
     pointsMode: geData ? 'source' : 'projected',
     liveGames: games.filter((g) => g.state === 'in'),
     liveAvailable,

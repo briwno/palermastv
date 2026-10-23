@@ -1,0 +1,78 @@
+<section id="page-perfil" class="page" hidden>
+  <div class="heading">
+    <div>
+      <div class="eyebrow">A GALERA</div>
+      <h1>Meu perfil<span>.</span></h1>
+      <p>Sua identidade nos palpites, no chat e nas votações.</p>
+    </div>
+  </div>
+  <div class="community-grid">
+    <section class="panel">
+      <form id="profile-form">
+        <label class="field-label" for="profile-name">Apelido</label
+        ><input class="text-input" id="profile-name" maxlength="24" required />
+        <label class="field-label" for="profile-avatar">Avatar</label
+        ><select class="text-input" id="profile-avatar">
+          <option>⚽</option>
+          <option>🔥</option>
+          <option>🦉</option>
+          <option>🌪️</option>
+          <option>🟢</option>
+          <option>🏆</option>
+          <option>🤡</option>
+          <option>😎</option>
+        </select>
+        <label class="field-label" for="profile-team">Seu time</label
+        ><select class="text-input" id="profile-team">
+          <option value="">Prefiro não escolher</option>
+          <option value="cap">Athletico</option>
+          <option value="coxa">Coritiba</option>
+          <option value="outro">Outro time</option>
+        </select>
+        <button class="button lime" type="submit">Salvar perfil</button>
+        <p id="profile-feedback" role="status"></p>
+      </form>
+      <p class="data-note">
+        Seu perfil fica salvo para o grupo e é reconhecido neste navegador. Para
+        usar em outro dispositivo, transfira seu código pessoal.
+      </p>
+      <details>
+        <summary>Transferir meu perfil</summary>
+        <p>O código dá acesso ao seu perfil. Guarde-o em particular.</p>
+        <button class="button subtle" id="export-profile">
+          Copiar meu código</button
+        ><label class="field-label" for="profile-code"
+          >Código de outro dispositivo</label
+        ><input
+          id="profile-code"
+          class="text-input"
+          type="password"
+          autocomplete="off"
+        /><button class="button subtle" id="import-profile">
+          Usar este perfil
+        </button>
+      </details>
+    </section>
+    <section class="panel">
+      <h2>Sua participação</h2>
+      <div id="profile-stats">Abra seu perfil para consultar.</div>
+      <p class="data-note">
+        Contagem dos palpites e votos mantidos no histórico do grupo e das
+        mensagens enviadas.
+      </p>
+    </section>
+  </div>
+  <section class="panel community-history">
+    <div class="section-head">
+      <h2>Craques e bagres do grupo</h2>
+      <button class="text-button" id="refresh-award-history">
+        Atualizar ↻
+      </button>
+    </div>
+    <p class="data-note">
+      Resultado parcial das votações pós-jogo. Empates mostram todos os
+      jogadores mais votados; cada pessoa pode alterar seu voto.
+    </p>
+    <div id="award-history"></div>
+  </section>
+</section>

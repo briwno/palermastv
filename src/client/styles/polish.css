@@ -1,0 +1,137 @@
+/* Small, shared finishing touches; retain the navy and amber palette. */
+.ui-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  vertical-align: middle;
+  pointer-events: none;
+}
+.nav {
+  min-height: 44px;
+  border-radius: 10px;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+.nav .ui-icon {
+  width: 20px;
+  height: 20px;
+  flex-basis: 20px;
+  opacity: 0.8;
+}
+.nav.active .ui-icon {
+  opacity: 1;
+}
+.nav-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.hub-tabs button,
+.match-tabs button,
+.match-secondary-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  flex-shrink: 0;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+.hub-tabs,
+.match-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: #42566f transparent;
+}
+.match-tabs button[aria-selected='true'],
+.hub-tabs button.selected {
+  color: #ffdc94;
+  background: #24364b;
+}
+.match-secondary-tabs button {
+  border-color: #2c4057;
+  border-radius: 8px;
+}
+.match-community-menu summary {
+  padding-block: 14px;
+}
+.button,
+.chip,
+.icon-btn,
+.alerts-toggle {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+.button {
+  border-radius: 9px;
+}
+.chip {
+  min-height: 34px;
+}
+.panel,
+.club-profile {
+  border-radius: 14px;
+}
+.section-head h2 {
+  letter-spacing: -0.25px;
+}
+.empty-message {
+  line-height: 1.7;
+}
+.data-note {
+  line-height: 1.6;
+}
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 4px;
+}
+@media (hover: hover) {
+  .hub-tabs button:not(.selected):hover,
+  .match-tabs button[aria-selected='false']:hover,
+  .match-secondary-tabs button[aria-selected='false']:hover {
+    color: var(--text);
+    background: #1b2c42;
+  }
+  .fixture:hover,
+  .recent-game:hover {
+    background-color: #1a2c42;
+  }
+}
+@media (max-width: 800px) {
+  .sidebar .nav {
+    min-width: 40px;
+    min-height: 42px;
+    justify-content: center;
+  }
+}
+@media (max-width: 600px) {
+  .hub-tabs button,
+  .match-tabs button {
+    gap: 6px;
+  }
+  .match-secondary-tabs button {
+    justify-content: flex-start;
+  }
+  .ui-icon {
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .hub-tabs button,
+  .match-tabs button,
+  .match-secondary-tabs button,
+  .button,
+  .chip,
+  .icon-btn,
+  .alerts-toggle {
+    transition: none;
+  }
+}

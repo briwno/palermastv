@@ -1,23 +1,98 @@
 <section id="page-clubes" class="page" hidden>
-  <div class="heading">
+  <div class="heading club-hub-heading">
     <div>
-      <div class="eyebrow">CURITIBA · PARANÁ</div>
+      <div class="eyebrow">DUAS CAMISAS. A MESMA CIDADE.</div>
       <h1>CAP <span>&amp;</span> CFC</h1>
-      <p>Notícias, campanha e últimos resultados.</p>
+      <p>O momento dos clubes, as notícias certas e tudo sobre o clássico.</p>
     </div>
-    <button class="button subtle" id="refresh-hub">Atualizar notícias ↻</button>
+    <button class="button subtle" id="refresh-hub">Atualizar ↻</button>
+  </div>
+  <div class="hub-tabs" role="group" aria-label="Conteúdo dos clubes">
+    <button class="selected" data-hub-section="overview" aria-pressed="true">
+      <svg
+        class="ui-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z" />
+        <path d="M12 7v10M8 12h8" />
+      </svg>
+      Raio-X dos clubes</button
+    ><button data-hub-section="news" aria-pressed="false">
+      <svg
+        class="ui-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M7 8h10M7 12h4m3 0h3M7 16h4m3 0h3" /></svg
+      >Notícias</button
+    ><button data-hub-section="classic" aria-pressed="false">
+      <svg
+        class="ui-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M3 12h18M8 3v4h8V3M8 21v-4h8v4" />
+        <circle cx="12" cy="12" r="3" /></svg
+      >Athletiba</button
+    ><button data-hub-section="history" aria-pressed="false">
+      <svg
+        class="ui-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v5l3 2" />
+      </svg>
+      História &amp; curiosidades
+    </button>
   </div>
   <div class="filter-row" id="news-filters">
     <button class="chip selected" data-club="todos">Os dois</button
     ><button class="chip" data-club="cap">Athletico</button
     ><button class="chip" data-club="coxa">Coritiba</button>
   </div>
-  <div id="club-profiles" class="club-profiles"></div>
-  <div class="section-head news-heading">
-    <h2>Notícias dos clubes</h2>
-    <span id="news-data" class="data-note">Consultando ESPN…</span>
+  <div class="hub-section" data-hub-panel="overview">
+    <div id="club-profiles" class="club-profiles"></div>
+    <p class="data-note">
+      Campanha e resultados: ESPN · Forma e boletim atual do elenco: FotMob.
+      Ausências informadas podem mudar até a partida.
+    </p>
   </div>
-  <div id="club-news" class="news-grid">
-    <div class="empty-message">Carregando notícias…</div>
-  </div>
+  <section class="hub-section" data-hub-panel="news" hidden>
+    <div class="section-head news-heading">
+      <h2>Na pauta dos clubes</h2>
+      <span class="status-pill">ge + ESPN</span>
+    </div>
+    <p id="news-data" class="data-note" role="status">Consultando notícias…</p>
+    <div id="club-news" class="news-grid">
+      <div class="empty-message">Carregando notícias…</div>
+    </div>
+  </section>
+  <!-- include: athletiba.html -->
 </section>

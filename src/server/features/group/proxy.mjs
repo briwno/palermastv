@@ -18,6 +18,63 @@ export async function groupAPI(request, env, fetcher = fetch) {
     return { status: r.status, body };
   }
   try {
+    const communityRoute = url.pathname.match(
+      /^\/api\/group\/(profile|chat|awards|history|room-game)$/,
+    );
+    if (communityRoute) {
+      const route = communityRoute[1];
+      if (!['GET', 'POST'].includes(request.method))
+        return { status: 405, body: { error: 'method_not_allowed' } };
+      if (request.method === 'GET' && route === 'profile')
+        return { status: 405, body: { error: 'method_not_allowed' } };
+      if (request.method === 'POST' && route === 'history')
+        return { status: 405, body: { error: 'method_not_allowed' } };
+      let body = {};
+      if (request.method === 'POST') {
+        const raw = await request.text();
+        if (raw.length > 4000)
+          return { status: 413, body: { error: 'too_large' } };
+        try {
+          body = JSON.parse(raw);
+        } catch {
+          return { status: 400, body: { error: 'invalid_json' } };
+        }
+        if (!body || typeof body !== 'object')
+          return { status: 400, body: { error: 'invalid_json' } };
+      }
+      const operation =
+        request.method === 'GET' ||
+        (route === 'profile' && body.operation === 'read')
+          ? 'read'
+          : 'write';
+      const data = {
+        action: 'community-' + ({ 'room-game': 'room' }[route] || route),
+        operation,
+        token: body.token,
+        name: body.name,
+        avatar: body.avatar,
+        team: body.team,
+        text: body.text,
+        craque: body.craque,
+        bagre: body.bagre,
+        resumeToken: body.resumeToken,
+      };
+      if (
+        route === 'awards' ||
+        (route === 'room-game' && operation === 'write' && !body.clear)
+      ) {
+        const league = body.league || url.searchParams.get('league'),
+          id = body.id || url.searchParams.get('id');
+        const match = await matchCenter(league, id, fetcher);
+        data.game = match.game;
+        data.players = match.lineups.flatMap((l) =>
+          l.players
+            .filter((p) => p.id && (p.starter || p.subbedIn))
+            .map((p) => ({ id: p.id, name: p.name, team: l.team.name })),
+        );
+      }
+      return await call(data);
+    }
     if (url.pathname === '/api/group/lounge') {
       if (request.method === 'GET')
         return await call({

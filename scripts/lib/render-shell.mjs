@@ -4,11 +4,16 @@ const shellURL = new URL('../../src/client/shell/index.html', import.meta.url);
 
 /** Assemble the shell and feature views without hiding page markup in JavaScript. */
 export async function renderShell() {
-  let html = await readFile(shellURL, 'utf8');
+  return expand(shellURL);
+}
+async function expand(url, ancestors = []) {
+  if (ancestors.includes(url.href))
+    throw Error('Circular HTML include: ' + url.href);
+  let html = await readFile(url, 'utf8');
   const includes = [...html.matchAll(/<!-- include: ([^>]+) -->/g)];
   const contents = await Promise.all(
     includes.map(([, relative]) =>
-      readFile(new URL(relative.trim(), shellURL), 'utf8'),
+      expand(new URL(relative.trim(), url), [...ancestors, url.href]),
     ),
   );
   includes.forEach(([placeholder], index) => {

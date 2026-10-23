@@ -99,6 +99,14 @@ export function geStandings(data, espnGroups = []) {
         goalsFor: e.goalsFor,
         goalsAgainst: e.goalsAgainst,
         recentForm: e.recentForm,
+        zone: e.legend?.name
+          ? {
+              label: e.legend.name,
+              color: /^#[0-9a-f]{6}$/i.test(e.legend.color)
+                ? e.legend.color
+                : '#929991',
+            }
+          : null,
       };
     }),
   }));

@@ -13,6 +13,25 @@ async function loadRatings() {
   target.innerHTML =
     '<div class="panel empty-message">Consultando notas…</div>';
   try {
+    const extra = await api(
+      'insights?league=' +
+        encodeURIComponent(activeMatch.game.leagueId) +
+        '&id=' +
+        activeMatch.game.id,
+    );
+    if (activeMatchKey !== key) return;
+    if (
+      extra.state === 'available' &&
+      extra.ratings.some((t) => t.players.length)
+    ) {
+      target.dataset.loaded = 'true';
+      target.innerHTML = `<section class="panel ratings-intro"><div class="section-head"><div><span class="eyebrow">DESEMPENHO EM CAMPO</span><h2>Notas dos jogadores</h2></div><span class="status-pill">FotMob · 0 a 10</span></div><p class="data-note">Avaliações da fonte, separadas da votação de craque e bagre dos Palermas.</p></section><div class="advanced-grid">${extra.ratings.map((t) => `<section class="panel"><h2>${esc(t.team || '')}</h2><ol class="compact-ratings">${t.players.map((p) => `<li><span>${esc(p.name)}</span><b class="rating-chip ${p.rating >= 7 ? 'rating-high' : ''}">${p.rating.toFixed(1)}</b></li>`).join('') || '<li>Sem notas publicadas.</li>'}</ol></section>`).join('')}</div>`;
+      return;
+    }
+  } catch {
+    /* Keep the existing secondary sources available. */
+  }
+  try {
     const d = await api(
       'ratings?league=' +
         encodeURIComponent(activeMatch.game.leagueId) +

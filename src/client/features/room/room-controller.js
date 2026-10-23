@@ -37,6 +37,9 @@ function setVideo(media, local = false) {
   el('#player-badge').textContent = local
     ? 'SUA TRANSMISSÃO'
     : 'AO VIVO · PALERMAS';
+  window.dispatchEvent(
+    new CustomEvent('palermas:media', { detail: { local, active: !!media } }),
+  );
   if (media)
     video.play().catch(() => {
       el('#enable-audio').hidden = false;
@@ -99,12 +102,14 @@ function people(room) {
     row.className = 'member';
     const a = document.createElement('span');
     a.className = 'avatar';
-    a.textContent = m.name.charAt(0).toUpperCase();
+    a.textContent = m.avatar || m.name.charAt(0).toUpperCase();
     const text = document.createElement('div'),
       name = document.createElement('strong'),
       sub = document.createElement('small');
     name.textContent = m.name + (m.id === room.id ? ' (você)' : '');
-    sub.textContent = m.publishing ? 'Transmitindo' : 'Na sala';
+    sub.textContent =
+      (m.publishing ? 'Transmitindo' : 'Na sala') +
+      ({ cap: ' · Athletico', coxa: ' · Coritiba' }[m.team] || '');
     text.append(name, sub);
     row.append(a, text);
     container.append(row);
@@ -179,6 +184,8 @@ async function connectRoom() {
         detail: {
           publisher: e.detail.publisher,
           count: e.detail.members.length,
+          isPublisher: e.detail.publisher === e.detail.id,
+          resumeToken,
         },
       }),
     );

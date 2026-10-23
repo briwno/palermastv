@@ -3,7 +3,7 @@
     <div>
       <div class="eyebrow">TRANSMISSÃO</div>
       <h1>Sala dos Palermas<span>.</span></h1>
-      <p>A tela por aqui. A voz continua no Discord.</p>
+      <p>O jogo e o chat por aqui. A voz continua no Discord.</p>
     </div>
     <span class="outline-label" id="room-connection-state">CONECTANDO</span>
   </div>
@@ -127,9 +127,43 @@
         A sala conecta automaticamente quando você abre esta página.
       </div>
       <div class="panel room-game">
+        <span class="tiny-label">PARTIDA DA TRANSMISSÃO</span>
+        <h3 id="room-linked-title">Nenhuma partida vinculada à transmissão</h3>
+        <p id="room-game-host-note" class="data-note">
+          O transmissor escolhe qual partida aparece para todos.
+        </p>
+        <label class="field-label" for="room-game-select"
+          >Vincular partida</label
+        ><select id="room-game-select" class="text-input"></select>
+        <div class="community-actions">
+          <button id="room-game-save" class="button lime" disabled>
+            Vincular para a sala</button
+          ><button id="room-game-clear" class="button subtle" disabled>
+            Remover vínculo
+          </button>
+        </div>
+        <p id="room-game-feedback" role="status"></p>
         <span class="tiny-label">JOGO SELECIONADO</span>
         <h3 id="selected-game">Escolha um jogo na agenda</h3>
         <span id="room-score">Placar oculto para evitar spoiler</span>
+        <div class="community-actions">
+          <button class="button subtle" id="room-match-open" disabled>
+            Abrir central da partida ↗</button
+          ><button
+            class="button subtle"
+            id="room-match-toggle"
+            aria-expanded="false"
+            aria-controls="room-match-details"
+            disabled
+          >
+            Mostrar estatísticas e escalações
+          </button>
+        </div>
+        <p class="data-note">
+          Estatísticas podem antecipar lances da transmissão. Abra quando quiser
+          consultar.
+        </p>
+        <div id="room-match-details" hidden></div>
       </div>
     </div>
     <aside class="panel participants">
@@ -160,6 +194,36 @@
       /><button class="button subtle full" id="save-nickname">
         Salvar apelido
       </button>
+      <section class="room-chat">
+        <div class="section-head">
+          <h2>Chat da galera</h2>
+          <a href="#perfil" class="text-button">Meu perfil ↗</a>
+        </div>
+        <div
+          id="room-chat-messages"
+          class="chat-messages"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+        ></div>
+        <form id="room-chat-form">
+          <label class="field-label" for="chat-text">Mensagem</label
+          ><textarea
+            id="chat-text"
+            class="text-input"
+            maxlength="500"
+            rows="2"
+            placeholder="Comenta o jogo…"
+            required
+          ></textarea
+          ><button class="button lime full" type="submit">Enviar</button>
+        </form>
+        <p id="chat-status" role="status"></p>
+        <small class="data-note"
+          >Últimas 100 mensagens do grupo · atualiza a cada 5 segundos. O chat
+          pode conter spoilers.</small
+        >
+      </section>
       <div id="room-polls" class="room-polls" data-lounge></div>
       <div class="room-note">
         <strong>Transmissão de tela</strong>

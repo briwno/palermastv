@@ -1,15 +1,7 @@
+import { requestJSON } from './request.js';
 import { timezone } from './dates.js';
 async function api(path) {
-  const r = await fetch('/api/football/' + path, {
-    credentials: 'same-origin',
-  });
-  if (r.status === 401) {
-    location.reload();
-    throw Error('Entre novamente no site.');
-  }
-  const data = await r.json();
-  if (!r.ok) throw Error(data.error || 'Dados indisponíveis');
-  return data;
+  return requestJSON('/api/football/' + path, { credentials: 'same-origin' });
 }
 
 function sourceNote(data) {

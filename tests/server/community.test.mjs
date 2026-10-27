@@ -2,10 +2,47 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { groupAPI } from '../../src/server/features/group/proxy.mjs';
 import { athletiba } from '../../src/server/features/clubs/athletiba.mjs';
+import { handleGroup } from '../../services/signaling/group.mjs';
 const env = {
   ROOM_CODE: 'test-room-secret-with-enough-length',
   SIGNALING_URL: 'https://signal.example',
 };
+
+test('chat and room reads reach the Worker as read operations without requiring a player identity or match', async () => {
+  const room = { ctx: { storage: { get: async () => undefined } } };
+  for (const [path, expected] of [
+    ['chat', { messages: [] }],
+    ['room-game', { game: null }],
+  ]) {
+    const result = await groupAPI(
+      new Request('https://site.example/api/group/' + path),
+      env,
+      async (url, options) => {
+        const payload = JSON.parse(options.body);
+        assert.equal(payload.operation, 'read');
+        assert.equal(payload.token, undefined);
+        assert.equal(payload.game, undefined);
+        return handleGroup(room, payload);
+      },
+    );
+    assert.equal(result.status, 200);
+    assert.deepEqual(result.body, expected);
+  }
+});
+
+test('outdated Worker failures become an explicit service error with a diagnostic reference', async () => {
+  for (const path of ['chat', 'room-game']) {
+    const result = await groupAPI(
+      new Request('https://site.example/api/group/' + path),
+      env,
+      async () => Response.json({ error: 'invalid_game' }, { status: 400 }),
+    );
+    assert.equal(result.status, 503);
+    assert.equal(result.body.error, 'service_outdated');
+    assert.match(result.body.requestId, /^[a-f0-9-]{36}$/);
+    assert.ok(!JSON.stringify(result).includes(env.ROOM_CODE));
+  }
+});
 const event = (id, home, away, homeScore, awayScore, state = 'post') => ({
   id,
   date: '2026-04-01T20:00:00Z',

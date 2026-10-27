@@ -13,6 +13,72 @@ import {
 } from '../../src/server/features/match/ratings.mjs';
 import { PalermasP2P } from '../../src/client/features/room/peer-connection.js';
 import { tacticalLines } from '../../src/client/features/match/formation.js';
+
+test('signaling forwards chat and match updates without creating media peers', async () => {
+  const c = new PalermasP2P('https://signal.example');
+  const received = [];
+  for (const type of ['chat-message', 'room-game-update'])
+    c.addEventListener(type, (event) => received.push(event.detail));
+  const message = { type: 'chat-message', message: { id: '1', text: 'Gol!' } };
+  const game = { type: 'room-game-update', game: null };
+  await c.handle(message);
+  await c.handle(game);
+  assert.deepEqual(received, [message, game]);
+  assert.equal(c.peers.size, 0);
+});
+
+test('heartbeat gives suspended tabs a fresh pong opportunity but closes an unresponsive socket', () => {
+  const c = new PalermasP2P('https://signal.example');
+  let closed = 0;
+  c.socket = { close: () => closed++ };
+  c.lastPong = c.lastHeartbeat = 1000;
+  c.heartbeat(121000);
+  assert.equal(closed, 0);
+  assert.equal(c.lastPong, 121000);
+  for (const now of [141000, 161000, 181000]) c.heartbeat(now);
+  assert.equal(closed, 0);
+  c.heartbeat(201000);
+  assert.equal(closed, 1);
+});
+
+test('connected media with no new frames is reported as stalled and clears when frames resume', async () => {
+  const c = new PalermasP2P('https://signal.example');
+  c.closed = false;
+  let timestamp = 0,
+    frames = 10,
+    samples;
+  c.addEventListener('stats', (event) => (samples = event.detail));
+  c.peers.set('host', {
+    pc: {
+      connectionState: 'connected',
+      getStats: async () =>
+        new Map([
+          [
+            'video',
+            {
+              type: 'inbound-rtp',
+              kind: 'video',
+              timestamp: (timestamp += 5000),
+              framesDecoded: frames,
+              bytesReceived: 100,
+              packetsReceived: 100,
+              freezeCount: 2,
+              totalFreezesDuration: 4,
+            },
+          ],
+        ]),
+    },
+  });
+  await c.collectStats();
+  await c.collectStats();
+  assert.equal(samples[0].stalled, false);
+  await c.collectStats();
+  assert.equal(samples[0].stalled, true);
+  assert.equal(samples[0].freezes, 2);
+  frames++;
+  await c.collectStats();
+  assert.equal(samples[0].stalled, false);
+});
 test('persistent packet loss suggests lower quality only after three consecutive samples', () => {
   let state = null;
   for (let i = 0; i < 2; i++) {

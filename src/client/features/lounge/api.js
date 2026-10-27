@@ -1,3 +1,4 @@
+import { requestJSON } from '../../shared/request.js';
 import { $ } from '../../shared/dom.js';
 import { save } from '../../shared/storage.js';
 import { groupToken } from '../group/predictions.js';
@@ -27,7 +28,7 @@ async function loungeRequest(context, body) {
     $('#nickname').value = name;
     save('palermas-nickname', name);
   }
-  const r = await fetch(
+  const d = await requestJSON(
     '/api/group/lounge' +
       (!body ? '?context=' + encodeURIComponent(context) : ''),
     {
@@ -45,10 +46,8 @@ async function loungeRequest(context, body) {
           }
         : {}),
     },
+    loungeErrors,
   );
-  const d = await r.json();
-  if (!r.ok)
-    throw Error(loungeErrors[d.error] || 'Não foi possível atualizar o grupo.');
   loungeCache.set(context, d);
   return d;
 }

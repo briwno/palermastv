@@ -1040,6 +1040,38 @@ dialog p {
   top: 12px;
   font-size: 20px;
 }
+.site-errors {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 10000;
+  display: grid;
+  gap: 10px;
+  width: min(430px, calc(100vw - 32px));
+}
+.site-error-popup {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: #291c1c;
+  color: #fff0ea;
+  border: 1px solid #e78973;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px #0008;
+  overflow-wrap: anywhere;
+}
+.site-error-popup small {
+  opacity: 0.85;
+}
+.site-error-popup button {
+  justify-self: end;
+  color: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
 .toast {
   position: fixed;
   bottom: 25px;

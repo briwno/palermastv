@@ -122,6 +122,21 @@
           sala. Os dados mostram a qualidade efetivamente enviada/recebida, não
           a qualidade do vídeo original.
         </p>
+        <h3>Histórico de eventos</h3>
+        <p>
+          Últimos 200 eventos desta aba, preservados ao reconectar e recarregar.
+          Baixe o relatório logo após a falha e compare com o do transmissor.
+          Inclui apelidos e métricas; não inclui vídeo, senhas, endereços de
+          rede ou sinais WebRTC.
+        </p>
+        <button class="button subtle" id="download-stream-log">
+          Baixar diagnóstico
+        </button>
+        <pre
+          id="stream-event-log"
+          class="stream-event-log"
+          aria-label="Eventos recentes da transmissão"
+        ></pre>
       </details>
       <div class="notice" id="room-status" role="status">
         A sala conecta automaticamente quando você abre esta página.
@@ -196,7 +211,7 @@
       </button>
       <section class="room-chat">
         <div class="section-head">
-          <h2>Chat da galera</h2>
+          <h2>Na arquibancada</h2>
           <a href="#perfil" class="text-button">Meu perfil ↗</a>
         </div>
         <div
@@ -207,21 +222,24 @@
           aria-relevant="additions"
         ></div>
         <form id="room-chat-form">
-          <label class="field-label" for="chat-text">Mensagem</label
+          <label class="field-label" for="chat-text">Sua mensagem</label
           ><textarea
             id="chat-text"
             class="text-input"
             maxlength="500"
             rows="2"
-            placeholder="Comenta o jogo…"
+            placeholder="Comenta o jogo com a galera…"
             required
-          ></textarea
-          ><button class="button lime full" type="submit">Enviar</button>
+          ></textarea>
+          <div class="chat-compose-footer">
+            <small id="chat-character-count">0 / 500</small>
+            <button class="button lime" type="submit" disabled>Enviar ↑</button>
+          </div>
         </form>
-        <p id="chat-status" role="status"></p>
+        <p id="chat-status" role="status" aria-live="polite"></p>
         <small class="data-note"
-          >Últimas 100 mensagens do grupo · atualiza a cada 5 segundos. O chat
-          pode conter spoilers.</small
+          >Enter envia · Shift+Enter quebra a linha. O chat pode conter
+          spoilers.</small
         >
       </section>
       <div id="room-polls" class="room-polls" data-lounge></div>

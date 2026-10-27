@@ -21,7 +21,7 @@ ROOM_CODE=mesmo-valor-de-env-local
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-Mantenha `SIGNALING_URL=http://127.0.0.1:8787` em `.env.local` e execute `npm run dev:signal` em outro terminal. A sala comporta um transmissor e cinco espectadores.
+Mantenha `SIGNALING_URL=http://127.0.0.1:8787` em `.env.local` e execute `npm run dev:signal` em outro terminal. A sala comporta um transmissor e cinco espectadores. O usuário entra pela sessão do site, sem digitar código de sala. `ROOM_CODE` é apenas uma credencial interna entre o servidor Next e o Worker; não é um convite nem uma etapa de entrada para o usuário.
 
 ## Onde editar
 
@@ -65,8 +65,8 @@ Fontes esportivas e widgets dependem de disponibilidade externa. Teste vídeo e 
 
 - **Meu perfil:** apelido, avatar, time e contagem de palpites, votos pós-jogo e mensagens. A identificação existente dos palpites é preservada. O código pessoal permite levar o perfil para outro navegador; quem tiver esse código poderá usá-lo.
 - **Craque e bagre:** na central de uma partida encerrada, cada pessoa escolhe dois jogadores diferentes que entraram em campo. O servidor consulta o estado e os participantes na ESPN. Alterar o voto substitui o anterior. Empates são exibidos sem desempate artificial; as parciais ficam no histórico do grupo.
-- **Chat da sala:** mensagens de texto com atualização a cada cinco segundos enquanto a sala estiver aberta. Mantém as últimas 100 mensagens; o contador pessoal registra todos os envios. O chat é compartilhado pelo grupo e pode conter spoilers.
-- **Partida da transmissão:** depois de começar a transmitir, selecione um jogo e use **Vincular para a sala**. Só o transmissor atual pode alterar ou remover o vínculo. Todos consultam o mesmo jogo; estatísticas e escalações são abertas por escolha do espectador.
+- **Chat da sala:** mensagens recebidas pelo WebSocket, com sincronização de segurança a cada cinco segundos enquanto a sala estiver aberta. O envio confirmado aparece imediatamente; falhas preservam o rascunho. Enter envia, Shift+Enter quebra a linha. Mantém as últimas 100 mensagens; o contador pessoal registra todos os envios. O chat é compartilhado pelo grupo e pode conter spoilers.
+- **Partida da transmissão:** depois de começar a transmitir, selecione um jogo e use **Vincular para a sala**. Só o transmissor atual pode alterar ou remover o vínculo. Mudanças são enviadas pelo WebSocket; consultas antigas não substituem um vínculo recém-salvo. Todos consultam o mesmo jogo; estatísticas e escalações são abertas por escolha do espectador.
 - **Miniplayer:** ao navegar com o vídeo ativo, o mesmo player acompanha a navegação. Voltar à sala restaura sua posição. Picture-in-Picture também aparece quando o navegador oferece suporte.
 - **CAP & CFC:** reúne panorama dos clubes, notícias, Athletiba e curiosidades. O clássico consulta calendários da ESPN das últimas três temporadas; os números descrevem apenas o recorte retornado. As notícias do ge passam por filtros de domínio, caminho do clube e conteúdo. O FotMob complementa forma recente, próximo compromisso e boletim do elenco quando disponíveis.
 - **Central da partida:** os próximos jogos de CAP & CFC abrem dentro do PalermasTV, usando o calendário e os IDs da ESPN. A integração FotMob associa adversários, horário e competição antes de exibir xG, mapa de chutes, notas e confrontos. Também fornece titulares, reservas, formação e técnico quando falta a escalação da ESPN; esses jogadores não substituem os IDs usados nas votações. Falhas nessa fonte preservam os dados principais da ESPN.

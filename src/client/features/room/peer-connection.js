@@ -22,8 +22,14 @@ export class PalermasP2P extends EventTarget {
     this.pendingClaim = null;
     this.offerJobs = new Set();
     this.lastPong = 0;
+    this.lastHeartbeat = 0;
   }
   emit(type, detail) {
+    if (type === 'error')
+      this.emit('diagnostic', {
+        event: 'client-error',
+        message: String(detail).slice(0, 240),
+      });
     this.dispatchEvent(new CustomEvent(type, { detail }));
   }
   send(value) {
@@ -43,6 +49,7 @@ export class PalermasP2P extends EventTarget {
       )
     )
       throw Error('O serviço da sala precisa usar HTTPS.');
+    this.emit('diagnostic', { event: 'join-start' });
     const res = await fetch('/api/room/join', {
       method: 'POST',
       credentials: 'same-origin',
@@ -51,6 +58,7 @@ export class PalermasP2P extends EventTarget {
       signal: AbortSignal.timeout(12000),
     });
     const data = await res.json();
+    this.emit('diagnostic', { event: 'join-response', status: res.status });
     if (!res.ok)
       throw Error(
         {
@@ -86,15 +94,13 @@ export class PalermasP2P extends EventTarget {
           this.id = message.id;
           this.iceServers = message.iceServers;
           clearTimeout(timer);
-          this.lastPong = Date.now();
-          this.timer = setInterval(() => {
-            if (Date.now() - this.lastPong > 60000) {
-              this.socket?.close();
-              return;
-            }
-            if (this.socket?.readyState === WebSocket.OPEN)
-              this.socket.send('ping');
-          }, 20000);
+          this.lastPong = this.lastHeartbeat = Date.now();
+          this.emit('diagnostic', {
+            event: 'signaling-connected',
+            id: this.id,
+            hasTurn: message.hasTurn === true,
+          });
+          this.timer = setInterval(() => this.heartbeat(), 20000);
           this.statsTimer = setInterval(() => this.collectStats(), 5000);
           resolve();
         }
@@ -106,13 +112,33 @@ export class PalermasP2P extends EventTarget {
         clearTimeout(timer);
         reject(Error('Não foi possível conectar ao serviço da sala.'));
       };
-      this.socket.onclose = () => {
+      this.socket.onclose = (event) => {
+        this.emit('diagnostic', {
+          event: 'signaling-closed',
+          code: event.code,
+          clean: event.wasClean,
+        });
         clearTimeout(timer);
         reject(Error('Conexão com a sala encerrada.'));
         this.cleanup(false);
         this.emit('disconnected');
       };
     });
+  }
+  heartbeat(now = Date.now()) {
+    // A suspended tab must get a fresh ping/pong opportunity before timing out.
+    const resumed = now - this.lastHeartbeat > 40000;
+    this.lastHeartbeat = now;
+    if (resumed) {
+      this.lastPong = now;
+      this.emit('diagnostic', { event: 'heartbeat-resumed' });
+    }
+    if (now - this.lastPong > 60000) {
+      this.emit('diagnostic', { event: 'heartbeat-timeout' });
+      this.socket?.close(4000, 'Heartbeat timeout');
+      return;
+    }
+    if (this.socket?.readyState === WebSocket.OPEN) this.socket.send('ping');
   }
   peer(id) {
     const existing = this.peers.get(id);
@@ -139,12 +165,38 @@ export class PalermasP2P extends EventTarget {
         } catch {}
       }
     };
+    pc.oniceconnectionstatechange = () =>
+      this.emit('diagnostic', {
+        event: 'ice-state',
+        id,
+        state: pc.iceConnectionState,
+      });
+    pc.onicecandidateerror = (e) =>
+      this.emit('diagnostic', { event: 'ice-error', id, code: e.errorCode });
     pc.ontrack = (e) => {
+      this.emit('diagnostic', {
+        event: 'remote-track',
+        id,
+        kind: e.track.kind,
+      });
+      for (const state of ['mute', 'unmute', 'ended'])
+        e.track.addEventListener(state, () =>
+          this.emit('diagnostic', {
+            event: 'remote-track-' + state,
+            id,
+            kind: e.track.kind,
+          }),
+        );
       if (!entry.received.getTracks().some((t) => t.id === e.track.id))
         entry.received.addTrack(e.track);
       this.emit('media', entry.received);
     };
     pc.onconnectionstatechange = () => {
+      this.emit('diagnostic', {
+        event: 'peer-state',
+        id,
+        state: pc.connectionState,
+      });
       this.emit('peerstate', { id, state: pc.connectionState });
       clearTimeout(entry.failedTimer);
       if (pc.connectionState === 'connected') {
@@ -169,10 +221,13 @@ export class PalermasP2P extends EventTarget {
       );
       return;
     }
+    this.emit('diagnostic', { event: 'ice-repair', id, attempt: e.restarts });
     try {
       if (this.stream && this.publisher === this.id) await this.offer(id, true);
       else this.send({ type: 'repair' });
-    } catch {}
+    } catch (error) {
+      this.emit('error', error.message);
+    }
     e.failedTimer = setTimeout(() => this.repair(id), 12000);
   }
   async offer(id, restart = false) {
@@ -199,6 +254,10 @@ export class PalermasP2P extends EventTarget {
     }
   }
   async handle(data) {
+    if (data.type === 'chat-message' || data.type === 'room-game-update') {
+      this.emit(data.type, data);
+      return;
+    }
     if (['handoff-request', 'handoff-declined'].includes(data.type)) {
       this.emit(data.type, data);
       if (data.type === 'handoff-declined')
@@ -232,6 +291,12 @@ export class PalermasP2P extends EventTarget {
     if (data.type === 'room') {
       const old = this.publisher;
       this.publisher = data.publisher;
+      if (old !== this.publisher)
+        this.emit('diagnostic', {
+          event: 'publisher-changed',
+          publisher: this.publisher,
+          members: data.members.length,
+        });
       this.members = data.members;
       if (old !== this.publisher) {
         this.closePeers();
@@ -418,6 +483,10 @@ export class PalermasP2P extends EventTarget {
               prev && Number.isFinite(frames) && Number.isFinite(prev.frames)
                 ? frames - prev.frames
                 : null;
+          e.stalledSamples =
+            e.pc.connectionState === 'connected' && ms > 0 && frameDelta === 0
+              ? (e.stalledSamples || 0) + 1
+              : 0;
           const sample = {
             id,
             name: this.members.find((m) => m.id === id)?.name || 'Participante',
@@ -443,6 +512,16 @@ export class PalermasP2P extends EventTarget {
             codec: codec?.mimeType?.replace('video/', '') || null,
             jitter: video?.jitter ?? null,
             limited: video?.qualityLimitationReason || null,
+            stalled: e.stalledSamples >= 2,
+            frames: frames ?? null,
+            freezes: video?.freezeCount ?? null,
+            freezeSeconds: video?.totalFreezesDuration ?? null,
+            packets: packets ?? null,
+            bytes: bytes ?? null,
+            iceState: e.pc.iceConnectionState,
+            candidateType: pair?.localCandidateId
+              ? reports.get(pair.localCandidateId)?.candidateType
+              : null,
             scale: 1,
             cap: this.bitrate,
           };
@@ -450,6 +529,17 @@ export class PalermasP2P extends EventTarget {
           sample.suggestLower = e.advice.active;
           sample.label = connectionLabel(sample);
           samples.push(sample);
+          const health = JSON.stringify([
+            sample.state,
+            sample.limited,
+            sample.stalled,
+            sample.suggestLower,
+          ]);
+          if (health !== e.health || Date.now() - (e.loggedAt || 0) >= 30000) {
+            this.emit('diagnostic', { event: 'media-stats', ...sample });
+            e.health = health;
+            e.loggedAt = Date.now();
+          }
           if (video)
             e.previous = {
               timestamp: video.timestamp,
@@ -459,7 +549,15 @@ export class PalermasP2P extends EventTarget {
               frames,
               rtt: sample.rtt,
             };
-        } catch {}
+        } catch (error) {
+          if (!e.statsError)
+            this.emit('diagnostic', {
+              event: 'stats-error',
+              id,
+              message: error.message,
+            });
+          e.statsError = true;
+        }
       }
       this.emit('stats', samples);
     } finally {
@@ -482,6 +580,10 @@ export class PalermasP2P extends EventTarget {
     if (e) {
       clearTimeout(e.failedTimer);
       e.pc.onconnectionstatechange = null;
+      e.pc.oniceconnectionstatechange = null;
+      e.pc.onicecandidateerror = null;
+      e.pc.onicecandidate = null;
+      e.pc.ontrack = null;
       e.pc.close();
       this.peers.delete(id);
     }

@@ -73,3 +73,14 @@
 .watching #stop-screen {
   display: none;
 }
+
+.stream-event-log {
+  max-height: 18rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  background: #101512;
+  color: #d8e5db;
+}

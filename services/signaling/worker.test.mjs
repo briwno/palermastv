@@ -45,6 +45,37 @@ function room() {
   return { r, ctx, add, members };
 }
 globalThis.WebSocketRequestResponsePair = class {};
+test('publisher ICE bursts for five viewers stay connected while abusive bursts are bounded', () => {
+  const { r, add } = room();
+  const host = add('host', true);
+  const viewers = Array.from({ length: 5 }, (_, i) => add('viewer' + i));
+  for (let i = 0; i < 300; i++)
+    r.webSocketMessage(
+      host,
+      JSON.stringify({
+        type: 'signal',
+        to: 'viewer' + (i % 5),
+        payload: {
+          type: 'candidate',
+          candidate: { candidate: 'candidate:test' },
+        },
+      }),
+    );
+  assert.equal(host.closed, undefined);
+  assert.equal(r.snapshot().publisher, 'host');
+  assert.ok(viewers.every((ws) => ws.values.length === 60));
+  for (let i = 300; i < 901; i++) r.webSocketMessage(host, '{}');
+  assert.equal(host.closed, true);
+  assert.equal(r.snapshot().publisher, null);
+});
+
+test('viewer rate protection remains bounded at 180 messages per window', () => {
+  const { r, add } = room();
+  const viewer = add('viewer');
+  for (let i = 0; i < 181; i++) r.webSocketMessage(viewer, '{}');
+  assert.equal(viewer.closed, true);
+});
+
 test('joins reject a wrong code, cap attempts, issue an expiring ticket without exposing code', async () => {
   const { r, ctx } = room();
   const request = (code) =>

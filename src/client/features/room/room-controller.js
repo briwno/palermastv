@@ -1,3 +1,5 @@
+import { diagnostics, recordDiagnostic } from './diagnostics.js';
+import { showError } from '../../shared/feedback.js';
 import { PalermasP2P } from './peer-connection.js';
 
 import { qualityProfiles } from './stream-health.mjs';
@@ -26,7 +28,11 @@ try {
 
 const quality = qualityProfiles;
 
-const status = (text) => (el('#room-status').textContent = text);
+const status = (text) => {
+  if (el('#room-status').textContent !== text)
+    recordDiagnostic('status', { message: text });
+  el('#room-status').textContent = text;
+};
 
 function setVideo(media, local = false) {
   video.srcObject = media;
@@ -175,6 +181,17 @@ async function connectRoom() {
   }
   const current = new PalermasP2P(endpoint);
   client = current;
+  for (const type of ['chat-message', 'room-game-update'])
+    current.addEventListener(type, (event) => {
+      if (client === current)
+        window.dispatchEvent(
+          new CustomEvent('palermas:' + type, { detail: event.detail }),
+        );
+    });
+  current.addEventListener('diagnostic', (e) => {
+    const { event, ...detail } = e.detail;
+    recordDiagnostic(event, detail);
+  });
   current.addEventListener('room', (e) => {
     if (client !== current) return;
     people(e.detail);
@@ -214,7 +231,10 @@ async function connectRoom() {
       status('A conexão oscilou. Tentando recuperar a transmissão…');
   });
   current.addEventListener('stats', (e) => renderStats(e.detail));
-  current.addEventListener('error', (e) => status(e.detail));
+  current.addEventListener('error', (e) => {
+    status(e.detail);
+    showError(e.detail, { code: 'stream_error' });
+  });
   current.addEventListener('replaced', () => {
     stopCapture(false);
     status('Transmissão transferida. Você continua na sala como espectador.');
@@ -234,6 +254,16 @@ async function connectRoom() {
   });
   current.addEventListener('disconnected', () => {
     if (client !== current) return;
+    window.dispatchEvent(
+      new CustomEvent('palermas:room', {
+        detail: { publisher: null, count: 0, isPublisher: false },
+      }),
+    );
+    if (wanted)
+      showError(
+        'A conexão com a sala caiu. Tentando reconectar automaticamente.',
+        { code: 'room_disconnected' },
+      );
     if (handoff && !handoff.from) stopCapture(false);
     if (!capture) setVideo(null);
     el('#room-members').replaceChildren();
@@ -260,6 +290,7 @@ async function connectRoom() {
   } catch (error) {
     current.leave();
     status(error.message);
+    showError(error.message, { code: 'room_join_failed' });
   } finally {
     joining = false;
     refresh();
@@ -290,6 +321,15 @@ async function share(takeover = false) {
     }
     capture = media;
     const track = media.getVideoTracks()[0];
+    const { width, height, frameRate, displaySurface } = track.getSettings();
+    recordDiagnostic('capture-start', {
+      width,
+      height,
+      frameRate,
+      displaySurface,
+    });
+    for (const state of ['mute', 'unmute', 'ended'])
+      track.addEventListener(state, () => recordDiagnostic('capture-' + state));
     track.contentHint = 'motion';
     track.addEventListener(
       'ended',
@@ -318,6 +358,10 @@ async function share(takeover = false) {
     );
   } catch (error) {
     stopCapture();
+    if (error.name !== 'NotAllowedError')
+      showError(error.message || 'Não foi possível compartilhar.', {
+        code: 'capture_failed',
+      });
     status(
       error.name === 'NotAllowedError'
         ? 'Compartilhamento cancelado.'
@@ -330,14 +374,20 @@ async function share(takeover = false) {
 
 function renderStats(samples) {
   const warning = el('#quality-warning'),
-    weak = samples.filter((s) => s.suggestLower);
+    weak = samples.filter(
+      (s) =>
+        s.suggestLower ||
+        s.stalled ||
+        s.limited === 'cpu' ||
+        s.limited === 'bandwidth',
+    );
   warning.hidden = !weak.length;
   warning.textContent = weak.length
     ? capture
-      ? 'Perda persistente para ' +
+      ? 'Sinais de travamento ou limitação para ' +
         weak.map((s) => s.name).join(', ') +
         '. Se estiver travando, experimente uma qualidade menor no seletor acima. A qualidade não foi alterada.'
-      : 'Sua conexão apresenta perda persistente. Peça ao transmissor para testar uma qualidade menor.'
+      : 'Há sinais de travamento ou limitação. Consulte o diagnóstico abaixo e peça ao transmissor para testar uma qualidade menor.'
     : '';
   const box = el('#diagnostics-content');
   box.replaceChildren();
@@ -370,6 +420,8 @@ function renderStats(samples) {
     line.textContent =
       'Upload de vídeo total: ' +
       (total / 1000000).toFixed(2) +
+      ' Mb/s; teto de vídeo escolhido para esta sala: ' +
+      ((client.bitrate * samples.length) / 1000000).toFixed(0) +
       ' Mb/s. O áudio e os dados de rede usam um pouco mais.';
     box.append(line);
   }
@@ -384,14 +436,21 @@ function renderStats(samples) {
       s.fps !== null ? Math.round(s.fps) + ' fps' : 'FPS —',
       s.bitrate !== null ? (s.bitrate / 1000000).toFixed(2) + ' Mb/s' : null,
       s.codec,
+      s.iceState ? 'ICE ' + s.iceState : null,
+      s.candidateType ? 'Rota ' + s.candidateType : null,
+      s.available !== null
+        ? 'Banda estimada ' + (s.available / 1000000).toFixed(2) + ' Mb/s'
+        : null,
+      s.freezes !== null ? s.freezes + ' congelamento(s)' : null,
       s.rtt !== null ? Math.round(s.rtt * 1000) + ' ms RTT' : null,
       s.loss !== null ? (s.loss * 100).toFixed(1) + '% de perda' : null,
     ]
       .filter(Boolean)
       .join(' · ');
     const detail = document.createElement('small');
-    detail.textContent =
-      s.limited === 'cpu'
+    detail.textContent = s.stalled
+      ? 'Sem novos quadros há pelo menos 10 segundos. Verifique a captura e a conexão do transmissor.'
+      : s.limited === 'cpu'
         ? 'O computador está limitando a codificação. Use 30 fps ou o modo 720p.'
         : s.limited === 'bandwidth'
           ? 'O navegador está ajustando o envio à banda disponível.'
@@ -402,6 +461,56 @@ function renderStats(samples) {
 }
 
 export async function initRoom() {
+  window.addEventListener('palermas:site-error', (event) =>
+    recordDiagnostic('site-error', event.detail),
+  );
+  const renderLog = () => {
+    el('#stream-event-log').textContent = diagnostics
+      .slice(-80)
+      .map((entry) => JSON.stringify(entry))
+      .join('\n');
+  };
+  window.addEventListener('palermas:diagnostic', renderLog);
+  renderLog();
+  el('#download-stream-log').addEventListener('click', () => {
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          { exportedAt: new Date().toISOString(), events: diagnostics },
+          null,
+          2,
+        ),
+      ],
+      { type: 'application/json' },
+    );
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'palermas-transmissao.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  for (const event of [
+    'waiting',
+    'stalled',
+    'playing',
+    'pause',
+    'error',
+    'emptied',
+  ])
+    video.addEventListener(event, () => {
+      recordDiagnostic('player-' + event, {
+        readyState: video.readyState,
+        networkState: video.networkState,
+        time: video.currentTime,
+        error: video.error?.code,
+      });
+    });
+  document.addEventListener('visibilitychange', () =>
+    recordDiagnostic('visibility', { state: document.visibilityState }),
+  );
+  window.addEventListener('offline', () => recordDiagnostic('network-offline'));
+
   try {
     const config = await fetch('/room-config.json', { cache: 'no-store' }).then(
       (r) => r.json(),
@@ -422,6 +531,11 @@ export async function initRoom() {
       retryTimer = null;
       client?.leave();
       stopCapture(false);
+      window.dispatchEvent(
+        new CustomEvent('palermas:room', {
+          detail: { publisher: null, count: 0, isPublisher: false },
+        }),
+      );
       people({ members: [], id: null });
       status('Você saiu da sala.');
       refresh();

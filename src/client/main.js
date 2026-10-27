@@ -17,7 +17,9 @@ import { initMiniplayer } from './features/room/miniplayer.js';
 import { initRoomMatch } from './features/room/match-context.js';
 import { initAthletiba } from './features/clubs/athletiba.js';
 import { initMatchInsights } from './features/match/insights.js';
+import { initErrorReporting } from './shared/feedback.js';
 
+initErrorReporting();
 initNavigation();
 initRoomPreferences();
 initDashboard();

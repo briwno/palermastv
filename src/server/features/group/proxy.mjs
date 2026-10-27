@@ -15,6 +15,32 @@ export async function groupAPI(request, env, fetcher = fetch) {
     } catch {
       throw Error('Serviço do grupo indisponível.');
     }
+    if (!r.ok) {
+      const action = data.action;
+      const outdated =
+        ['community-chat', 'community-room'].includes(action) &&
+        (['invalid_game', 'unknown_action'].includes(body?.error) ||
+          (data.operation === 'read' && body?.error === 'invalid_identity'));
+      const requestId = crypto.randomUUID();
+      const error = outdated ? 'service_outdated' : body?.error;
+      console.error(
+        JSON.stringify({
+          service: 'group-proxy',
+          path: url.pathname,
+          action,
+          status: r.status,
+          code:
+            typeof error === 'string' && /^[a-z0-9_]{1,64}$/.test(error)
+              ? error
+              : 'upstream_error',
+          requestId,
+        }),
+      );
+      return {
+        status: outdated ? 503 : r.status,
+        body: { ...body, ...(outdated ? { error } : {}), requestId },
+      };
+    }
     return { status: r.status, body };
   }
   try {
@@ -177,6 +203,15 @@ export async function groupAPI(request, env, fetcher = fetch) {
       away: body.away,
     });
   } catch {
-    return { status: 502, body: { error: 'group_unavailable' } };
+    const requestId = crypto.randomUUID();
+    console.error(
+      JSON.stringify({
+        service: 'group-proxy',
+        path: url.pathname,
+        code: 'group_unavailable',
+        requestId,
+      }),
+    );
+    return { status: 502, body: { error: 'group_unavailable', requestId } };
   }
 }

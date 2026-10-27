@@ -11,7 +11,9 @@ let host = false,
   generation = 0,
   roomBusy = false,
   detailsBusy = false;
-function gameOptions() {
+let assigning = false,
+  roomRevision = 0;
+function gameOptions(preferred) {
   const games = [
     ...new Map(
       [...agendas.values()]
@@ -35,7 +37,7 @@ function gameOptions() {
       )
       .join('');
   select.value =
-    previous ||
+    (typeof preferred === 'string' ? preferred : previous) ||
     (chosen
       ? chosen.leagueId + '/' + chosen.id
       : linked
@@ -109,13 +111,18 @@ function applyGame(game) {
   if (changed) details();
 }
 async function loadRoomGame() {
-  if (roomBusy || document.hidden || $('#page-sala').hidden) return;
+  if (roomBusy || assigning || document.hidden || $('#page-sala').hidden)
+    return;
   roomBusy = true;
+  const current = roomRevision;
   try {
     const d = await communityRequest('room-game');
+    if (current !== roomRevision) return;
     applyGame(d.game);
+    $('#room-game-feedback').textContent = '';
   } catch (e) {
-    $('#room-game-feedback').textContent = e.message;
+    if (current === roomRevision)
+      $('#room-game-feedback').textContent = e.message;
   } finally {
     roomBusy = false;
   }
@@ -144,14 +151,18 @@ export function initRoomMatch() {
     if (linked) navigate('partida/' + linked.leagueId + '/' + linked.id);
   });
   async function assign(clear = false) {
-    if (!host) return;
+    if (!host || assigning) return;
     const [league, id] = $('#room-game-select').value.split('/');
     if (!clear && !id) {
       $('#room-game-feedback').textContent =
         'Escolha uma partida para vincular.';
       return;
     }
+    assigning = true;
+    roomRevision++;
     $('#room-game-save').disabled = true;
+    $('#room-game-clear').disabled = true;
+    $('#room-game-feedback').textContent = 'Salvando para a sala…';
     try {
       const d = await communityRequest('room-game', {
         league,
@@ -166,7 +177,9 @@ export function initRoomMatch() {
     } catch (e) {
       $('#room-game-feedback').textContent = e.message;
     } finally {
+      assigning = false;
       $('#room-game-save').disabled = !host;
+      $('#room-game-clear').disabled = !host;
     }
   }
   $('#room-game-save').addEventListener('click', () => assign());
@@ -174,8 +187,8 @@ export function initRoomMatch() {
   window.addEventListener('palermas:room', (e) => {
     host = !!e.detail.isPublisher;
     resumeToken = e.detail.resumeToken || '';
-    $('#room-game-save').disabled = !host;
-    $('#room-game-clear').disabled = !host;
+    $('#room-game-save').disabled = !host || assigning;
+    $('#room-game-clear').disabled = !host || assigning;
     $('#room-game-host-note').textContent = host
       ? 'Você está transmitindo. Escolha a partida para toda a sala.'
       : 'O transmissor escolhe qual partida aparece para todos.';
@@ -183,7 +196,12 @@ export function initRoomMatch() {
   });
   window.addEventListener('palermas:roomselection', (e) => {
     chosen = e.detail;
-    gameOptions();
+    gameOptions(chosen.leagueId + '/' + chosen.id);
+  });
+  window.addEventListener('palermas:room-game-update', (event) => {
+    roomRevision++;
+    applyGame(event.detail.game);
+    $('#room-game-feedback').textContent = '';
   });
   window.addEventListener('football:games', gameOptions);
   window.addEventListener('palermas:navigate', (e) => {

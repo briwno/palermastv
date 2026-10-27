@@ -1,3 +1,4 @@
+import { requestJSON } from '../../shared/request.js';
 import { $, esc, all } from '../../shared/dom.js';
 import { activeMatch, activeMatchKey } from '../match/match-center.js';
 import { save } from '../../shared/storage.js';
@@ -21,27 +22,20 @@ const groupMessages = {
 };
 
 async function groupRequest(path, body) {
-  const r = await fetch('/api/group/' + path, {
-    credentials: 'same-origin',
-    ...(body
-      ? {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        }
-      : {}),
-  });
-  let data;
-  try {
-    data = await r.json();
-  } catch {
-    throw Error('Não foi possível consultar o grupo.');
-  }
-  if (!r.ok)
-    throw Error(
-      groupMessages[data.error] || 'Não foi possível consultar o grupo.',
-    );
-  return data;
+  return requestJSON(
+    '/api/group/' + path,
+    {
+      credentials: 'same-origin',
+      ...(body
+        ? {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          }
+        : {}),
+    },
+    groupMessages,
+  );
 }
 
 async function loadRoomStatus() {

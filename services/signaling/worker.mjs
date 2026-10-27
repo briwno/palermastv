@@ -87,6 +87,17 @@ export class PalermasRoom {
       new WebSocketRequestResponsePair('ping', 'pong'),
     );
   }
+  log(event, detail = {}) {
+    console.log(
+      JSON.stringify({
+        service: 'signaling',
+        event,
+        at: new Date().toISOString(),
+        members: this.members.size,
+        ...detail,
+      }),
+    );
+  }
   snapshot() {
     return {
       type: 'room',
@@ -112,6 +123,9 @@ export class PalermasRoom {
   broadcast() {
     const state = this.snapshot();
     for (const ws of this.members.keys()) this.send(ws, state);
+  }
+  broadcastUpdate(value) {
+    for (const ws of this.members.keys()) this.send(ws, value);
   }
   async fetch(request) {
     const url = new URL(request.url);
@@ -193,7 +207,10 @@ export class PalermasRoom {
         if (this.members.size >= MAX_PEOPLE)
           return json({ error: 'room_full' }, 409);
         // Keep short-lived tickets and login-attempt records bounded.
-        const entries = await this.ctx.storage.list();
+        const entries = new Map([
+          ...(await this.ctx.storage.list({ prefix: 'ticket:' })),
+          ...(await this.ctx.storage.list({ prefix: 'rate:' })),
+        ]);
         for (const [key, value] of entries) {
           if (
             (key.startsWith('ticket:') && value.expires < now) ||
@@ -273,6 +290,7 @@ export class PalermasRoom {
       this.ctx.acceptWebSocket(server);
       server.serializeAttachment(member);
       this.members.set(server, member);
+      this.log('connected', { id: member.id });
       this.send(server, {
         type: 'welcome',
         id: member.id,
@@ -291,6 +309,7 @@ export class PalermasRoom {
     const member = this.members.get(ws);
     if (!member) return;
     if (typeof raw !== 'string' || raw.length > 70000) {
+      this.log('message-too-large', { id: member.id });
       ws.close(1009, 'Mensagem muito grande');
       this.remove(ws);
       return;
@@ -300,7 +319,15 @@ export class PalermasRoom {
       member.window = now;
       member.messages = 0;
     }
-    if (++member.messages > 180) {
+    // The publisher gathers ICE candidates for up to five simultaneous links.
+    const limit = member.publishing ? 180 * (MAX_PEOPLE - 1) : 180;
+    if (++member.messages > limit) {
+      this.log('rate-limit', {
+        id: member.id,
+        publishing: member.publishing,
+        messages: member.messages,
+        limit,
+      });
       ws.close(1008, 'Muitas mensagens');
       this.remove(ws);
       return;
@@ -400,6 +427,7 @@ export class PalermasRoom {
         return;
       }
       member.publishing = true;
+      this.log('publisher-claimed', { id: member.id });
       ws.serializeAttachment(member);
       this.send(ws, { type: 'claimed' });
       this.broadcast();
@@ -431,12 +459,22 @@ export class PalermasRoom {
     ws.serializeAttachment(member);
   }
   remove(ws) {
-    if (this.members.delete(ws)) this.broadcast();
+    const member = this.members.get(ws);
+    if (this.members.delete(ws)) {
+      this.log('removed', { id: member.id, publishing: member.publishing });
+      this.broadcast();
+    }
   }
-  webSocketClose(ws) {
+  webSocketClose(ws, code, reason, wasClean) {
+    this.log('socket-close', {
+      id: this.members.get(ws)?.id,
+      code,
+      clean: wasClean,
+    });
     this.remove(ws);
   }
   webSocketError(ws) {
+    this.log('socket-error', { id: this.members.get(ws)?.id });
     try {
       ws.close(1011, 'Conexão encerrada');
     } catch {}

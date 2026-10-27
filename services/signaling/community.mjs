@@ -93,6 +93,10 @@ export async function community(room, data) {
     )
       return json({ error: 'host_only' }, 403);
     await store.put('room-game', data.game || null);
+    room.broadcastUpdate?.({
+      type: 'room-game-update',
+      game: data.game || null,
+    });
     return json({ game: data.game || null });
   }
   if (!profile && Object.keys(profiles).length >= 32)
@@ -102,6 +106,7 @@ export async function community(room, data) {
   if (Date.now() - ((await store.get('community-rate:' + id)) || 0) < 1000)
     return json({ error: 'try_later' }, 429);
   profile = { avatar: '⚽', team: '', ...profile, name: profile?.name || name };
+  let message;
   if (data.action === 'community-profile') {
     if (
       !avatars.includes(data.avatar) ||
@@ -120,14 +125,15 @@ export async function community(room, data) {
     const text = clean(data.text, 500);
     if (!text) return json({ error: 'invalid_message' }, 400);
     const messages = (await store.get('room-chat')) || [];
-    messages.push({
+    message = {
       id: crypto.randomUUID(),
       playerId: id,
       name: profile.name,
       avatar: profile.avatar,
       text,
       createdAt: Date.now(),
-    });
+    };
+    messages.push(message);
     await store.put('room-chat', messages.slice(-100));
     const activity = (await store.get('activity:' + id)) || { messages: 0 };
     await store.put('activity:' + id, { messages: activity.messages + 1 });
@@ -175,5 +181,6 @@ export async function community(room, data) {
     room.broadcast();
   }
   await store.put('community-rate:' + id, Date.now());
-  return json({ ok: true, id, profile });
+  if (message) room.broadcastUpdate?.({ type: 'chat-message', message });
+  return json({ ok: true, id, profile, ...(message ? { message } : {}) });
 }

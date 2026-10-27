@@ -176,8 +176,6 @@ export function initClubHub() {
   );
   window.addEventListener('palermas:navigate', (e) => {
     if (e.detail.page === 'clubes' && !hubData) loadHub();
-    if (e.detail.page === 'sala' && $('#spoiler-toggle').checked)
-      $('#important-popup').hidden = true;
   });
   $('#today-heading').textContent = new Intl.DateTimeFormat('pt-BR', {
     timeZone: timezone,

@@ -28,7 +28,9 @@
             </h3>
             <span id="selected-game" hidden>Escolha um jogo na agenda</span>
           </div>
-          <strong id="room-score" class="room-score">Placar oculto</strong>
+          <strong id="room-score" class="room-score"
+            >Nenhuma partida selecionada</strong
+          >
         </div>
         <details class="room-match-settings">
           <summary>Escolher ou trocar partida</summary>
@@ -75,16 +77,6 @@
       >
         <div class="section-head">
           <h2>Na partida</h2>
-          <button
-            class="button subtle"
-            id="room-match-toggle"
-            aria-expanded="true"
-            aria-controls="room-match-details"
-            disabled
-          >
-            Recolher resumo
-          </button>
-          <button id="room-match-open" hidden disabled>Mostrar resumo</button>
         </div>
         <div id="room-match-details">
           <p class="data-note">
@@ -127,11 +119,8 @@
             step="0.05"
             value="1" /></label
         ><button id="enable-audio" class="button subtle" hidden>
-          Reproduzir com som</button
-        ><label class="spoiler-toggle"
-          ><input type="checkbox" id="spoiler-toggle" checked /> Esconder
-          placares</label
-        >
+          Reproduzir com som
+        </button>
       </div>
       <div class="reactions-bar">
         <span>Reações</span>

@@ -61,20 +61,17 @@ async function details() {
     );
     if (current !== generation) return;
     setRoomGame(data.game);
-    const spoilers = $('#spoiler-toggle').checked;
     $('#room-match-details').innerHTML =
       `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
-        spoilers
-          ? '<p class="data-note">Desmarque “Esconder placares” para ver estatísticas e lances.</p>'
-          : data.statistics.length
-            ? data.statistics
-                .slice(0, 7)
-                .map(
-                  (s) =>
-                    `<div class="room-stat"><b>${esc(s.home ?? '—')}${esc(s.unit)}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}${esc(s.unit)}</b></div>`,
-                )
-                .join('')
-            : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
+        data.statistics.length
+          ? data.statistics
+              .slice(0, 7)
+              .map(
+                (s) =>
+                  `<div class="room-stat"><b>${esc(s.home ?? '—')}${esc(s.unit)}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}${esc(s.unit)}</b></div>`,
+              )
+              .join('')
+          : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
       }</section><section><h3>Escalações</h3>${
         data.lineups.length
           ? data.lineups
@@ -90,15 +87,13 @@ async function details() {
               .join('')
           : '<p>Escalações ainda não divulgadas.</p>'
       }</section></div><section><h3>Últimos lances</h3>${
-        spoilers
-          ? '<p class="data-note">Lances ocultos para evitar spoilers.</p>'
-          : (data.events || [])
-              .slice(0, 4)
-              .map(
-                (e) =>
-                  `<p><b>${esc(e.clock || '')} ${esc(e.label)}</b> · ${esc((e.participants || []).join(', ') || e.teamName || '')}</p>`,
-              )
-              .join('') || '<p>Nenhum lance disponível na fonte.</p>'
+        (data.events || [])
+          .slice(0, 4)
+          .map(
+            (e) =>
+              `<p><b>${esc(e.clock || '')} ${esc(e.label)}</b> · ${esc((e.participants || []).join(', ') || e.teamName || '')}</p>`,
+          )
+          .join('') || '<p>Nenhum lance disponível na fonte.</p>'
       }</section><p class="data-note">Fonte: ESPN · Atualização a cada minuto.</p>`;
   } catch (e) {
     if (current === generation)
@@ -121,8 +116,6 @@ function applyGame(game) {
   $('#room-linked-title').textContent = game
     ? game.home.name + ' × ' + game.away.name
     : 'Nenhuma partida vinculada à transmissão';
-  $('#room-match-open').disabled = !game;
-  $('#room-match-toggle').disabled = !game;
   if (game) setRoomGame(game);
   else if (changed) setRoomGame(null);
   gameOptions();
@@ -146,31 +139,6 @@ async function loadRoomGame() {
   }
 }
 export function initRoomMatch() {
-  $('#room-match-toggle').addEventListener('click', () => {
-    const panel = $('#room-match-details');
-    panel.hidden = !panel.hidden;
-    $('#room-match-toggle').setAttribute(
-      'aria-expanded',
-      String(!panel.hidden),
-    );
-    $('#room-match-toggle').textContent = panel.hidden
-      ? 'Mostrar resumo'
-      : 'Recolher resumo';
-    details();
-  });
-  $('#spoiler-toggle').addEventListener('change', () => {
-    // Remove visible scores/events immediately, before the refresh completes.
-    $('#room-match-details').textContent = linked
-      ? 'Atualizando resumo…'
-      : 'Vincule uma partida para acompanhar o resumo aqui.';
-    details();
-  });
-  $('#room-match-open').addEventListener('click', () => {
-    if (linked) {
-      $('#room-match-details').hidden = false;
-      details();
-    }
-  });
   async function assign(clear = false) {
     if (!host || assigning) return;
     const [league, id] = $('#room-game-select').value.split('/');

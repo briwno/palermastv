@@ -920,14 +920,6 @@ tr.featured.cap-row {
   padding: 10px;
   font-size: 9px;
 }
-.spoiler-toggle {
-  font-size: 10px;
-  color: var(--muted);
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  margin-left: auto;
-}
 input[type='checkbox'] {
   accent-color: var(--lime);
 }
@@ -1324,9 +1316,6 @@ dialog p {
   }
   .player video {
     aspect-ratio: 16/9;
-  }
-  .spoiler-toggle {
-    margin: 8px 0;
   }
   .heading > .outline-label {
     display: none;

@@ -64,7 +64,6 @@ function addNotice(n, popup = false) {
   }
   if (!popup || !fresh || !popupsEnabled || !$('#alerts-panel').hidden) return;
   // Match notifications stay silent in the room when spoiler protection is on.
-  if (!$('#page-sala').hidden && $('#spoiler-toggle').checked) return;
   $('#important-popup').innerHTML =
     `<button class="popup-close" aria-label="Fechar aviso">×</button><span class="notice-kind">${esc(n.kind)}</span><strong>${esc(n.title)}</strong><p>${esc(n.text)}</p>${n.gameId ? `<button class="text-button" data-detail="${esc(n.gameId)}">Ver jogo ↗</button>` : n.page ? `<button class="text-button" data-notice-page="${esc(n.page)}">${esc(n.action || 'Abrir')} ↗</button>` : ''}`;
   $('#important-popup').hidden = false;

@@ -16,9 +16,8 @@ function updateScore() {
     return;
   }
   const fresh = findGame(roomGame.id) || roomGame;
-  $('#room-score').textContent = $('#spoiler-toggle').checked
-    ? 'Placar oculto'
-    : fresh.homeScore !== null && fresh.awayScore !== null
+  $('#room-score').textContent =
+    fresh.homeScore !== null && fresh.awayScore !== null
       ? fresh.homeScore + ' × ' + fresh.awayScore + ' · ' + gameState(fresh)
       : 'Jogo agendado · ' + timeText(fresh);
 }
@@ -78,7 +77,6 @@ export function initRoomPreferences() {
     $('#details').close();
     navigate('sala');
   });
-  $('#spoiler-toggle').addEventListener('change', updateScore);
   $('#fullscreen').addEventListener('click', async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();

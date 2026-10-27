@@ -213,7 +213,7 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
     );
     assert.match(
       w.document.querySelector('#room-match-details').textContent,
-      /Lances ocultos/,
+      /Últimos lances/,
     );
     assert.ok(
       w.document

@@ -16,6 +16,38 @@
   </div>
   <div class="watch-grid">
     <div class="player-column">
+      <section
+        class="panel room-game room-match-header"
+        aria-label="Partida da transmissão"
+      >
+        <div class="room-match-heading">
+          <div>
+            <span class="tiny-label">PARTIDA DA TRANSMISSÃO</span>
+            <h3 id="room-linked-title">
+              Nenhuma partida vinculada à transmissão
+            </h3>
+            <span id="selected-game" hidden>Escolha um jogo na agenda</span>
+          </div>
+          <strong id="room-score" class="room-score">Placar oculto</strong>
+        </div>
+        <details class="room-match-settings">
+          <summary>Escolher ou trocar partida</summary>
+          <p id="room-game-host-note" class="data-note">
+            O transmissor escolhe qual partida aparece para todos.
+          </p>
+          <label class="field-label" for="room-game-select">Partida</label>
+          <select id="room-game-select" class="text-input"></select>
+          <div class="community-actions">
+            <button id="room-game-save" class="button lime" disabled>
+              Vincular para a sala
+            </button>
+            <button id="room-game-clear" class="button subtle" disabled>
+              Remover vínculo
+            </button>
+          </div>
+        </details>
+        <p id="room-game-feedback" role="status"></p>
+      </section>
       <div class="player" id="player">
         <video id="local-video" autoplay playsinline muted hidden></video>
         <div class="player-placeholder" id="player-placeholder">
@@ -37,6 +69,30 @@
           >TRANSMISSÃO LOCAL</span
         >
       </div>
+      <section
+        class="panel room-match-summary"
+        aria-label="Central resumida da partida"
+      >
+        <div class="section-head">
+          <h2>Na partida</h2>
+          <button
+            class="button subtle"
+            id="room-match-toggle"
+            aria-expanded="true"
+            aria-controls="room-match-details"
+            disabled
+          >
+            Recolher resumo
+          </button>
+          <button id="room-match-open" hidden disabled>Mostrar resumo</button>
+        </div>
+        <div id="room-match-details">
+          <p class="data-note">
+            Vincule uma partida para acompanhar escalações, estatísticas e
+            lances aqui.
+          </p>
+        </div>
+      </section>
       <div class="quality-controls">
         <label for="stream-quality">Qualidade da transmissão</label
         ><select id="stream-quality">
@@ -140,45 +196,6 @@
       </details>
       <div class="notice" id="room-status" role="status">
         A sala conecta automaticamente quando você abre esta página.
-      </div>
-      <div class="panel room-game">
-        <span class="tiny-label">PARTIDA DA TRANSMISSÃO</span>
-        <h3 id="room-linked-title">Nenhuma partida vinculada à transmissão</h3>
-        <p id="room-game-host-note" class="data-note">
-          O transmissor escolhe qual partida aparece para todos.
-        </p>
-        <label class="field-label" for="room-game-select"
-          >Vincular partida</label
-        ><select id="room-game-select" class="text-input"></select>
-        <div class="community-actions">
-          <button id="room-game-save" class="button lime" disabled>
-            Vincular para a sala</button
-          ><button id="room-game-clear" class="button subtle" disabled>
-            Remover vínculo
-          </button>
-        </div>
-        <p id="room-game-feedback" role="status"></p>
-        <span class="tiny-label">JOGO SELECIONADO</span>
-        <h3 id="selected-game">Escolha um jogo na agenda</h3>
-        <span id="room-score">Placar oculto para evitar spoiler</span>
-        <div class="community-actions">
-          <button class="button subtle" id="room-match-open" disabled>
-            Abrir central da partida ↗</button
-          ><button
-            class="button subtle"
-            id="room-match-toggle"
-            aria-expanded="false"
-            aria-controls="room-match-details"
-            disabled
-          >
-            Mostrar estatísticas e escalações
-          </button>
-        </div>
-        <p class="data-note">
-          Estatísticas podem antecipar lances da transmissão. Abra quando quiser
-          consultar.
-        </p>
-        <div id="room-match-details" hidden></div>
       </div>
     </div>
     <aside class="panel participants">

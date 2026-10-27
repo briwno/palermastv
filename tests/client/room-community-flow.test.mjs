@@ -205,6 +205,27 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
     w.document.querySelector('#room-game-save').click();
     await tick();
     assert.equal(values.get('room-game').id, game.id);
+    await tick();
+    assert.equal(w.document.querySelector('#room-match-details').hidden, false);
+    assert.match(
+      w.document.querySelector('#room-match-details').textContent,
+      /Escalações/,
+    );
+    assert.match(
+      w.document.querySelector('#room-match-details').textContent,
+      /Lances ocultos/,
+    );
+    assert.ok(
+      w.document
+        .querySelector('#room-linked-title')
+        .closest('.room-match-header'),
+    );
+    assert.equal(
+      w.document
+        .querySelector('#player')
+        .nextElementSibling.getAttribute('aria-label'),
+      'Central resumida da partida',
+    );
     assert.match(
       w.document.querySelector('#room-linked-title').textContent,
       /Athletico/,

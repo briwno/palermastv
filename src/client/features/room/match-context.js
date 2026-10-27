@@ -3,7 +3,6 @@ import { api } from '../../shared/football-api.js';
 import { agendas, clubGames } from '../football/game-store.js';
 import { communityRequest } from '../group/api.js';
 import { setRoomGame } from './preferences.js';
-import { navigate } from '../../shell/navigation.js';
 let host = false,
   resumeToken = '',
   linked = null,
@@ -62,34 +61,51 @@ async function details() {
     );
     if (current !== generation) return;
     setRoomGame(data.game);
-    $('#room-match-details').innerHTML = `<h3>Estatísticas</h3>${
-      data.statistics.length
-        ? data.statistics
-            .slice(0, 7)
-            .map(
-              (s) =>
-                `<div class="room-stat"><b>${esc(s.home ?? '—')}${esc(s.unit)}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}${esc(s.unit)}</b></div>`,
-            )
-            .join('')
-        : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
-    }<h3>Escalações</h3>${data.lineups
-      .map(
-        (l) =>
-          `<div><strong>${esc(l.team.name)} ${esc(l.formation || '')}</strong><p>${esc(
-            l.players
-              .filter((p) => p.starter)
-              .map((p) => p.name)
-              .join(' · ') || 'Ainda não divulgada pela fonte.',
-          )}</p></div>`,
-      )
-      .join(
-        '',
-      )}<p class="data-note">Fonte: ESPN · Atualiza a cada minuto enquanto este painel estiver aberto.</p>`;
+    const spoilers = $('#spoiler-toggle').checked;
+    $('#room-match-details').innerHTML =
+      `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
+        spoilers
+          ? '<p class="data-note">Desmarque “Esconder placares” para ver estatísticas e lances.</p>'
+          : data.statistics.length
+            ? data.statistics
+                .slice(0, 7)
+                .map(
+                  (s) =>
+                    `<div class="room-stat"><b>${esc(s.home ?? '—')}${esc(s.unit)}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}${esc(s.unit)}</b></div>`,
+                )
+                .join('')
+            : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
+      }</section><section><h3>Escalações</h3>${
+        data.lineups.length
+          ? data.lineups
+              .map(
+                (l) =>
+                  `<div><strong>${esc(l.team.name)} ${esc(l.formation || '')}</strong><p>${esc(
+                    l.players
+                      .filter((p) => p.starter)
+                      .map((p) => p.name)
+                      .join(' · ') || 'Ainda não divulgada pela fonte.',
+                  )}</p></div>`,
+              )
+              .join('')
+          : '<p>Escalações ainda não divulgadas.</p>'
+      }</section></div><section><h3>Últimos lances</h3>${
+        spoilers
+          ? '<p class="data-note">Lances ocultos para evitar spoilers.</p>'
+          : (data.events || [])
+              .slice(0, 4)
+              .map(
+                (e) =>
+                  `<p><b>${esc(e.clock || '')} ${esc(e.label)}</b> · ${esc((e.participants || []).join(', ') || e.teamName || '')}</p>`,
+              )
+              .join('') || '<p>Nenhum lance disponível na fonte.</p>'
+      }</section><p class="data-note">Fonte: ESPN · Atualização a cada minuto.</p>`;
   } catch (e) {
     if (current === generation)
       $('#room-match-details').textContent = e.message;
   } finally {
     detailsBusy = false;
+    if (current !== generation) details();
   }
 }
 function applyGame(game) {
@@ -98,7 +114,9 @@ function applyGame(game) {
   linked = game;
   if (changed) {
     generation++;
-    $('#room-match-details').textContent = 'Consultando dados da partida…';
+    $('#room-match-details').textContent = game
+      ? 'Consultando dados da partida…'
+      : 'Vincule uma partida para acompanhar o resumo aqui.';
   }
   $('#room-linked-title').textContent = game
     ? game.home.name + ' × ' + game.away.name
@@ -136,19 +154,22 @@ export function initRoomMatch() {
       String(!panel.hidden),
     );
     $('#room-match-toggle').textContent = panel.hidden
-      ? 'Mostrar estatísticas e escalações'
-      : 'Ocultar estatísticas e escalações';
+      ? 'Mostrar resumo'
+      : 'Recolher resumo';
     details();
   });
   $('#spoiler-toggle').addEventListener('change', () => {
-    if ($('#spoiler-toggle').checked) {
-      $('#room-match-details').hidden = true;
-      $('#room-match-toggle').setAttribute('aria-expanded', 'false');
-      $('#room-match-toggle').textContent = 'Mostrar estatísticas e escalações';
-    }
+    // Remove visible scores/events immediately, before the refresh completes.
+    $('#room-match-details').textContent = linked
+      ? 'Atualizando resumo…'
+      : 'Vincule uma partida para acompanhar o resumo aqui.';
+    details();
   });
   $('#room-match-open').addEventListener('click', () => {
-    if (linked) navigate('partida/' + linked.leagueId + '/' + linked.id);
+    if (linked) {
+      $('#room-match-details').hidden = false;
+      details();
+    }
   });
   async function assign(clear = false) {
     if (!host || assigning) return;

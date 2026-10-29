@@ -7,23 +7,31 @@ import { tacticalLines } from '../match/formation.js';
 function renderLineup(lineup, team) {
   const players = lineup?.players || [];
   const lines = lineup && tacticalLines(lineup);
+  const athlete = (p) =>
+    `<div class="football-athlete" title="${esc(p.name)}"><div class="athlete-portrait"><span>${esc(
+      (p.shortName || p.name || '?')
+        .split(' ')
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join(''),
+    )}</span>${p.photo ? `<img src="${esc(p.photo)}" alt="" loading="lazy" data-player-photo>` : ''}<b>${esc(p.jersey || '—')}</b></div><span class="athlete-name">${esc(p.shortName || p.name)}</span></div>`;
   const row = (list) =>
-    `<div class="pitch-row">${list.map((p) => `<div class="pitch-player"><b>${esc(p.jersey || '—')}</b><span>${esc(p.shortName || p.name)}</span></div>`).join('')}</div>`;
-  return `<header><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Escalação')}</span></header>${
+    `<div class="football-pitch-row">${list.map(athlete).join('')}</div>`;
+  return `<header class="football-team-heading">${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}<div><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Aguardando escalação')}</span></div></header>${
     lines
-      ? `<div class="formation-pitch"><div class="pitch-markings" aria-hidden="true"><i></i></div><div class="pitch-players">${[...lines].reverse().map(row).join('')}</div></div>`
+      ? `<div class="football-pitch"><div class="football-pitch-lines" aria-hidden="true"><i></i></div><div class="football-pitch-players">${[...lines].reverse().map(row).join('')}</div></div>`
       : `<p class="data-note">${
           players
             .filter((p) => p.starter)
             .map((p) => esc(p.name))
             .join(' · ') || 'Escalação ainda não divulgada.'
         }</p>`
-  }<details><summary>Reservas</summary><p>${
+  }<details class="football-bench" open><summary>Banco de reservas</summary><div>${
     players
       .filter((p) => !p.starter)
-      .map((p) => esc(p.name))
-      .join(' · ') || 'Ainda não informados.'
-  }</p></details>`;
+      .map(athlete)
+      .join('') || '<p class="data-note">Ainda não informado.</p>'
+  }</div></details>`;
 }
 let linked = null,
   chosen = null,
@@ -120,6 +128,12 @@ function applyGame(game) {
   const changed =
     linked?.id !== game?.id || linked?.leagueId !== game?.leagueId;
   linked = game;
+  $('#page-sala').classList.toggle('football-mode', !!game);
+  document.body.classList.toggle(
+    'football-room',
+    !!game && !$('#page-sala').hidden,
+  );
+  $('#football-scoreboard').hidden = !game;
   $('#room-match-stage').classList.toggle('has-match', !!game);
   $('#room-lineups-toggle').hidden = !game;
   for (const side of ['home', 'away']) {
@@ -159,6 +173,14 @@ async function loadRoomGame() {
   }
 }
 export function initRoomMatch() {
+  $('#page-sala').addEventListener(
+    'error',
+    (event) => {
+      if (event.target.matches('[data-player-photo]'))
+        event.target.hidden = true;
+    },
+    true,
+  );
   $('#room-lineups-toggle').addEventListener('click', () => {
     const hidden = $('#room-match-stage').classList.toggle('lineups-collapsed');
     $('#room-lineups-toggle').textContent = hidden
@@ -211,6 +233,10 @@ export function initRoomMatch() {
   });
   window.addEventListener('football:games', gameOptions);
   window.addEventListener('palermas:navigate', (e) => {
+    document.body.classList.toggle(
+      'football-room',
+      !!linked && e.detail.page === 'sala',
+    );
     if (e.detail.page === 'sala') {
       gameOptions();
       loadRoomGame();

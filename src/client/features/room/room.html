@@ -1,19 +1,18 @@
-<section id="page-sala" class="page" hidden>
-  <div class="heading">
+<section id="page-sala" class="page" hidden="">
+  <div class="room-toolbar">
+    <a href="#inicio" class="room-back">← Início</a>
     <div>
-      <div class="eyebrow">TRANSMISSÃO</div>
-      <h1>Sala dos Palermas<span>.</span></h1>
-      <p>O jogo e o chat por aqui. A voz continua no Discord.</p>
+      <span class="tiny-label">PALERMAS TV</span>
+      <h1>
+        Sala dos Palermas <span class="football-mode-label">Modo futebol</span>
+      </h1>
     </div>
-    <span class="outline-label" id="room-connection-state">CONECTANDO</span>
+    <span class="outline-label" id="room-connection-state">CONECTANDO</span
+    ><button class="button subtle" id="join-room" disabled="">
+      Conectando…
+    </button>
   </div>
-  <div class="connection-bar">
-    <div>
-      <strong>Sala de transmissão</strong>
-      <p>Uma pessoa transmite. Até cinco assistem. O som da aba vai junto.</p>
-    </div>
-    <button class="button subtle" id="join-room" disabled>Conectando…</button>
-  </div>
+
   <div class="watch-grid">
     <div class="player-column">
       <section
@@ -26,48 +25,63 @@
             <h3 id="room-linked-title">
               Nenhuma partida vinculada à transmissão
             </h3>
-            <span id="selected-game" hidden>Escolha um jogo na agenda</span>
+            <span id="selected-game" hidden="">Escolha um jogo na agenda</span>
           </div>
           <strong id="room-score" class="room-score"
             >Nenhuma partida selecionada</strong
           >
         </div>
-        <details class="room-match-settings">
-          <summary>Escolher ou trocar partida</summary>
-          <p id="room-game-host-note" class="data-note">
-            Qualquer pessoa do grupo pode escolher a partida da sala.
-          </p>
-          <label class="field-label" for="room-game-select">Partida</label>
-          <select id="room-game-select" class="text-input"></select>
-          <div class="community-actions">
-            <button id="room-game-save" class="button lime">
-              Vincular para a sala
-            </button>
-            <button id="room-game-clear" class="button subtle">
-              Remover vínculo
-            </button>
-          </div>
-        </details>
+
         <p id="room-game-feedback" role="status"></p>
+        <div class="room-match-tools">
+          <details class="room-match-settings">
+            <summary>Escolher ou trocar partida</summary>
+            <p id="room-game-host-note" class="data-note">
+              Qualquer pessoa do grupo pode escolher a partida da sala.
+            </p>
+            <label class="field-label" for="room-game-select">Partida</label>
+            <select id="room-game-select" class="text-input"></select>
+            <div class="community-actions">
+              <button id="room-game-save" class="button lime">
+                Vincular para a sala
+              </button>
+              <button id="room-game-clear" class="button subtle">
+                Remover vínculo
+              </button>
+            </div>
+          </details>
+          <button
+            id="room-lineups-toggle"
+            class="button subtle"
+            aria-pressed="true"
+            hidden=""
+          >
+            Esconder escalações
+          </button>
+        </div>
       </section>
-      <button
-        id="room-lineups-toggle"
-        class="button subtle"
-        aria-pressed="true"
-        hidden
-      >
-        Esconder escalações
-      </button>
+
       <div class="room-match-stage" id="room-match-stage">
         <aside
           id="room-home-lineup"
           class="room-side-lineup"
           aria-label="Escalação mandante"
-          hidden
+          hidden=""
         ></aside>
         <div class="room-video-column">
+          <div
+            class="football-scoreboard"
+            id="football-scoreboard"
+            hidden=""
+          ></div>
           <div class="player" id="player">
-            <video id="local-video" autoplay playsinline muted hidden></video>
+            <video
+              id="local-video"
+              autoplay=""
+              playsinline=""
+              muted=""
+              hidden=""
+            ></video>
             <div class="player-placeholder" id="player-placeholder">
               <div class="large-play">▶</div>
               <h2>Nenhuma transmissão</h2>
@@ -83,203 +97,225 @@
               class="reaction-overlay"
               aria-hidden="true"
             ></div>
-            <span class="player-badge" id="player-badge" hidden
+            <span class="player-badge" id="player-badge" hidden=""
               >TRANSMISSÃO LOCAL</span
             >
           </div>
-          <section
-            class="panel room-match-summary"
-            aria-label="Central resumida da partida"
-          >
-            <div class="section-head">
-              <h2>Na partida</h2>
+          <div class="player-controls">
+            <button class="button lime" id="takeover-screen" hidden="">
+              Assumir transmissão ↗</button
+            ><button class="button subtle" id="restore-quality" disabled="">
+              Reaplicar qualidade</button
+            ><button class="button subtle" id="stop-screen" disabled="">
+              Encerrar transmissão</button
+            ><button class="button subtle" id="focus-mode" aria-pressed="false">
+              Ampliar vídeo</button
+            ><button class="button subtle" id="fullscreen">⛶ Tela cheia</button
+            ><label class="volume-control" for="volume"
+              >Volume
+              <input
+                id="volume"
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value="1" /></label
+            ><button id="enable-audio" class="button subtle" hidden="">
+              Reproduzir com som
+            </button>
+          </div>
+          <div class="reactions-bar">
+            <span>Reações</span>
+            <div id="reaction-buttons">
+              <button data-reaction="⚽" aria-label="Reagir com bola">⚽</button
+              ><button data-reaction="🔥" aria-label="Reagir com fogo">
+                🔥</button
+              ><button data-reaction="👏" aria-label="Aplaudir">👏</button
+              ><button data-reaction="😂" aria-label="Reagir com risada">
+                😂</button
+              ><button data-reaction="😱" aria-label="Reagir com surpresa">
+                😱</button
+              ><button data-reaction="🤡" aria-label="Reagir com palhaço">
+                🤡
+              </button>
             </div>
-            <div id="room-match-details">
-              <p class="data-note">
-                Vincule uma partida para acompanhar escalações, estatísticas e
-                lances aqui.
-              </p>
-            </div>
-          </section>
+            <label
+              ><input type="checkbox" id="show-reactions" checked="" />
+              Mostrar</label
+            >
+          </div>
+
+          <div
+            id="quality-warning"
+            class="notice"
+            role="status"
+            hidden=""
+          ></div>
+          <div class="handoff-request notice" id="handoff-request" hidden="">
+            <strong id="handoff-name"></strong>
+            <p>
+              A galera continua na sala. A sua captura será encerrada ao
+              aceitar.
+            </p>
+            <button class="button lime" id="accept-handoff">
+              Passar transmissão</button
+            ><button class="button subtle" id="decline-handoff">
+              Continuar transmitindo
+            </button>
+          </div>
         </div>
         <aside
           id="room-away-lineup"
           class="room-side-lineup"
           aria-label="Escalação visitante"
-          hidden
+          hidden=""
         ></aside>
       </div>
-      <div class="quality-controls">
-        <label for="stream-quality">Qualidade da transmissão</label
-        ><select id="stream-quality">
-          <option value="balanced">720p · 30 fps · Computador mais leve</option>
-          <option value="high" selected>1080p · 30 fps · Nitidez fixa</option>
-          <option value="sports">
-            1080p · 60 fps · Mais movimento
-          </option></select
-        ><small
-          >Você escolhe a qualidade. Em caso de perda persistente, o site sugere
-          diminuir sem trocar o perfil sozinho.</small
-        >
-      </div>
-      <div id="quality-warning" class="notice" role="status" hidden></div>
-      <div class="player-controls">
-        <button class="button lime" id="takeover-screen" hidden>
-          Assumir transmissão ↗</button
-        ><button class="button subtle" id="restore-quality" disabled>
-          Reaplicar qualidade</button
-        ><button class="button subtle" id="stop-screen" disabled>
-          Encerrar transmissão</button
-        ><button class="button subtle" id="focus-mode" aria-pressed="false">
-          ◩ Modo jogo</button
-        ><button class="button subtle" id="fullscreen">⛶ Tela cheia</button
-        ><label class="volume-control" for="volume"
-          >Volume
-          <input
-            id="volume"
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value="1" /></label
-        ><button id="enable-audio" class="button subtle" hidden>
-          Reproduzir com som
-        </button>
-      </div>
-      <div class="reactions-bar">
-        <span>Reações</span>
-        <div id="reaction-buttons">
-          <button data-reaction="⚽" aria-label="Reagir com bola">⚽</button
-          ><button data-reaction="🔥" aria-label="Reagir com fogo">🔥</button
-          ><button data-reaction="👏" aria-label="Aplaudir">👏</button
-          ><button data-reaction="😂" aria-label="Reagir com risada">😂</button
-          ><button data-reaction="😱" aria-label="Reagir com surpresa">
-            😱</button
-          ><button data-reaction="🤡" aria-label="Reagir com palhaço">
-            🤡
-          </button>
+
+      <section
+        class="panel room-match-summary"
+        aria-label="Central resumida da partida"
+      >
+        <div class="section-head">
+          <h2>Na partida</h2>
         </div>
-        <label
-          ><input type="checkbox" id="show-reactions" checked /> Mostrar</label
-        >
+        <div id="room-match-details">
+          <p class="data-note">
+            Vincule uma partida para acompanhar escalações, estatísticas e
+            lances aqui.
+          </p>
+        </div>
+      </section>
+      <div class="room-social">
+        <section class="room-chat">
+          <div class="section-head">
+            <h2>Na arquibancada</h2>
+            <a href="#perfil" class="text-button">Meu perfil ↗</a>
+          </div>
+          <div
+            id="room-chat-messages"
+            class="chat-messages"
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+          ></div>
+          <form id="room-chat-form">
+            <label class="field-label" for="chat-text">Sua mensagem</label
+            ><textarea
+              id="chat-text"
+              class="text-input"
+              maxlength="500"
+              rows="2"
+              placeholder="Comenta o jogo com a galera…"
+              required=""
+            ></textarea>
+            <div class="chat-compose-footer">
+              <small id="chat-character-count">0 / 500</small>
+              <button class="button lime" type="submit" disabled="">
+                Enviar ↑
+              </button>
+            </div>
+          </form>
+          <p id="chat-status" role="status" aria-live="polite"></p>
+          <small class="data-note"
+            >Enter envia · Shift+Enter quebra a linha. O chat pode conter
+            spoilers.</small
+          >
+        </section>
+        <aside class="panel participants">
+          <details class="room-people">
+            <summary>
+              Quem está na sala <span>Participantes e apelido</span>
+            </summary>
+            <div class="section-head">
+              <h2>Participantes</h2>
+              <span class="count" id="room-count">1 / 6</span>
+            </div>
+            <div id="room-members">
+              <div class="member">
+                <span class="avatar">P</span>
+                <div>
+                  <strong id="local-member-name">Você</strong
+                  ><small>Neste computador</small>
+                </div>
+                <span class="green-dot"></span>
+              </div>
+            </div>
+            <div class="empty-seats" id="empty-seats">
+              <span>＋ ＋ ＋ ＋ ＋</span>
+              <p>Até cinco espectadores.</p>
+            </div>
+            <label class="field-label" for="nickname">Seu apelido</label
+            ><input
+              id="nickname"
+              class="text-input"
+              maxlength="24"
+              placeholder="Como a galera te chama?"
+            /><button class="button subtle full" id="save-nickname">
+              Salvar apelido
+            </button>
+          </details>
+          <div id="room-polls" class="room-polls" data-lounge=""></div>
+        </aside>
       </div>
-      <div class="handoff-request notice" id="handoff-request" hidden>
-        <strong id="handoff-name"></strong>
-        <p>
-          A galera continua na sala. A sua captura será encerrada ao aceitar.
-        </p>
-        <button class="button lime" id="accept-handoff">
-          Passar transmissão</button
-        ><button class="button subtle" id="decline-handoff">
-          Continuar transmitindo
-        </button>
-      </div>
-      <p class="data-note capture-tip">
-        Para o jogo ficar maior e mais nítido, compartilhe a aba do jogo com o
-        vídeo em tela cheia. Compartilhar o monitor inteiro também transmite
-        bordas e outras janelas.
-      </p>
-      <details class="stream-diagnostics">
+      <details class="room-stream-settings">
         <summary>
-          Diagnóstico da transmissão
-          <span>Resolução · FPS · conexão</span>
+          Ajustes da transmissão <span>Qualidade, conexão e diagnóstico</span>
         </summary>
-        <div id="diagnostics-content">Aguardando transmissão.</div>
-        <p>
-          Atualiza a cada 5 segundos. Em conexão direta, o transmissor envia uma
-          cópia por espectador: o uso de upload e de processamento cresce com a
-          sala. Os dados mostram a qualidade efetivamente enviada/recebida, não
-          a qualidade do vídeo original.
+        <div class="quality-controls">
+          <label for="stream-quality">Qualidade da transmissão</label
+          ><select id="stream-quality">
+            <option value="balanced">
+              720p · 30 fps · Computador mais leve
+            </option>
+            <option value="high" selected="">
+              1080p · 30 fps · Nitidez fixa
+            </option>
+            <option value="sports">
+              1080p · 60 fps · Mais movimento
+            </option></select
+          ><small
+            >Você escolhe a qualidade. Em caso de perda persistente, o site
+            sugere diminuir sem trocar o perfil sozinho.</small
+          >
+        </div>
+        <p class="data-note capture-tip">
+          Para o jogo ficar maior e mais nítido, compartilhe a aba do jogo com o
+          vídeo em tela cheia. Compartilhar o monitor inteiro também transmite
+          bordas e outras janelas.
         </p>
-        <h3>Histórico de eventos</h3>
-        <p>
-          Últimos 200 eventos desta aba, preservados ao reconectar e recarregar.
-          Baixe o relatório logo após a falha e compare com o do transmissor.
-          Inclui apelidos e métricas; não inclui vídeo, senhas, endereços de
-          rede ou sinais WebRTC.
-        </p>
-        <button class="button subtle" id="download-stream-log">
-          Baixar diagnóstico
-        </button>
-        <pre
-          id="stream-event-log"
-          class="stream-event-log"
-          aria-label="Eventos recentes da transmissão"
-        ></pre>
+        <details class="stream-diagnostics">
+          <summary>
+            Diagnóstico da transmissão
+            <span>Resolução · FPS · conexão</span>
+          </summary>
+          <div id="diagnostics-content">Aguardando transmissão.</div>
+          <p>
+            Atualiza a cada 5 segundos. Em conexão direta, o transmissor envia
+            uma cópia por espectador: o uso de upload e de processamento cresce
+            com a sala. Os dados mostram a qualidade efetivamente
+            enviada/recebida, não a qualidade do vídeo original.
+          </p>
+          <h3>Histórico de eventos</h3>
+          <p>
+            Últimos 200 eventos desta aba, preservados ao reconectar e
+            recarregar. Baixe o relatório logo após a falha e compare com o do
+            transmissor. Inclui apelidos e métricas; não inclui vídeo, senhas,
+            endereços de rede ou sinais WebRTC.
+          </p>
+          <button class="button subtle" id="download-stream-log">
+            Baixar diagnóstico
+          </button>
+          <pre
+            id="stream-event-log"
+            class="stream-event-log"
+            aria-label="Eventos recentes da transmissão"
+          ></pre>
+        </details>
       </details>
       <div class="notice" id="room-status" role="status">
         A sala conecta automaticamente quando você abre esta página.
       </div>
     </div>
-    <aside class="panel participants">
-      <div class="section-head">
-        <h2>Participantes</h2>
-        <span class="count" id="room-count">1 / 6</span>
-      </div>
-      <div id="room-members">
-        <div class="member">
-          <span class="avatar">P</span>
-          <div>
-            <strong id="local-member-name">Você</strong
-            ><small>Neste computador</small>
-          </div>
-          <span class="green-dot"></span>
-        </div>
-      </div>
-      <div class="empty-seats" id="empty-seats">
-        <span>＋ ＋ ＋ ＋ ＋</span>
-        <p>Até cinco espectadores.</p>
-      </div>
-      <label class="field-label" for="nickname">Seu apelido</label
-      ><input
-        id="nickname"
-        class="text-input"
-        maxlength="24"
-        placeholder="Como a galera te chama?"
-      /><button class="button subtle full" id="save-nickname">
-        Salvar apelido
-      </button>
-      <section class="room-chat">
-        <div class="section-head">
-          <h2>Na arquibancada</h2>
-          <a href="#perfil" class="text-button">Meu perfil ↗</a>
-        </div>
-        <div
-          id="room-chat-messages"
-          class="chat-messages"
-          role="log"
-          aria-live="polite"
-          aria-relevant="additions"
-        ></div>
-        <form id="room-chat-form">
-          <label class="field-label" for="chat-text">Sua mensagem</label
-          ><textarea
-            id="chat-text"
-            class="text-input"
-            maxlength="500"
-            rows="2"
-            placeholder="Comenta o jogo com a galera…"
-            required
-          ></textarea>
-          <div class="chat-compose-footer">
-            <small id="chat-character-count">0 / 500</small>
-            <button class="button lime" type="submit" disabled>Enviar ↑</button>
-          </div>
-        </form>
-        <p id="chat-status" role="status" aria-live="polite"></p>
-        <small class="data-note"
-          >Enter envia · Shift+Enter quebra a linha. O chat pode conter
-          spoilers.</small
-        >
-      </section>
-      <div id="room-polls" class="room-polls" data-lounge></div>
-      <div class="room-note">
-        <strong>Transmissão de tela</strong>
-        <p>
-          Para compartilhar com som, selecione uma aba e marque a opção de
-          áudio.
-        </p>
-      </div>
-    </aside>
   </div>
 </section>

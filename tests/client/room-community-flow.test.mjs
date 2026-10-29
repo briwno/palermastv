@@ -233,11 +233,17 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
         .querySelector('#room-linked-title')
         .closest('.room-match-header'),
     );
-    assert.equal(
+    assert.ok(
+      w.document.querySelector('[aria-label="Central resumida da partida"]'),
+    );
+    assert.ok(
       w.document
-        .querySelector('#player')
-        .nextElementSibling.getAttribute('aria-label'),
-      'Central resumida da partida',
+        .querySelector('#page-sala')
+        .classList.contains('football-mode'),
+    );
+    assert.equal(
+      w.document.querySelector('#football-scoreboard').hidden,
+      false,
     );
     assert.match(
       w.document.querySelector('#room-linked-title').textContent,

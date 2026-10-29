@@ -37,6 +37,11 @@ function player(p) {
   );
   return {
     id: String(p.athlete?.id || ''),
+    photo:
+      safeURL(p.athlete?.headshot?.href) ||
+      (/^\d+$/.test(String(p.athlete?.id || ''))
+        ? `https://a.espncdn.com/i/headshots/soccer/players/full/${p.athlete.id}.png`
+        : null),
     name: text(p.athlete?.displayName || p.athlete?.fullName || 'Jogador'),
     shortName: text(p.athlete?.shortName || p.athlete?.displayName),
     jersey: text(p.jersey),

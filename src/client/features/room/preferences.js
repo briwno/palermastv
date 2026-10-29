@@ -1,4 +1,4 @@
-import { $ } from '../../shared/dom.js';
+import { $, esc } from '../../shared/dom.js';
 import { toast } from '../../shared/feedback.js';
 import { save } from '../../shared/storage.js';
 import { timeText } from '../../shared/dates.js';
@@ -16,6 +16,12 @@ function updateScore() {
     return;
   }
   const fresh = roomGame;
+  const board = $('#football-scoreboard');
+  if (board) {
+    const team = (side) =>
+      `<div class="scoreboard-team">${fresh[side].logo ? `<img src="${esc(fresh[side].logo)}" alt="">` : ''}<strong>${esc(fresh[side].name)}</strong></div>`;
+    board.innerHTML = `<div class="scoreboard-competition">${esc(fresh.league || 'Partida')}</div><div class="scoreboard-main">${team('home')}<div class="scoreboard-result"><strong>${esc(fresh.homeScore ?? '–')}<span>:</span>${esc(fresh.awayScore ?? '–')}</strong><small>${esc(gameState(fresh) || timeText(fresh))}</small></div>${team('away')}</div>`;
+  }
   $('#room-score').textContent =
     fresh.homeScore !== null && fresh.awayScore !== null
       ? fresh.homeScore + ' × ' + fresh.awayScore + ' · ' + gameState(fresh)

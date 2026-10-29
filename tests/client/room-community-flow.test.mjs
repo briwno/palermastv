@@ -205,6 +205,19 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
     w.document.querySelector('#room-game-save').click();
     await tick();
     assert.equal(values.get('room-game').id, game.id);
+    assert.ok(
+      w.document
+        .querySelector('#room-match-stage')
+        .classList.contains('has-match'),
+    );
+    assert.equal(w.document.querySelector('#room-home-lineup').hidden, false);
+    w.document.querySelector('#room-lineups-toggle').click();
+    assert.ok(
+      w.document
+        .querySelector('#room-match-stage')
+        .classList.contains('lineups-collapsed'),
+    );
+    w.document.querySelector('#room-lineups-toggle').click();
     await tick();
     assert.equal(w.document.querySelector('#room-match-details').hidden, false);
     assert.match(

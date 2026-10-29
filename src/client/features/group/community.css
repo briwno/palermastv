@@ -320,3 +320,90 @@ textarea:focus-visible {
     text-align: left;
   }
 }
+/* A linked match expands into a broadcast desk; the video keeps most of the width. */
+.room-match-stage {
+  min-width: 0;
+}
+.room-match-stage.has-match {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(0, 4fr) minmax(130px, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.room-video-column {
+  min-width: 0;
+}
+.room-side-lineup {
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+.room-side-lineup header {
+  min-height: 58px;
+}
+.room-side-lineup h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+.room-side-lineup header span,
+.room-side-lineup details {
+  font-size: 11px;
+  color: var(--muted);
+}
+.room-side-lineup .formation-pitch {
+  min-height: 350px;
+}
+.room-side-lineup .pitch-row {
+  gap: 2px;
+}
+.room-side-lineup .pitch-player {
+  min-width: 0;
+  padding: 2px;
+  font-size: 9px;
+}
+.room-side-lineup .pitch-player span {
+  overflow-wrap: anywhere;
+  font-size: 8px;
+}
+.room-side-lineup .pitch-player b {
+  width: 23px;
+  height: 23px;
+  font-size: 10px;
+}
+.room-side-lineup details {
+  margin-top: 12px;
+}
+.room-side-lineup details p {
+  line-height: 1.8;
+}
+#room-lineups-toggle {
+  margin-bottom: 10px;
+}
+.room-match-stage.lineups-collapsed {
+  display: block;
+}
+.room-match-stage.lineups-collapsed .room-side-lineup {
+  display: none;
+}
+@media (min-width: 1450px) {
+  #page-sala .watch-grid:has(.has-match) {
+    grid-template-columns: minmax(0, 1fr) 240px;
+  }
+}
+@media (max-width: 1190px) {
+  .room-match-stage.has-match {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .room-match-stage .room-video-column {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .room-side-lineup .formation-pitch {
+    min-height: 330px;
+  }
+  .room-match-stage.lineups-collapsed {
+    display: block;
+  }
+}

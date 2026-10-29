@@ -3,6 +3,28 @@ import { api } from '../../shared/football-api.js';
 import { agendas, clubGames } from '../football/game-store.js';
 import { communityRequest } from '../group/api.js';
 import { setRoomGame } from './preferences.js';
+import { tacticalLines } from '../match/formation.js';
+function renderLineup(lineup, team) {
+  const players = lineup?.players || [];
+  const lines = lineup && tacticalLines(lineup);
+  const row = (list) =>
+    `<div class="pitch-row">${list.map((p) => `<div class="pitch-player"><b>${esc(p.jersey || '—')}</b><span>${esc(p.shortName || p.name)}</span></div>`).join('')}</div>`;
+  return `<header><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Escalação')}</span></header>${
+    lines
+      ? `<div class="formation-pitch"><div class="pitch-markings" aria-hidden="true"><i></i></div><div class="pitch-players">${[...lines].reverse().map(row).join('')}</div></div>`
+      : `<p class="data-note">${
+          players
+            .filter((p) => p.starter)
+            .map((p) => esc(p.name))
+            .join(' · ') || 'Escalação ainda não divulgada.'
+        }</p>`
+  }<details><summary>Reservas</summary><p>${
+    players
+      .filter((p) => !p.starter)
+      .map((p) => esc(p.name))
+      .join(' · ') || 'Ainda não informados.'
+  }</p></details>`;
+}
 let linked = null,
   chosen = null,
   generation = 0,
@@ -59,6 +81,13 @@ async function details() {
     );
     if (current !== generation) return;
     setRoomGame(data.game);
+    for (const [side, team] of [
+      ['home', data.game.home],
+      ['away', data.game.away],
+    ]) {
+      const lineup = data.lineups.find((l) => l.team.id === team.id);
+      $('#room-' + side + '-lineup').innerHTML = renderLineup(lineup, team);
+    }
     $('#room-match-details').innerHTML =
       `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
         data.statistics.length
@@ -105,6 +134,13 @@ function applyGame(game) {
   const changed =
     linked?.id !== game?.id || linked?.leagueId !== game?.leagueId;
   linked = game;
+  $('#room-match-stage').classList.toggle('has-match', !!game);
+  $('#room-lineups-toggle').hidden = !game;
+  for (const side of ['home', 'away']) {
+    const panel = $('#room-' + side + '-lineup');
+    panel.hidden = !game;
+    if (changed && game) panel.innerHTML = renderLineup(null, game[side]);
+  }
   if (changed) {
     generation++;
     $('#room-match-details').textContent = game
@@ -137,6 +173,13 @@ async function loadRoomGame() {
   }
 }
 export function initRoomMatch() {
+  $('#room-lineups-toggle').addEventListener('click', () => {
+    const hidden = $('#room-match-stage').classList.toggle('lineups-collapsed');
+    $('#room-lineups-toggle').textContent = hidden
+      ? 'Mostrar escalações'
+      : 'Esconder escalações';
+    $('#room-lineups-toggle').setAttribute('aria-pressed', String(!hidden));
+  });
   async function assign(clear = false) {
     if (assigning) return;
     const [league, id] = $('#room-game-select').value.split('/');

@@ -50,41 +50,65 @@
         </details>
         <p id="room-game-feedback" role="status"></p>
       </section>
-      <div class="player" id="player">
-        <video id="local-video" autoplay playsinline muted hidden></video>
-        <div class="player-placeholder" id="player-placeholder">
-          <div class="large-play">▶</div>
-          <h2>Nenhuma transmissão</h2>
-          <p>Uma transmissão ativa aparece aqui automaticamente.</p>
-          <button class="button lime" id="share-screen">
-            Transmitir um jogo <span>↗</span></button
-          ><small
-            >O navegador pedirá que você escolha o que compartilhar.</small
-          >
-        </div>
-        <div
-          id="reaction-overlay"
-          class="reaction-overlay"
-          aria-hidden="true"
-        ></div>
-        <span class="player-badge" id="player-badge" hidden
-          >TRANSMISSÃO LOCAL</span
-        >
-      </div>
-      <section
-        class="panel room-match-summary"
-        aria-label="Central resumida da partida"
+      <button
+        id="room-lineups-toggle"
+        class="button subtle"
+        aria-pressed="true"
+        hidden
       >
-        <div class="section-head">
-          <h2>Na partida</h2>
+        Esconder escalações
+      </button>
+      <div class="room-match-stage" id="room-match-stage">
+        <aside
+          id="room-home-lineup"
+          class="room-side-lineup"
+          aria-label="Escalação mandante"
+          hidden
+        ></aside>
+        <div class="room-video-column">
+          <div class="player" id="player">
+            <video id="local-video" autoplay playsinline muted hidden></video>
+            <div class="player-placeholder" id="player-placeholder">
+              <div class="large-play">▶</div>
+              <h2>Nenhuma transmissão</h2>
+              <p>Uma transmissão ativa aparece aqui automaticamente.</p>
+              <button class="button lime" id="share-screen">
+                Transmitir um jogo <span>↗</span></button
+              ><small
+                >O navegador pedirá que você escolha o que compartilhar.</small
+              >
+            </div>
+            <div
+              id="reaction-overlay"
+              class="reaction-overlay"
+              aria-hidden="true"
+            ></div>
+            <span class="player-badge" id="player-badge" hidden
+              >TRANSMISSÃO LOCAL</span
+            >
+          </div>
+          <section
+            class="panel room-match-summary"
+            aria-label="Central resumida da partida"
+          >
+            <div class="section-head">
+              <h2>Na partida</h2>
+            </div>
+            <div id="room-match-details">
+              <p class="data-note">
+                Vincule uma partida para acompanhar escalações, estatísticas e
+                lances aqui.
+              </p>
+            </div>
+          </section>
         </div>
-        <div id="room-match-details">
-          <p class="data-note">
-            Vincule uma partida para acompanhar escalações, estatísticas e
-            lances aqui.
-          </p>
-        </div>
-      </section>
+        <aside
+          id="room-away-lineup"
+          class="room-side-lineup"
+          aria-label="Escalação visitante"
+          hidden
+        ></aside>
+      </div>
       <div class="quality-controls">
         <label for="stream-quality">Qualidade da transmissão</label
         ><select id="stream-quality">

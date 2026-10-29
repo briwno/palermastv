@@ -79,19 +79,6 @@ export async function community(room, data) {
     });
   }
   if (data.action === 'community-room') {
-    if (
-      !/^[a-zA-Z0-9_-]{32,100}$/.test(
-        typeof data.resumeToken === 'string' ? data.resumeToken : '',
-      )
-    )
-      return json({ error: 'host_only' }, 403);
-    const resumeKey = await hash(data.resumeToken);
-    if (
-      ![...room.members.values()].some(
-        (m) => m.publishing && m.resumeKey === resumeKey,
-      )
-    )
-      return json({ error: 'host_only' }, 403);
     await store.put('room-game', data.game || null);
     room.broadcastUpdate?.({
       type: 'room-game-update',

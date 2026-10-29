@@ -74,7 +74,7 @@ test('live chat and match updates appear once and survive an older pending read'
       w.document.querySelector('#room-linked-title').textContent,
       /Athletico/,
     );
-    assert.equal(w.document.querySelector('#room-game-save').disabled, true);
+    assert.equal(w.document.querySelector('#room-game-save').disabled, false);
     w.dispatchEvent(
       new w.CustomEvent('palermas:room-game-update', {
         detail: { game: null },
@@ -249,15 +249,11 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
       3,
     );
     assert.equal(w.document.querySelectorAll('.site-error-popup').length, 0);
-    // A viewer cannot assign a game even with a valid site session and player identity.
+    // A viewer may assign without a publisher or media connection.
     room.members.get(ws).publishing = false;
     w.document.querySelector('#room-game-save').click();
     await tick();
-    assert.equal(values.get('room-game'), null);
-    assert.match(
-      w.document.querySelector('#room-game-feedback').textContent,
-      /Só quem/,
-    );
+    assert.ok(values.get('room-game'));
   } finally {
     w.close();
   }

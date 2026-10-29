@@ -3,9 +3,7 @@ import { api } from '../../shared/football-api.js';
 import { agendas, clubGames } from '../football/game-store.js';
 import { communityRequest } from '../group/api.js';
 import { setRoomGame } from './preferences.js';
-let host = false,
-  resumeToken = '',
-  linked = null,
+let linked = null,
   chosen = null,
   generation = 0,
   roomBusy = false,
@@ -140,7 +138,7 @@ async function loadRoomGame() {
 }
 export function initRoomMatch() {
   async function assign(clear = false) {
-    if (!host || assigning) return;
+    if (assigning) return;
     const [league, id] = $('#room-game-select').value.split('/');
     if (!clear && !id) {
       $('#room-game-feedback').textContent =
@@ -157,7 +155,6 @@ export function initRoomMatch() {
         league,
         id,
         clear,
-        resumeToken,
       });
       applyGame(d.game);
       $('#room-game-feedback').textContent = clear
@@ -167,22 +164,13 @@ export function initRoomMatch() {
       $('#room-game-feedback').textContent = e.message;
     } finally {
       assigning = false;
-      $('#room-game-save').disabled = !host;
-      $('#room-game-clear').disabled = !host;
+      $('#room-game-save').disabled = false;
+      $('#room-game-clear').disabled = false;
     }
   }
   $('#room-game-save').addEventListener('click', () => assign());
   $('#room-game-clear').addEventListener('click', () => assign(true));
-  window.addEventListener('palermas:room', (e) => {
-    host = !!e.detail.isPublisher;
-    resumeToken = e.detail.resumeToken || '';
-    $('#room-game-save').disabled = !host || assigning;
-    $('#room-game-clear').disabled = !host || assigning;
-    $('#room-game-host-note').textContent = host
-      ? 'Você está transmitindo. Escolha a partida para toda a sala.'
-      : 'O transmissor escolhe qual partida aparece para todos.';
-    loadRoomGame();
-  });
+  window.addEventListener('palermas:room', loadRoomGame);
   window.addEventListener('palermas:roomselection', (e) => {
     chosen = e.detail;
     gameOptions(chosen.leagueId + '/' + chosen.id);

@@ -172,17 +172,16 @@ test('chat uses the stored profile, throttles messages and keeps a bounded share
   ).json();
   assert.equal(profile.stats.messages, 1);
 });
-test('only the active publisher resume credential may assign or clear the shared match', async () => {
+test('a group identity may assign or clear the shared match without a publisher', async () => {
   const r = room(),
     resumeToken = 'host_resume_token_long_enough_for_room';
   const member = { publishing: false, resumeKey: await digest(resumeToken) };
   r.members.set({}, member);
   const request = { ...base, action: 'community-room', resumeToken, game };
-  assert.equal((await community(r, request)).status, 403);
-  member.publishing = true;
+  assert.equal((await community(r, { ...request, token: '' })).status, 400);
   assert.equal(
     (await community(r, { ...request, resumeToken: token })).status,
-    403,
+    200,
   );
   assert.equal((await community(r, request)).status, 200);
   assert.deepEqual(

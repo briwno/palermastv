@@ -300,6 +300,6 @@ export function initMatchCenter() {
       activeMatch?.game.state !== 'post'
     )
       loadMatch(true);
-  }, 60000);
+  }, 15000);
 }
 export { openMatch, activeMatch, activeMatchKey, matchTab };

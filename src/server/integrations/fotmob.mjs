@@ -11,6 +11,48 @@ export const fotmobLeagues = {
 };
 export const fotmobClubs = { cap: 10273, coxa: 9767 };
 const base = 'https://www.fotmob.com/api/data/';
+// Keep ESPN identities: FotMob match/team IDs belong to a different namespace.
+export async function liveFotmobGame(game, fetcher = fetch) {
+  if (!fotmobLeagues[game.leagueId]) return game;
+  const date = new Date(game.date)
+    .toISOString()
+    .slice(0, 10)
+    .replaceAll('-', '');
+  const data = await feed(
+    base + 'matches?date=' + date + '&timezone=America%2FSao_Paulo',
+    15,
+    fetcher,
+  );
+  const candidates = (data.leagues || [])
+    .filter((l) => Number(l.primaryId || l.id) === fotmobLeagues[game.leagueId])
+    .flatMap((l) => l.matches || [])
+    .filter((item) => sameFotmobGame(item, game));
+  if (candidates.length !== 1) return game;
+  const item = candidates[0],
+    status = item.status;
+  if (
+    !status?.started ||
+    status.cancelled ||
+    status.awarded ||
+    (game.state === 'post' && !status.finished)
+  )
+    return game;
+  if (
+    ![item.home.score, item.away.score].every(
+      (s) => Number.isInteger(s) && s >= 0,
+    )
+  )
+    return game;
+  return {
+    ...game,
+    homeScore: item.home.score,
+    awayScore: item.away.score,
+    state: status.finished ? 'post' : 'in',
+    clock: status.liveTime?.short || '',
+    status: status.finished ? 'Encerrado' : 'Ao vivo',
+    scoreSource: 'FotMob',
+  };
+}
 export const fotmobTeam = (id, fetcher = fetch) => {
   if (!/^\d{1,12}$/.test(String(id))) throw Error('Time inválido');
   return feed(base + 'teams?id=' + id, 600, fetcher);

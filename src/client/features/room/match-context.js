@@ -94,7 +94,7 @@ async function details() {
               `<p><b>${esc(e.clock || '')} ${esc(e.label)}</b> · ${esc((e.participants || []).join(', ') || e.teamName || '')}</p>`,
           )
           .join('') || '<p>Nenhum lance disponível na fonte.</p>'
-      }</section><p class="data-note">Fonte: ESPN · Atualização a cada minuto.</p>`;
+      }</section><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
   } catch (e) {
     if (current === generation)
       $('#room-match-details').textContent = e.message;
@@ -116,7 +116,7 @@ function applyGame(game) {
   $('#room-linked-title').textContent = game
     ? game.home.name + ' × ' + game.away.name
     : 'Nenhuma partida vinculada à transmissão';
-  if (game) setRoomGame(game);
+  if (game && changed) setRoomGame(game);
   else if (changed) setRoomGame(null);
   gameOptions();
   if (changed) details();
@@ -201,7 +201,7 @@ export function initRoomMatch() {
     }
   });
   setInterval(loadRoomGame, 10000);
-  setInterval(details, 60000);
+  setInterval(details, 15000);
   gameOptions();
   if (location.hash === '#sala') loadRoomGame();
 }

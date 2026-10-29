@@ -1,4 +1,5 @@
 import { feed, leagues, normalizeEvent } from '../football/service.mjs';
+import { liveFotmobGame } from '../../integrations/fotmob.mjs';
 const text = (v) =>
   String(v ?? '')
     .replace(/<[^>]*>/g, '')
@@ -195,7 +196,7 @@ export function normalizeMatch(data, league) {
     eventsAvailable: Array.isArray(data.keyEvents) || Array.isArray(c.details),
     source: 'ESPN',
     checkedAt: new Date().toISOString(),
-    refreshSeconds: 60,
+    refreshSeconds: 15,
   };
 }
 export async function matchCenter(leagueId, id, fetcher = fetch) {
@@ -203,8 +204,16 @@ export async function matchCenter(leagueId, id, fetcher = fetch) {
   if (!league || !/^\d{1,14}$/.test(id || '')) throw Error('Partida inválida.');
   const data = await feed(
     `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.id}/summary?event=${id}&lang=pt&region=br`,
-    60,
+    15,
     fetcher,
   );
-  return normalizeMatch(data, league);
+  const result = normalizeMatch(data, league);
+  try {
+    result.game = await liveFotmobGame(result.game, fetcher);
+  } catch {
+    /* Provider failure keeps the ESPN result available. */
+  }
+  if (result.game.scoreSource === 'FotMob')
+    result.source = 'ESPN · Placar: FotMob';
+  return result;
 }

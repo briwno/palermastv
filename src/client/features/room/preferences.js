@@ -15,7 +15,7 @@ function updateScore() {
     $('#room-score').textContent = 'Nenhuma partida selecionada';
     return;
   }
-  const fresh = findGame(roomGame.id) || roomGame;
+  const fresh = roomGame;
   $('#room-score').textContent =
     fresh.homeScore !== null && fresh.awayScore !== null
       ? fresh.homeScore + ' × ' + fresh.awayScore + ' · ' + gameState(fresh)

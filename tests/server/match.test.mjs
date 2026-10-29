@@ -48,7 +48,12 @@ const fixture = {
           starter: true,
           jersey: '9',
           athlete: { id: 'a', displayName: 'Atacante' },
-          stats: [{ name: 'totalGoals', value: 1 }],
+          stats: [
+            { name: 'totalGoals', value: 1 },
+            { name: 'totalShots', value: 3 },
+            { name: 'shotsOnTarget', value: 0 },
+            { name: 'appearances', value: 1 },
+          ],
         },
         {
           starter: false,
@@ -81,6 +86,11 @@ test('match center aligns teams by id, preserves zero stats, separates starters 
   assert.equal(d.statistics[0].away, '0');
   assert.equal(d.lineups[0].formation, '4-3-3');
   assert.equal(d.lineups[0].players[0].goals, 1);
+  assert.deepEqual(d.lineups[0].players[0].stats, {
+    totalShots: 3,
+    shotsOnTarget: 0,
+  });
+  assert.deepEqual(d.lineups[0].players[1].stats, {});
   assert.equal(d.lineups[0].players[1].starter, false);
   assert.equal(d.lineups[1].available, false);
   assert.equal(d.events[0].type, 'yellow-card');

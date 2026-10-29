@@ -222,7 +222,7 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
     assert.equal(w.document.querySelector('#room-match-details').hidden, false);
     assert.match(
       w.document.querySelector('#room-match-details').textContent,
-      /Escalações/,
+      /Estatísticas/,
     );
     assert.match(
       w.document.querySelector('#room-match-details').textContent,

@@ -407,3 +407,122 @@ textarea:focus-visible {
     display: block;
   }
 }
+/* Room layout owns its pitch dimensions; match-page aspect ratios must not leak in. */
+#page-sala .player-column {
+  min-width: 0;
+  container-type: inline-size;
+}
+#page-sala .room-match-stage.has-match {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+#page-sala .room-video-column {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+#page-sala .room-side-lineup {
+  overflow: hidden;
+  padding: 14px;
+  background: #101e30;
+  border-color: #263a50;
+}
+#page-sala .room-side-lineup .formation-pitch {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 360px;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 12px 0;
+  box-sizing: border-box;
+}
+#page-sala .room-side-lineup .pitch-players {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: 8px;
+  padding: 16px 4px;
+  box-sizing: border-box;
+}
+#page-sala .room-side-lineup .pitch-player {
+  flex: 1 1 0;
+  width: 0;
+  max-width: 72px;
+  min-width: 0;
+}
+#page-sala .room-side-lineup .pitch-player span {
+  font-size: 10px;
+  padding: 2px;
+  line-height: 1.25;
+}
+#page-sala .room-side-lineup .pitch-player b {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+#page-sala .room-side-lineup header {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#page-sala .room-side-lineup h3 {
+  font-size: 14px;
+}
+#page-sala .room-match-summary {
+  background: #101e30;
+  padding: 20px;
+}
+#page-sala .room-match-summary .room-summary-grid {
+  gap: 26px;
+}
+#page-sala .room-match-header {
+  border-color: #34516b;
+  background: linear-gradient(110deg, #14283e, #101c2d);
+}
+#page-sala .room-match-heading h3 {
+  font-size: 20px;
+}
+#page-sala .room-score {
+  font-variant-numeric: tabular-nums;
+  font-size: 24px;
+}
+#page-sala .room-match-stage.lineups-collapsed {
+  display: block;
+}
+@container (min-width: 1140px) {
+  #page-sala .room-match-stage.has-match {
+    grid-template-columns: 210px minmax(0, 1fr) 210px;
+  }
+  #page-sala .room-video-column {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  #page-sala #room-home-lineup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  #page-sala #room-away-lineup {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  #page-sala .room-match-stage.lineups-collapsed {
+    display: block;
+  }
+}
+@media (max-width: 600px) {
+  #page-sala .room-side-lineup {
+    padding: 8px;
+  }
+  #page-sala .room-side-lineup .formation-pitch {
+    height: 300px;
+  }
+  #page-sala .room-side-lineup .pitch-player span {
+    font-size: 8px;
+  }
+  #page-sala .room-side-lineup header {
+    display: block;
+  }
+}

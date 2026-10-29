@@ -99,21 +99,7 @@ async function details() {
               )
               .join('')
           : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
-      }</section><section><h3>Escalações</h3>${
-        data.lineups.length
-          ? data.lineups
-              .map(
-                (l) =>
-                  `<div><strong>${esc(l.team.name)} ${esc(l.formation || '')}</strong><p>${esc(
-                    l.players
-                      .filter((p) => p.starter)
-                      .map((p) => p.name)
-                      .join(' · ') || 'Ainda não divulgada pela fonte.',
-                  )}</p></div>`,
-              )
-              .join('')
-          : '<p>Escalações ainda não divulgadas.</p>'
-      }</section></div><section><h3>Últimos lances</h3>${
+      }</section><section><h3>Últimos lances</h3>${
         (data.events || [])
           .slice(0, 4)
           .map(
@@ -121,7 +107,7 @@ async function details() {
               `<p><b>${esc(e.clock || '')} ${esc(e.label)}</b> · ${esc((e.participants || []).join(', ') || e.teamName || '')}</p>`,
           )
           .join('') || '<p>Nenhum lance disponível na fonte.</p>'
-      }</section><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
+      }</section></div><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
   } catch (e) {
     if (current === generation)
       $('#room-match-details').textContent = e.message;

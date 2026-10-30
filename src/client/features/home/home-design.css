@@ -17,6 +17,8 @@ body.home-design main {
   margin-left: 216px;
 }
 body.home-design .brand {
+  flex-direction: row;
+  align-items: center;
   gap: 10px;
   font-size: 23px;
   letter-spacing: -1px;
@@ -213,6 +215,9 @@ body.home-design footer {
   margin-top: 6px;
 }
 #page-inicio .club-mini-stats {
+  position: static;
+  width: auto;
+  transform: none;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -651,6 +656,8 @@ body.home-design footer {
     display: none;
   }
   body.home-design .sidebar nav {
+    scrollbar-width: thin;
+    scrollbar-color: #40536a transparent;
     display: flex;
     overflow-x: auto;
     gap: 5px;

@@ -31,6 +31,7 @@ function navigate(page) {
     route = page;
   }
   all('.page').forEach((el) => (el.hidden = el.id !== 'page-' + page));
+  document.body.classList.toggle('home-design', page === 'inicio');
   all('.nav').forEach((el) => {
     el.classList.toggle('active', el.dataset.page === page);
     if (el.dataset.page === page) el.setAttribute('aria-current', 'page');

@@ -1,0 +1,773 @@
+/* Homepage visual reference: restrained navy, editorial hierarchy, club-first. */
+body.home-design {
+  background: #0c1420;
+  color: #edf1f7;
+  --muted: #95a6b9;
+  --line: #253345;
+  --lime: #e9c777;
+  font-size: 14px;
+}
+body.home-design .sidebar {
+  width: 216px;
+  background: #101b29;
+  border-right: 1px solid #233144;
+  padding: 28px 18px;
+}
+body.home-design main {
+  margin-left: 216px;
+}
+body.home-design .brand {
+  gap: 10px;
+  font-size: 23px;
+  letter-spacing: -1px;
+}
+body.home-design .group-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+body.home-design .brand-tv {
+  color: #e9c777;
+}
+body.home-design .nav-label {
+  margin: 36px 14px 12px;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+}
+body.home-design .nav {
+  font-size: 13px;
+  min-height: 48px;
+  padding: 13px 14px;
+  margin-bottom: 6px;
+  color: #9badc0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+}
+body.home-design .nav.active {
+  background: #243144;
+  color: #fff;
+  border-color: #34445a;
+  box-shadow: inset 3px 0 #e9c777;
+}
+body.home-design .nav:hover {
+  color: #fff;
+  background: #1b293b;
+}
+body.home-design .topbar {
+  height: 65px;
+  padding: 0 36px;
+  background: #0c1420;
+  border-color: #202d3d;
+}
+body.home-design .content {
+  max-width: 1600px;
+  padding: 34px 36px 48px;
+  margin: 0 auto;
+}
+body.home-design .topbar .breadcrumb {
+  font-size: 12px;
+}
+body.home-design .profile {
+  padding-top: 20px;
+  border-top: 1px solid #253345;
+}
+body.home-design footer {
+  border-color: #253345;
+  color: #899db1;
+}
+#page-inicio h1,
+#page-inicio h2,
+#page-inicio h3 {
+  font-family: 'DM Sans', sans-serif;
+  text-transform: none;
+}
+#page-inicio .heading {
+  margin-bottom: 28px;
+  align-items: end;
+}
+#page-inicio .heading h1 {
+  font-size: clamp(29px, 3vw, 43px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -1.7px;
+  margin: 10px 0;
+}
+#page-inicio .heading h1 span {
+  color: #e9c777;
+}
+#page-inicio .heading p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #9eafc1;
+  margin: 0;
+  text-transform: capitalize;
+}
+#page-inicio .eyebrow {
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: #a6b7c8;
+}
+#page-inicio .home-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 34px;
+}
+#page-inicio .home-teams {
+  min-width: 0;
+}
+.home-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+#page-inicio .home-section-title h2 {
+  font-size: 18px;
+  letter-spacing: -0.4px;
+  margin: 0;
+}
+.home-section-title a {
+  font-size: 12px;
+  color: #acbdce;
+}
+#page-inicio .hero-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+#page-inicio .club-card {
+  min-height: 298px;
+  padding: 20px;
+  border: 1px solid #344052;
+  border-radius: 16px;
+  background: #162230;
+  box-shadow: none;
+}
+#page-inicio .club-card.cap {
+  background: linear-gradient(140deg, #30232e, #172331 75%);
+  border-top: 3px solid #e35a65;
+}
+#page-inicio .club-card.coxa {
+  background: linear-gradient(140deg, #203439, #172331 75%);
+  border-top: 3px solid #8abeb1;
+}
+#page-inicio .club-card::before,
+#page-inicio .club-card::after {
+  display: none;
+}
+#page-inicio .club-top {
+  z-index: 2;
+}
+#page-inicio .pill {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: #d1bdc7;
+}
+#page-inicio .coxa .pill {
+  color: #b6cfc8;
+}
+#page-inicio .favorite {
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  background: #ffffff08;
+  color: #bdc7d2;
+  border: 1px solid #ffffff18;
+}
+#page-inicio .favorite[aria-pressed='true'] {
+  color: #e9c777;
+  border-color: #e9c777;
+}
+#page-inicio .club-crest-art {
+  position: absolute;
+  top: 65px;
+  right: 20px;
+  width: 66px;
+  height: 76px;
+  object-fit: contain;
+  opacity: 1;
+  filter: drop-shadow(0 6px 10px #0004);
+  transform: none;
+}
+#page-inicio .club-content {
+  margin-top: 14px;
+}
+#page-inicio .club-content h2 {
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin: 0 74px 10px 0;
+}
+#page-inicio .club-content h2 > span {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #b0bdcb;
+  letter-spacing: 0;
+  margin-top: 6px;
+}
+#page-inicio .club-mini-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+  margin: 12px 70px 18px 0;
+  color: #c5d0dc;
+  font-size: 11px;
+}
+#page-inicio .club-mini-stats span {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+#page-inicio .club-match {
+  padding-top: 16px;
+  border-top: 1px solid #ffffff14;
+  gap: 7px;
+  min-height: 90px;
+}
+#page-inicio .tiny-label {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: #94a7bb;
+}
+#page-inicio .club-match strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+#page-inicio .club-match > span:last-child {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #a3b3c5;
+}
+#page-inicio .club-match em {
+  color: #8294a8;
+  font-style: normal;
+}
+#page-inicio .club-link {
+  font-size: 12px;
+  color: #f0d394;
+  padding: 14px 0 0;
+  margin-top: 2px;
+  border: 0;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+#page-inicio .home-room-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 37px 0 0;
+  padding: 23px;
+  border: 1px solid #3e4350;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at top right, #344153, #172331 70%);
+}
+#page-inicio .home-room-banner > div {
+  flex: 0;
+  width: 100%;
+}
+#page-inicio .home-room-icon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  background: none;
+  border: 0;
+  border-radius: 12px;
+}
+#page-inicio .home-room-icon img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+#page-inicio .home-room-banner strong {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.4px;
+}
+#page-inicio .home-room-banner p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #a8b9c9;
+  margin: 9px 0;
+}
+#page-inicio #home-room-people {
+  gap: 6px;
+  margin: 8px 0 0;
+}
+#page-inicio #home-room-people:empty {
+  display: none;
+}
+#page-inicio #home-room-people span {
+  font-size: 10px;
+  background: #ffffff08;
+  padding: 5px 7px;
+}
+#page-inicio .home-room-banner .button {
+  width: 100%;
+  font-size: 12px;
+  padding: 12px 16px;
+  min-height: 43px;
+  border-radius: 8px;
+  background: #e9c777;
+  color: #17212c;
+  border: 0;
+}
+#page-inicio .home-room-banner.room-is-live {
+  border-color: #698b79;
+}
+#page-inicio .live-strip {
+  border: 0;
+  border-left: 3px solid #76bf9d;
+  border-radius: 0;
+  background: #152720;
+  margin: 0 0 24px;
+  padding: 14px 16px;
+}
+#page-inicio .live-strip-games button {
+  font-size: 12px;
+  background: none;
+  border: 0;
+  border-left: 1px solid #344a40;
+  border-radius: 0;
+}
+#page-inicio .lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
+  gap: 32px;
+  margin: 0;
+  align-items: start;
+}
+#page-inicio .schedule.panel {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  min-width: 0;
+}
+#page-inicio .section-head {
+  margin-bottom: 18px;
+  align-items: center;
+}
+#page-inicio .section-head h2 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  margin: 0;
+}
+#page-inicio .text-button {
+  font-size: 12px;
+  color: #acbdce;
+}
+#page-inicio .count {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  background: #223145;
+  border: 0;
+  color: #c6d4e0;
+  padding: 4px 8px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+#page-inicio .filter-row {
+  border-bottom: 1px solid #2a3748;
+  padding: 0 0 14px;
+  margin-bottom: 0;
+  gap: 8px;
+}
+#page-inicio .chip {
+  padding: 8px 13px;
+  font-size: 12px;
+  color: #a3b3c5;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+#page-inicio .chip.selected {
+  color: #f4d99e;
+  background: #e9c7770d;
+  border-color: #e9c77745;
+}
+#page-inicio .fixture {
+  padding: 20px 4px;
+  min-height: 96px;
+  gap: 16px;
+  border-bottom: 1px solid #223043;
+  background: none;
+  grid-template-columns: 68px minmax(0, 1fr) 34px;
+}
+#page-inicio .fixture.is-live {
+  background: #14271f;
+  box-shadow: inset 3px 0 #78bf99;
+  padding-left: 12px;
+  border-radius: 8px;
+}
+#page-inicio .fixture-time {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e1e9f2;
+}
+#page-inicio .fixture-time small {
+  font-size: 9px;
+  line-height: 1.4;
+  letter-spacing: 0.3px;
+  color: #91a6bb;
+  margin-top: 6px;
+}
+#page-inicio .fixture-competition {
+  font-size: 10px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  color: #899fb5;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+#page-inicio .fixture-teams {
+  font-size: 13px;
+  gap: 8px;
+}
+#page-inicio .fixture-teams img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+#page-inicio .fixture-teams .versus {
+  font-size: 16px;
+  white-space: nowrap;
+  color: #e9cf97;
+}
+#page-inicio .fixture-open {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #34455a;
+  color: #b5c6d6;
+  background: #182536;
+}
+#page-inicio .home-news {
+  margin: 0;
+  min-width: 0;
+  border-left: 1px solid #233144;
+  padding-left: 28px;
+}
+#page-inicio .home-news .eyebrow {
+  display: none;
+}
+#page-inicio .news-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+#page-inicio .news-card {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid #253244;
+  padding: 17px 0;
+  overflow: visible;
+}
+#page-inicio .news-card:first-child {
+  padding-top: 0;
+}
+#page-inicio .news-card a {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+#page-inicio .news-image {
+  height: 90px;
+  aspect-ratio: auto;
+  border-radius: 9px;
+  overflow: hidden;
+}
+#page-inicio .news-image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+#page-inicio .news-image img.news-fallback {
+  object-fit: contain;
+  padding: 16px;
+  background: #192b3c;
+}
+#page-inicio .news-club {
+  font-size: 8px;
+  padding: 3px 5px;
+  bottom: 4px;
+  left: 4px;
+}
+#page-inicio .news-video {
+  display: none;
+}
+#page-inicio .news-copy {
+  padding: 0;
+}
+#page-inicio .news-copy h3 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  margin: 6px 0 8px;
+  letter-spacing: -0.1px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+#page-inicio .news-meta {
+  font-size: 9px;
+  line-height: 1.5;
+  color: #94a9bd;
+}
+#page-inicio .news-read {
+  font-size: 10px;
+  color: #d8c18b;
+}
+#page-inicio .data-note {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #899eb4;
+  margin-top: 14px;
+}
+#page-inicio .empty-message {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #a4b6c8;
+  padding: 24px 0;
+}
+@media (min-width: 1600px) {
+  #page-inicio .home-lead {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+  #page-inicio .club-card {
+    padding: 24px;
+    min-height: 320px;
+  }
+  #page-inicio .club-content h2 {
+    font-size: 32px;
+  }
+  #page-inicio .club-crest-art {
+    width: 85px;
+    height: 95px;
+    right: 24px;
+  }
+  #page-inicio .club-match strong {
+    font-size: 16px;
+  }
+  #page-inicio .fixture-teams {
+    font-size: 15px;
+  }
+}
+@media (max-width: 1200px) {
+  body.home-design .sidebar {
+    width: 190px;
+    padding: 25px 12px;
+  }
+  body.home-design main {
+    margin-left: 190px;
+  }
+  body.home-design .content {
+    padding: 28px 24px;
+  }
+  #page-inicio .home-lead {
+    grid-template-columns: 1fr;
+  }
+  #page-inicio .home-room-banner {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 20px;
+  }
+  #page-inicio .home-room-banner > .tiny-label {
+    display: none;
+  }
+  #page-inicio .home-room-icon,
+  #page-inicio .home-room-icon img {
+    width: 44px;
+    height: 44px;
+  }
+  #page-inicio .home-room-banner strong {
+    font-size: 16px;
+  }
+  #page-inicio .home-room-banner .button {
+    width: auto;
+  }
+  #page-inicio .lower-grid {
+    grid-template-columns: 1fr;
+  }
+  #page-inicio .home-news {
+    border: 0;
+    padding: 0;
+    margin-top: 8px;
+  }
+  #page-inicio .news-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  #page-inicio .news-card {
+    padding: 0 0 16px;
+  }
+}
+@media (max-width: 800px) {
+  body.home-design .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1px solid #253345;
+  }
+  body.home-design main {
+    margin-left: 0;
+  }
+  body.home-design .sidebar .brand {
+    font-size: 21px;
+  }
+  body.home-design .group-logo {
+    width: 36px;
+    height: 36px;
+  }
+  body.home-design .sidebar .nav-label,
+  body.home-design .sidebar-bottom {
+    display: none;
+  }
+  body.home-design .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+    padding-top: 12px;
+  }
+  body.home-design .nav {
+    flex: 0 0 auto;
+    min-height: 40px;
+    margin: 0;
+    font-size: 11px;
+    padding: 10px;
+  }
+  body.home-design .nav .ui-icon {
+    width: 15px;
+    height: 15px;
+    flex-basis: 15px;
+  }
+  body.home-design .topbar {
+    height: 50px;
+    padding: 0 18px;
+  }
+  body.home-design .content {
+    padding: 26px 18px;
+  }
+  #page-inicio .heading h1 {
+    font-size: 32px;
+  }
+  #page-inicio .home-lead {
+    gap: 18px;
+  }
+  #page-inicio .club-card {
+    padding: 18px;
+  }
+  #page-inicio .club-content h2 {
+    font-size: 25px;
+  }
+  #page-inicio .club-crest-art {
+    width: 54px;
+    height: 66px;
+    right: 15px;
+  }
+  #page-inicio .club-mini-stats {
+    margin-right: 54px;
+  }
+}
+@media (max-width: 540px) {
+  #page-inicio .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  #page-inicio .club-card {
+    min-height: 0;
+    padding: 18px 20px;
+  }
+  #page-inicio .club-content h2 {
+    font-size: 28px;
+  }
+  #page-inicio .club-crest-art {
+    width: 70px;
+    height: 80px;
+    top: 55px;
+    right: 22px;
+  }
+  #page-inicio .club-match {
+    min-height: 0;
+  }
+  #page-inicio .club-link {
+    padding-top: 14px;
+  }
+  #page-inicio .home-room-banner {
+    grid-template-columns: 40px 1fr;
+    padding: 18px;
+    gap: 14px;
+  }
+  #page-inicio .home-room-banner .button {
+    grid-column: 1/-1;
+    width: 100%;
+  }
+  #page-inicio .news-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  #page-inicio .news-card {
+    padding: 16px 0;
+  }
+  #page-inicio .fixture {
+    grid-template-columns: 56px minmax(0, 1fr) 30px;
+    gap: 8px;
+    padding: 16px 0;
+  }
+  #page-inicio .fixture-teams {
+    display: grid;
+    grid-template-columns: 22px 1fr 32px;
+    gap: 6px;
+    font-size: 12px;
+  }
+  #page-inicio .fixture-teams .versus {
+    grid-column: 3;
+    grid-row: 1/3;
+    font-size: 14px;
+    text-align: center;
+  }
+  #page-inicio .fixture-teams img {
+    width: 20px;
+    height: 20px;
+  }
+  #page-inicio .fixture-time {
+    font-size: 13px;
+  }
+  #page-inicio .fixture-competition {
+    font-size: 9px;
+  }
+  #page-inicio .filter-row {
+    gap: 4px;
+  }
+  #page-inicio .chip {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}

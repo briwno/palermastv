@@ -7,6 +7,7 @@ export function teamKey(name) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    .replace(/\bvasco(?: da gama)?\b/g, 'vasco')
     .replace(/athletico[- ]?(?:paranaense|pr)?|atletico[- ]?pr/g, 'athletico')
     .replace(/\b(red bull|rb)\s*bragantino\b/g, 'bragantino')
     .replace(/\b(atletico[- ]?mg|atletico mineiro)\b/g, 'atleticomg')

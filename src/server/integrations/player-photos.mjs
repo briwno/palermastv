@@ -29,9 +29,13 @@ export async function enrichPlayerPhotos(result, fetcher = fetch) {
   const key = game.leagueId + '/' + game.id;
   let entry = cache.get(key);
   if (!entry || entry.expires < Date.now()) {
-    const date = new Date(game.date)
-      .toISOString()
-      .slice(0, 10)
+    const date = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .format(new Date(game.date))
       .replaceAll('-', '');
     const day = await feed(
       `https://www.fotmob.com/api/data/matches?date=${date}&timezone=America%2FSao_Paulo`,

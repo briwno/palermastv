@@ -14,9 +14,13 @@ const base = 'https://www.fotmob.com/api/data/';
 // Keep ESPN identities: FotMob match/team IDs belong to a different namespace.
 export async function liveFotmobGame(game, fetcher = fetch) {
   if (!fotmobLeagues[game.leagueId]) return game;
-  const date = new Date(game.date)
-    .toISOString()
-    .slice(0, 10)
+  const date = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .format(new Date(game.date))
     .replaceAll('-', '');
   const data = await feed(
     base + 'matches?date=' + date + '&timezone=America%2FSao_Paulo',

@@ -32,6 +32,16 @@ const statDefinitions = [
   ['blockedShots', 'Chutes bloqueados'],
   ['interceptions', 'Interceptações'],
 ];
+const playerStatKeys = [
+  'totalShots',
+  'shotsOnTarget',
+  'foulsCommitted',
+  'foulsSuffered',
+  'offsides',
+  'saves',
+  'goalsConceded',
+  'ownGoals',
+];
 function player(p) {
   const stats = Object.fromEntries(
     (p.stats || []).map((s) => [s.name, s.value]),
@@ -61,6 +71,11 @@ function player(p) {
     yellowCards: stats.yellowCards ?? 0,
     redCards: stats.redCards ?? 0,
     assists: stats.goalAssists ?? 0,
+    stats: Object.fromEntries(
+      playerStatKeys
+        .filter((key) => Number.isFinite(Number(stats[key])))
+        .map((key) => [key, Number(stats[key])]),
+    ),
     sourceUrl: safeURL(
       p.athlete?.links?.find((l) => l.rel?.includes('desktop'))?.href,
     ),

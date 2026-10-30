@@ -107,7 +107,19 @@ export function initFootballExperience() {
           ['Assistências', p.assists],
           ['Amarelos', p.yellowCards],
           ['Vermelhos', p.redCards],
+          ['Finalizações', p.stats?.totalShots],
+          ['No gol', p.stats?.shotsOnTarget],
+          ['Faltas cometidas', p.stats?.foulsCommitted],
+          ['Faltas sofridas', p.stats?.foulsSuffered],
+          ['Impedimentos', p.stats?.offsides],
+          ['Defesas', p.stats?.saves],
+          ['Gols sofridos', p.stats?.goalsConceded],
+          [
+            'Nota FotMob',
+            Number.isFinite(p.rating) ? p.rating.toFixed(1) : null,
+          ],
         ]
+          .filter(([, value]) => value !== null && value !== undefined)
           .map(
             ([label, value]) =>
               `<div><b>${esc(value ?? '—')}</b><span>${label}</span></div>`,

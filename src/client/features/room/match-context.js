@@ -10,19 +10,121 @@ import {
   updateFootballExperience,
   resetFootballExperience,
 } from './football-experience.js';
+import { save } from '../../shared/storage.js';
+
+const lineupsPreference = 'palermas-room-lineups';
+const nameKey = (s) =>
+  String(s || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+const times = (n) => (n > 1 ? '×' + n : '');
+const ratingClass = (r) =>
+  r >= 8
+    ? 'rating-top'
+    : r >= 7
+      ? 'rating-good'
+      : r >= 6
+        ? 'rating-ok'
+        : 'rating-low';
+function athleteEvents(p) {
+  const marks = [
+    p.goals > 0 && `<i title="${p.goals} gol(s)">⚽${times(p.goals)}</i>`,
+    p.assists > 0 &&
+      `<i title="${p.assists} assistência(s)">👟${times(p.assists)}</i>`,
+    p.redCards > 0
+      ? '<i class="event-card event-red" title="Cartão vermelho"></i>'
+      : p.yellowCards > 0 &&
+        '<i class="event-card event-yellow" title="Cartão amarelo"></i>',
+    p.subbedIn &&
+      `<i class="event-sub-in" title="Entrou${p.inClock ? ' aos ' + esc(p.inClock) : ''}">▲${esc(p.inClock || '')}</i>`,
+    p.subbedOut &&
+      `<i class="event-sub-out" title="Saiu${p.outClock ? ' aos ' + esc(p.outClock) : ''}">▼${esc(p.outClock || '')}</i>`,
+  ].filter(Boolean);
+  return marks.length
+    ? `<span class="athlete-events">${marks.join('')}</span>`
+    : '';
+}
+
+let ratings = null,
+  ratingsAt = 0,
+  ratingsBusy = false;
+const recentScorers = new Map();
+function decorate(lineup, sideIndex, events) {
+  if (!lineup) return lineup;
+  const clocks = new Map();
+  for (const e of [...events].reverse())
+    if (e.type === 'substitution')
+      for (const name of e.participants) clocks.set(name, e.clock);
+  const source = ratings?.[sideIndex]?.players || [];
+  const byJersey = new Map(
+      source.map((p) => [String(p.jersey ?? ''), p.rating]),
+    ),
+    byName = new Map(source.map((p) => [nameKey(p.name), p.rating]));
+  return {
+    ...lineup,
+    players: lineup.players.map((p) => ({
+      ...p,
+      inClock: p.subbedIn ? clocks.get(p.name) : null,
+      outClock: p.subbedOut ? clocks.get(p.name) : null,
+      rating:
+        byName.get(nameKey(p.name)) ??
+        (p.jersey ? byJersey.get(String(p.jersey)) : undefined) ??
+        null,
+      justScored: (recentScorers.get(p.name) || 0) > Date.now(),
+    })),
+  };
+}
+
+async function loadRatings() {
+  const game = linked,
+    current = generation;
+  if (
+    !game ||
+    ratingsBusy ||
+    game.state === 'pre' ||
+    Date.now() - ratingsAt < 60000
+  )
+    return;
+  ratingsBusy = true;
+  ratingsAt = Date.now();
+  try {
+    const d = await api(
+      `insights?league=${encodeURIComponent(game.leagueId)}&id=${encodeURIComponent(game.id)}`,
+    );
+    if (current !== generation || d.state !== 'available') return;
+    ratings = d.lineups.map((l) => ({
+      players: l.players.filter((p) => p.rating !== null),
+    }));
+    renderRoomLineups();
+  } catch {
+    /* Ratings are optional; the ESPN lineup stays as is. */
+  } finally {
+    ratingsBusy = false;
+  }
+}
+function setLineupsHidden(hidden) {
+  $('#room-match-stage').classList.toggle('lineups-collapsed', hidden);
+  $('#room-lineups-toggle').textContent = hidden
+    ? 'Mostrar escalações'
+    : 'Esconder escalações';
+  $('#room-lineups-toggle').setAttribute('aria-pressed', String(!hidden));
+}
+
 let latestMatch = null;
 let initialLineup = false;
 function renderLineup(lineup, team) {
   const players = lineup?.players || [];
   const lines = lineup && tacticalLines(lineup);
   const athlete = (p) =>
-    `<button type="button" class="football-athlete" data-room-player="${esc(team.id + '/' + p.id)}" aria-label="Ver ${esc(p.name)}" title="${esc(p.name)}"><span class="athlete-portrait"><span>${esc(
+    `<button type="button" class="football-athlete" data-room-player="${esc(team.id + '/' + p.id)}" aria-label="Ver ${esc(p.name)}" title="${esc(p.name)}"><span class="athlete-portrait">${athleteEvents(p)}<span>${esc(
       (p.shortName || p.name || '?')
         .split(' ')
         .map((n) => n[0])
         .slice(0, 2)
         .join(''),
-    )}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
+    )}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
   const row = (list) =>
     `<div class="football-pitch-row">${list.map(athlete).join('')}</div>`;
   return `<header class="football-team-heading">${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}<div><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Aguardando escalação')}</span></div></header>${
@@ -47,9 +149,19 @@ function renderRoomLineups() {
   for (const side of ['home', 'away']) {
     const team = latestMatch.game[side];
     const lineup = latestMatch.lineups.find((l) => l.team.id === team.id);
+    if (lineup)
+      lineup.players = decorate(
+        lineup,
+        side === 'home' ? 0 : 1,
+        latestMatch.events || [],
+      ).players;
     const panel = $('#room-' + side + '-lineup');
     const html = renderLineup(
-      currentLineup(lineup, latestMatch.events || [], initialLineup),
+      currentLineup(
+        decorate(lineup, side === 'home' ? 0 : 1, latestMatch.events || []),
+        latestMatch.events || [],
+        initialLineup,
+      ),
       team,
     );
     if (panel.dataset.rendered === html) continue;
@@ -117,6 +229,7 @@ async function details() {
     setRoomGame(data.game);
     latestMatch = data;
     renderRoomLineups();
+    loadRatings();
     updateFootballExperience(data);
     $('#room-match-details').innerHTML =
       `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
@@ -165,6 +278,9 @@ function applyGame(game) {
   }
   if (changed) {
     latestMatch = null;
+    ratings = null;
+    ratingsAt = 0;
+    recentScorers.clear();
     resetFootballExperience();
     generation++;
     $('#room-match-details').textContent = game
@@ -215,12 +331,18 @@ export function initRoomMatch() {
     },
     true,
   );
+  let lineupsHidden = false;
+  try {
+    lineupsHidden = localStorage.getItem(lineupsPreference) === 'hidden';
+  } catch {
+    /* Storage may be blocked; lineups stay visible. */
+  }
+  setLineupsHidden(lineupsHidden);
   $('#room-lineups-toggle').addEventListener('click', () => {
-    const hidden = $('#room-match-stage').classList.toggle('lineups-collapsed');
-    $('#room-lineups-toggle').textContent = hidden
-      ? 'Mostrar escalações'
-      : 'Esconder escalações';
-    $('#room-lineups-toggle').setAttribute('aria-pressed', String(!hidden));
+    const hidden =
+      !$('#room-match-stage').classList.contains('lineups-collapsed');
+    setLineupsHidden(hidden);
+    save(lineupsPreference, hidden ? 'hidden' : 'shown');
   });
   async function assign(clear = false) {
     if (assigning) return;

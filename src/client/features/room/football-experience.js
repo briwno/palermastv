@@ -112,8 +112,16 @@ export function initFootballExperience() {
           ['Faltas cometidas', p.stats?.foulsCommitted],
           ['Faltas sofridas', p.stats?.foulsSuffered],
           ['Impedimentos', p.stats?.offsides],
-          ['Defesas', p.stats?.saves],
-          ['Gols sofridos', p.stats?.goalsConceded],
+          [
+            'Defesas',
+            /goalkeeper/i.test(p.positionCode || '') ? p.stats?.saves : null,
+          ],
+          [
+            'Gols sofridos',
+            /goalkeeper/i.test(p.positionCode || '')
+              ? p.stats?.goalsConceded
+              : null,
+          ],
           [
             'Nota FotMob',
             Number.isFinite(p.rating) ? p.rating.toFixed(1) : null,

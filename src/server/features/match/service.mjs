@@ -1,5 +1,6 @@
 import { feed, leagues, normalizeEvent } from '../football/service.mjs';
 import { liveFotmobGame } from '../../integrations/fotmob.mjs';
+import { enrichPlayerPhotos } from '../../integrations/player-photos.mjs';
 const text = (v) =>
   String(v ?? '')
     .replace(/<[^>]*>/g, '')
@@ -155,6 +156,9 @@ export function normalizeMatch(data, league) {
         teamId: String(e.team?.id || ''),
         teamName: text(e.team?.displayName || ''),
         participants,
+        participantIds: (e.participants || []).map((p) =>
+          String(p.athlete?.id || ''),
+        ),
         shootout: !!e.shootout,
       };
     })
@@ -220,5 +224,10 @@ export async function matchCenter(leagueId, id, fetcher = fetch) {
   }
   if (result.game.scoreSource === 'FotMob')
     result.source = 'ESPN · Placar: FotMob';
+  try {
+    await enrichPlayerPhotos(result, fetcher);
+  } catch {
+    /* Photos are optional; ESPN remains available. */
+  }
   return result;
 }

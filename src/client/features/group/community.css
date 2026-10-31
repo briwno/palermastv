@@ -206,20 +206,140 @@ textarea:focus-visible {
 .mini-actions {
   flex-wrap: wrap;
 }
-.miniplayer .player {
+.miniplayer[data-corner='tr'],
+.miniplayer[data-corner='tl'] {
+  top: 84px;
+  bottom: auto;
+}
+.miniplayer[data-corner='tl'],
+.miniplayer[data-corner='bl'] {
+  left: 20px;
+  right: auto;
+}
+.miniplayer.dragging {
+  opacity: 0.92;
+  box-shadow: 0 24px 70px #000b;
+}
+.mini-heading {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.miniplayer.dragging .mini-heading {
+  cursor: grabbing;
+}
+.mini-score,
+.pip-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+}
+.mini-score b,
+.pip-score b {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mini-score small,
+.pip-score small {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.floating-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.floating-team span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.floating-team img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex: none;
+}
+#miniplayer-video,
+.pip-video {
+  position: relative;
+}
+.floating-goal {
+  position: absolute;
+  inset: auto 12px 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #f4cf78;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #0d4237f5, #5b4722f5);
+  animation: goal-entrance 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.floating-goal span {
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+  color: #ffe197;
+}
+.miniplayer .player,
+.pip-video .player {
   width: 100%;
   height: auto;
   min-height: 0;
   aspect-ratio: 16 / 9;
   border-radius: 0;
+  border: 0;
 }
-.miniplayer .player video {
+.miniplayer .player video,
+.pip-video .player video {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
-.miniplayer .player-badge {
+.miniplayer .player-badge,
+.pip-video .player-badge {
   display: none;
+}
+.pip-body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: #0b1423;
+  color: #f1f5fa;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+}
+.pip-score {
+  padding: 8px 12px;
+  justify-content: center;
+}
+.pip-video {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  background: #000;
+}
+.pip-video .player {
+  max-height: 100%;
+}
+.pip-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 12px;
+}
+.player-away .player-placeholder p {
+  margin-bottom: 16px;
 }
 .miniplayer #mini-status:empty {
   display: none;
@@ -235,6 +355,10 @@ textarea:focus-visible {
     bottom: 78px;
     right: 12px;
     width: min(320px, calc(100vw - 24px));
+  }
+  .miniplayer[data-corner='tl'],
+  .miniplayer[data-corner='bl'] {
+    left: 12px;
   }
   .athletiba-score span {
     font-size: 11px;

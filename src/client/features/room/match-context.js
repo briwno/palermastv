@@ -12,6 +12,7 @@ import {
   recentEventsHTML,
 } from './football-experience.js';
 import { save } from '../../shared/storage.js';
+import { playerFloating } from './miniplayer.js';
 
 const lineupsPreference = 'palermas-room-lineups';
 const nameKey = (s) =>
@@ -222,9 +223,8 @@ async function details() {
   if (
     !linked ||
     detailsBusy ||
-    $('#page-sala').hidden ||
     $('#room-match-details').hidden ||
-    document.hidden
+    (($('#page-sala').hidden || document.hidden) && !playerFloating())
   )
     return;
   const game = linked,

@@ -248,9 +248,11 @@
       aria-label="Transmissão em miniplayer"
       hidden
     >
-      <div class="mini-heading">
-        <strong>Ao vivo · PalermasTV</strong
-        ><button
+      <div class="mini-heading" title="Arraste para mudar de canto">
+        <div class="mini-score" id="miniplayer-score">
+          <strong>Ao vivo · PalermasTV</strong>
+        </div>
+        <button
           class="icon-btn"
           id="miniplayer-close"
           aria-label="Recolher miniplayer e voltar à sala"
@@ -258,7 +260,9 @@
           ↗
         </button>
       </div>
-      <div id="miniplayer-video"></div>
+      <div id="miniplayer-video">
+        <div class="floating-goal" id="miniplayer-goal" hidden></div>
+      </div>
       <div class="mini-actions">
         <button class="text-button" id="miniplayer-return">Voltar à sala</button
         ><button class="text-button" id="miniplayer-mute">

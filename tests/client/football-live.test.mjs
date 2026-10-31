@@ -44,8 +44,10 @@ test('live lineup follows repeated substitutions by identity and retains initial
   const result = currentLineup(lineup, events);
   assert.deepEqual(
     result.players.filter((p) => p.starter).map((p) => p.id),
-    ['3'],
+    ['3', '4'],
   );
+  assert.equal(result.players[3].sentOff, true);
+  assert.equal(result.players[2].sentOff, undefined);
   assert.equal(result.players[2].positionCode, 'leftMidfielder');
   assert.equal(result.players[0].leftAt, "50'");
   assert.equal(currentLineup(lineup, events, true), lineup);

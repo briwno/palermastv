@@ -21,7 +21,8 @@ export function currentLineup(lineup, events, initial = false) {
     outgoing.starter = false;
     outgoing.leftAt = e.clock;
   }
-  for (const p of players) if (Number(p.redCards) > 0) p.starter = false;
+  // Sent-off players keep their slot so the formation stays drawable.
+  for (const p of players) if (Number(p.redCards) > 0) p.sentOff = p.starter;
   return { ...lineup, players };
 }
 

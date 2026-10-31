@@ -9,6 +9,7 @@ import {
   initFootballExperience,
   updateFootballExperience,
   resetFootballExperience,
+  recentEventsHTML,
 } from './football-experience.js';
 import { save } from '../../shared/storage.js';
 
@@ -104,6 +105,14 @@ async function loadRatings() {
     ratingsBusy = false;
   }
 }
+function statRow(s) {
+  const h = Number(String(s.home).replace('%', '')),
+    a = Number(String(s.away).replace('%', '')),
+    valid =
+      s.home !== null && s.away !== null && Number.isFinite(h + a) && h + a > 0;
+  const lead = !valid || h === a ? '' : h > a ? 'home' : 'away';
+  return `<div class="room-stat lead-${lead || 'none'}"><b class="home">${esc(s.home ?? '—')}${s.home !== null ? esc(s.unit) : ''}</b><span>${esc(s.label)}</span><b class="away">${esc(s.away ?? '—')}${s.away !== null ? esc(s.unit) : ''}</b>${valid ? `<div class="room-stat-track" aria-hidden="true"><i style="width:${((h / (h + a)) * 100).toFixed(1)}%"></i></div>` : ''}</div>`;
+}
 function setLineupsHidden(hidden) {
   $('#room-match-stage').classList.toggle('lineups-collapsed', hidden);
   $('#room-lineups-toggle').textContent = hidden
@@ -118,13 +127,13 @@ function renderLineup(lineup, team) {
   const players = lineup?.players || [];
   const lines = lineup && tacticalLines(lineup);
   const athlete = (p) =>
-    `<button type="button" class="football-athlete" data-room-player="${esc(team.id + '/' + p.id)}" aria-label="Ver ${esc(p.name)}" title="${esc(p.name)}"><span class="athlete-portrait">${athleteEvents(p)}<span>${esc(
+    `<button type="button" class="football-athlete${p.sentOff ? ' sent-off' : ''}" data-room-player="${esc(team.id + '/' + p.id)}" aria-label="Ver ${esc(p.name)}${p.sentOff ? ' (expulso)' : ''}" title="${esc(p.name)}${p.sentOff ? ' · Expulso' : ''}"><span class="athlete-portrait">${athleteEvents(p)}<span>${esc(
       (p.shortName || p.name || '?')
         .split(' ')
         .map((n) => n[0])
         .slice(0, 2)
         .join(''),
-    )}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
+    )}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.sentOff ? '<small class="sub-out">Expulso</small>' : p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
   const row = (list) =>
     `<div class="football-pitch-row">${list.map(athlete).join('')}</div>`;
   return `<header class="football-team-heading">${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}<div><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Aguardando escalação')}</span></div></header>${
@@ -231,26 +240,16 @@ async function details() {
     renderRoomLineups();
     loadRatings();
     updateFootballExperience(data);
+    const crest = (t) => (t.logo ? `<img src="${esc(t.logo)}" alt="">` : '');
     $('#room-match-details').innerHTML =
       `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
         data.statistics.length
-          ? data.statistics
-              .slice(0, 7)
-              .map(
-                (s) =>
-                  `<div class="room-stat"><b>${esc(s.home ?? '—')}${esc(s.unit)}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}${esc(s.unit)}</b></div>`,
-              )
-              .join('')
+          ? `<div class="room-stat-teams"><span class="home">${crest(data.game.home)}${esc(data.game.home.name)}</span><span class="away">${esc(data.game.away.name)}${crest(data.game.away)}</span></div>${data.statistics
+              .slice(0, 8)
+              .map(statRow)
+              .join('')}`
           : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
-      }</section><section><h3>Últimos lances</h3>${
-        (data.events || [])
-          .slice(0, 4)
-          .map(
-            (e) =>
-              `<p><b>${esc(e.clock || '')} ${esc(e.label)}</b> · ${esc((e.participants || []).join(', ') || e.teamName || '')}</p>`,
-          )
-          .join('') || '<p>Nenhum lance disponível na fonte.</p>'
-      }</section></div><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
+      }</section><section><h3>Últimos lances</h3>${recentEventsHTML(6)}</section></div><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
   } catch (e) {
     if (current === generation)
       $('#room-match-details').textContent = e.message;

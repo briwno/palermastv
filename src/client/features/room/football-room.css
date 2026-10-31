@@ -403,6 +403,13 @@ body.football-room .topbar {
   outline: 2px solid #f0cb7b;
   outline-offset: 2px;
 }
+.football-athlete.sent-off .athlete-portrait {
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+.football-athlete.sent-off .athlete-name {
+  opacity: 0.7;
+}
 .football-athlete.is-open .athlete-portrait {
   border-color: #f0cb7b;
   box-shadow: 0 0 0 2px #f0cb7b66;
@@ -644,12 +651,141 @@ body.football-room .topbar {
   grid-template-columns: 1fr 1fr;
   gap: 32px;
 }
+#page-sala .room-match-summary {
+  --stat-home: #e2bd70;
+  --stat-away: #5fb7d4;
+}
+#page-sala .room-stat-teams {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--room-edge);
+  font-size: 13px;
+  font-weight: 700;
+}
+#page-sala .room-stat-teams span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+#page-sala .room-stat-teams .home {
+  color: var(--stat-home);
+}
+#page-sala .room-stat-teams .away {
+  color: var(--stat-away);
+}
+#page-sala .room-stat-teams img,
+.recent-event img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: none;
+}
 #page-sala .room-stat {
   display: grid;
-  grid-template-columns: 50px 1fr 50px;
+  grid-template-columns: 56px 1fr 56px;
+  align-items: center;
+  row-gap: 7px;
   text-align: center;
-  padding: 12px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--room-edge);
+  font-variant-numeric: tabular-nums;
+}
+#page-sala .room-stat span {
+  color: #a5bdcb;
+  font-size: 13px;
+}
+#page-sala .room-stat b {
+  color: #7f95a4;
+  font-weight: 600;
+}
+#page-sala .room-stat.lead-home b.home,
+#page-sala .room-stat.lead-none b.home {
+  color: var(--stat-home);
+  font-weight: 800;
+}
+#page-sala .room-stat.lead-away b.away,
+#page-sala .room-stat.lead-none b.away {
+  color: var(--stat-away);
+  font-weight: 800;
+}
+#page-sala .room-stat-track {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--stat-away);
+  overflow: hidden;
+}
+#page-sala .room-stat-track i {
+  display: block;
+  height: 100%;
+  background: var(--stat-home);
+  border-right: 2px solid var(--room-panel);
+}
+.room-recent-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.recent-event {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 42px 24px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--room-edge);
+  border-left: 3px solid var(--stat-home);
+  border-radius: 10px;
+  background: #122330;
+  color: #edf4f8;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.recent-event.away {
+  border-left-color: var(--stat-away);
+}
+.recent-event:hover,
+.recent-event:focus-visible {
+  border-color: #e2bd70;
+  outline: none;
+}
+.recent-event.recent-goal,
+.recent-event.recent-penalty-goal,
+.recent-event.recent-own-goal {
+  background: #173b32;
+}
+.recent-event > b {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.recent-icon {
+  text-align: center;
+}
+.recent-text {
+  display: grid;
+  min-width: 0;
+}
+.recent-text strong {
+  font-size: 13px;
+}
+.recent-text small {
+  color: #a5bdcb;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-text em {
+  font-style: normal;
+  color: #f4cf79;
+  font-weight: 700;
 }
 #page-sala .room-social {
   display: grid;

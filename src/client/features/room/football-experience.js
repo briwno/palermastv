@@ -114,6 +114,27 @@ function eventCard(event) {
     : [];
   return `${hero}${narration}${video}${stats.length ? `<div class="player-card-stats">${stats.map(([l, v]) => `<div><b>${esc(v)}</b><span>${l}</span></div>`).join('')}</div>` : ''}`;
 }
+export function recentEventsHTML(limit) {
+  const events = (match?.events || [])
+    .filter((e) => icons[e.type])
+    .slice(0, limit);
+  if (!events.length) return '<p>Nenhum lance disponível na fonte.</p>';
+  return `<ol class="room-recent-events">${events
+    .map((e) => {
+      const team = [match.game.home, match.game.away].find(
+        (t) => t.id === e.teamId,
+      );
+      const side = team === match.game.away ? 'away' : 'home';
+      let who = esc(e.participants.join(' · '));
+      if (e.type === 'substitution') {
+        const [inP, outP] = substitutionPair(e);
+        who = `${inP ? `<span class="sub-in-label">▲</span> ${esc(inP.name)}` : ''}${outP ? ` <span class="sub-out-label">▼</span> ${esc(outP.name)}` : ''}`;
+      } else if (goalTypes.has(e.type) && e.scoreAfter)
+        who += ` <em>${esc(e.scoreAfter)}</em>`;
+      return `<li><button type="button" class="recent-event ${side} recent-${esc(e.type)}" data-room-event="${esc(e.id)}"><b>${esc(e.clock)}</b><span class="recent-icon" aria-hidden="true">${icons[e.type]}</span><span class="recent-text"><strong>${esc(e.label)}${team ? ' · ' + esc(team.name) : ''}</strong><small>${who || esc(e.text)}</small></span>${team?.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}</button></li>`;
+    })
+    .join('')}</ol>`;
+}
 let tipTimer, tipTarget;
 function showTip(button, delay) {
   hideTip();
@@ -250,7 +271,7 @@ export function initFootballExperience() {
       if (!p) return;
       card(
         p.name,
-        `<div class="player-card-identity">${p.photo ? `<img src="${esc(p.photo)}" data-player-photo data-photo-fallback="${esc(p.photoFallback || '')}" alt="${esc(p.name)}">` : ''}<div><strong>${esc(lineup.team.name)} · ${esc(p.jersey || '—')}</strong><p>${esc(p.position || 'Posição não informada')}</p><small>${p.subbedOut ? 'Substituído' : p.subbedIn ? 'Entrou durante a partida' : p.starter ? 'Titular' : 'Reserva'}</small></div></div><div class="player-card-stats">${[
+        `<div class="player-card-identity">${p.photo ? `<img src="${esc(p.photo)}" data-player-photo data-photo-fallback="${esc(p.photoFallback || '')}" alt="${esc(p.name)}">` : ''}<div><strong>${esc(lineup.team.name)} · ${esc(p.jersey || '—')}</strong><p>${esc(p.position || 'Posição não informada')}</p><small>${p.redCards > 0 ? 'Expulso' : p.subbedOut ? 'Substituído' : p.subbedIn ? 'Entrou durante a partida' : p.starter ? 'Titular' : 'Reserva'}</small></div></div><div class="player-card-stats">${[
           ['Gols', p.goals],
           ['Assistências', p.assists],
           ['Amarelos', p.yellowCards],

@@ -17,6 +17,17 @@ const safeURL = (v) => {
     return null;
   }
 };
+const thumbnailURL = (v) => {
+  try {
+    const u = new URL(v);
+    return u.protocol === 'https:' &&
+      u.hostname === 'espnmedia-cdn.akamaized.net'
+      ? u.href
+      : safeURL(v);
+  } catch {
+    return null;
+  }
+};
 const statDefinitions = [
   ['possessionPct', 'Posse de bola', '%'],
   ['totalShots', 'Finalizações'],
@@ -110,6 +121,41 @@ const eventLabels = {
   end: 'Fim de tempo',
   other: 'Evento',
 };
+const goalTypes = new Set(['goal', 'own-goal', 'penalty-goal']);
+const fold = (v) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+// Only trusts the running score when it reproduces the final ESPN score.
+function addScoreAfterGoals(events, game) {
+  const goals = events.filter((e) => goalTypes.has(e.type) && !e.shootout);
+  const score = { [game.home.id]: 0, [game.away.id]: 0 };
+  const after = [...goals].reverse().map((e) => {
+    if (!(e.teamId in score)) return null;
+    score[e.teamId]++;
+    return `${score[game.home.id]} × ${score[game.away.id]}`;
+  });
+  if (
+    after.includes(null) ||
+    String(score[game.home.id]) !== String(game.homeScore) ||
+    String(score[game.away.id]) !== String(game.awayScore)
+  )
+    return;
+  [...goals].reverse().forEach((e, i) => (e.scoreAfter = after[i]));
+}
+function attachGoalVideos(events, videos) {
+  const used = new Set();
+  for (const e of [...events].reverse()) {
+    if (!goalTypes.has(e.type) || !e.participants[0]) continue;
+    const surname = fold(e.participants[0]).split(' ').pop();
+    const video =
+      surname.length > 2 &&
+      videos.find(
+        (v) => !used.has(v) && fold(v.title).split(/\W+/).includes(surname),
+      );
+    if (video) {
+      used.add(video);
+      e.video = video;
+    }
+  }
+}
 export function normalizeMatch(data, league) {
   const c = data.header?.competitions?.[0];
   if (!c) throw Error('Partida não encontrada na fonte.');
@@ -174,10 +220,12 @@ export function normalizeMatch(data, league) {
         participantIds: (e.participants || []).map((p) =>
           String(p.athlete?.id || ''),
         ),
+        text: text(e.text || e.shortText).slice(0, 600),
         shootout: !!e.shootout,
       };
     })
     .sort((a, b) => b.period - a.period || b.seconds - a.seconds);
+  addScoreAfterGoals(events, game);
   const commentary = (data.commentary || [])
     .slice(-250)
     .map((e, i) => ({
@@ -193,8 +241,11 @@ export function normalizeMatch(data, league) {
     .map((v) => ({
       title: text(v.headline || v.description),
       url: safeURL(v.links?.web?.href),
+      thumbnail: thumbnailURL(v.thumbnail),
+      duration: Number(v.duration) || null,
     }))
     .filter((v) => v.url);
+  attachGoalVideos(events, videos);
   return {
     commentary,
     videos,

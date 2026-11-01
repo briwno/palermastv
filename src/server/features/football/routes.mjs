@@ -1,3 +1,4 @@
+import { teamPage, marketCenter } from '../clubs/team.mjs';
 import {
   dailyGames,
   nextClubGames,
@@ -16,7 +17,12 @@ export async function footballRoute(url, env, fetcher) {
 
   try {
     let value;
-    if (path === '/api/football/athletiba') value = await athletiba(fetcher);
+    if (path === '/api/football/team')
+      value = await teamPage(url.searchParams.get('id'), fetcher);
+    else if (path === '/api/football/market')
+      value = await marketCenter(fetcher);
+    else if (path === '/api/football/athletiba')
+      value = await athletiba(fetcher);
     else if (path === '/api/football/brasileirao')
       value = publicGERound(
         await geCompetition(url.searchParams.get('serie') || 'a', fetcher),

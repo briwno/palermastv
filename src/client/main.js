@@ -1,3 +1,4 @@
+import { initFootballHub } from './features/hub/hub.js';
 import { initRoomPreferences } from './features/room/preferences.js';
 import { initNavigation } from './shell/navigation.js';
 import { initDashboard } from './features/football/dashboard.js';
@@ -21,6 +22,7 @@ import { initErrorReporting } from './shared/feedback.js';
 
 initErrorReporting();
 initNavigation();
+initFootballHub();
 initRoomPreferences();
 initDashboard();
 initStandings();

@@ -102,3 +102,35 @@ test('invalid scores and tokens never create votes', async () => {
   );
   assert.equal(room.ctx.storage.size, 0);
 });
+
+test('rankings isolate season, competition and round rather than calendar date', async () => {
+  const room = makeRoom();
+  for (const [id, league, season, round, home, away] of [
+    ['1', 'bra.1', '2026', '2', 1, 0],
+    ['2', 'bra.1', '2026', '3', 1, 0],
+    ['3', 'bra.2', '2026', '2', 1, 0],
+    ['4', 'bra.1', '2025', '2', 1, 0],
+  ]) {
+    await room.ctx.storage.put('pickgame:' + league + ':' + id, {
+      id,
+      league,
+      season,
+      round,
+      date: season + '-01-01T12:00:00Z',
+      result: { home, away },
+      votes: { p: { name: 'Palerma', home, away } },
+    });
+  }
+  const d = await (
+    await handleGroup(room, {
+      action: 'ranking',
+      league: 'bra.1',
+      season: '2026',
+      round: '2',
+    })
+  ).json();
+  assert.equal(d.ranking[0].points, 5);
+  assert.equal(d.settled, 1);
+  assert.deepEqual(d.rounds, ['2', '3']);
+  assert.deepEqual(d.seasons, ['2026', '2025']);
+});

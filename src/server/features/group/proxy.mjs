@@ -1,3 +1,4 @@
+import { predictionPeriod } from './round.mjs';
 import { matchCenter } from '../match/service.mjs';
 import { signalingEndpoint } from '../../config/signaling.mjs';
 export async function groupAPI(request, env, fetcher = fetch) {
@@ -44,6 +45,35 @@ export async function groupAPI(request, env, fetcher = fetch) {
     return { status: r.status, body };
   }
   try {
+    if (url.pathname === '/api/group/pulse') {
+      const raw = request.method === 'POST' ? await request.text() : '{}';
+      if (raw.length > 2000)
+        return { status: 413, body: { error: 'too_large' } };
+      const body = JSON.parse(raw);
+      const context = body.context || url.searchParams.get('context');
+      const data = {
+        action: 'pulse',
+        operation: request.method === 'POST' ? 'write' : 'read',
+        context,
+        token: body.token,
+        name: body.name,
+        mood: body.mood,
+        mvp: body.mvp,
+      };
+      if (request.method === 'POST' && !body.mood) {
+        const [league, id] = String(context).split('/');
+        const match = await matchCenter(league, id, fetcher);
+        data.votingOpen =
+          match.game.state === 'post' ||
+          /half.?time|intervalo/i.test(match.game.status);
+        data.players = match.lineups.flatMap((l) =>
+          l.players
+            .filter((p) => p.starter || p.subbedIn)
+            .map((p) => ({ id: p.id, name: p.name })),
+        );
+      }
+      return await call(data);
+    }
     const communityRoute = url.pathname.match(
       /^\/api\/group\/(profile|chat|awards|history|room-game)$/,
     );
@@ -152,6 +182,7 @@ export async function groupAPI(request, env, fetcher = fetch) {
           return {
             league: g.league,
             id: g.id,
+            ...(await predictionPeriod(m, fetcher)),
             home: Number(m.homeScore),
             away: Number(m.awayScore),
           };
@@ -161,7 +192,12 @@ export async function groupAPI(request, env, fetcher = fetch) {
         .filter((r) => r.status === 'fulfilled' && r.value)
         .map((r) => r.value);
       if (results.length) await call({ action: 'settle', results });
-      return await call({ action: 'ranking' });
+      return await call({
+        action: 'ranking',
+        season: url.searchParams.get('season'),
+        league: url.searchParams.get('league'),
+        round: url.searchParams.get('round'),
+      });
     }
     if (url.pathname !== '/api/group/predictions')
       return { status: 404, body: { error: 'not_found' } };
@@ -183,6 +219,7 @@ export async function groupAPI(request, env, fetcher = fetch) {
       id = request.method === 'POST' ? body.id : url.searchParams.get('id');
     const { game } = await matchCenter(league, id, fetcher);
     const metadata = {
+      ...(await predictionPeriod(game, fetcher)),
       league,
       id: game.id,
       date: game.date,

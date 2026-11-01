@@ -21,6 +21,9 @@ for (const route of [
   'clubes',
   'clubes/noticias',
   'sala',
+  'time/3458',
+  'bolao',
+  'mercado',
   'perfil',
   'athletiba',
   'partida/bra.1/123',
@@ -100,11 +103,13 @@ for (const route of [
         window.document.querySelectorAll('.page:not([hidden])').length,
         1,
       );
-      const page = route.startsWith('partida/')
-        ? 'partida'
-        : route === 'athletiba' || route.startsWith('clubes/')
-          ? 'clubes'
-          : route;
+      const page = route.startsWith('time/')
+        ? 'time'
+        : route.startsWith('partida/')
+          ? 'partida'
+          : route === 'athletiba' || route.startsWith('clubes/')
+            ? 'clubes'
+            : route;
       assert.equal(
         window.document.querySelector(`#page-${page}`).hidden,
         false,

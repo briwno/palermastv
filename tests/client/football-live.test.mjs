@@ -4,7 +4,61 @@ import {
   currentLineup,
   goalChange,
 } from '../../src/client/features/room/football-live.js';
-import { matchPhotoPlayer } from '../../src/server/integrations/player-photos.mjs';
+import {
+  matchPhotoPlayer,
+  enrichPlayerPhotos,
+} from '../../src/server/integrations/player-photos.mjs';
+
+test('Copa do Brasil photos use the primary competition id even within a stage feed', async () => {
+  const game = {
+    id: '778899',
+    leagueId: 'bra.copa_do_brazil',
+    date: '2026-11-01T21:30:00Z',
+    home: { id: '6273', name: 'Grêmio' },
+    away: { id: '7632', name: 'Atlético-MG' },
+  };
+  const player = {
+    id: '123',
+    name: 'Weverton',
+    jersey: '1',
+    photo: 'https://a.espncdn.com/original.png',
+  };
+  const result = { game, lineups: [{ team: game.home, players: [player] }] };
+  const remote = {
+    id: '1000019468',
+    home: { id: 1, name: 'Grêmio' },
+    away: { id: 2, name: 'Atlético-MG' },
+    status: { utcTime: game.date },
+  };
+  const calls = [];
+  await enrichPlayerPhotos(result, async (url) => {
+    calls.push(url);
+    return Response.json(
+      url.includes('matchDetails')
+        ? {
+            content: {
+              lineup: {
+                homeTeam: {
+                  id: 1,
+                  starters: [
+                    { id: 267826, name: 'Weverton', shirtNumber: '1' },
+                  ],
+                },
+                awayTeam: { id: 2, starters: [] },
+              },
+            },
+          }
+        : { leagues: [{ id: 1000001382, primaryId: 9067, matches: [remote] }] },
+    );
+  });
+  assert.equal(calls.length, 2);
+  assert.equal(
+    player.photo,
+    'https://images.fotmob.com/image_resources/playerimages/267826.png',
+  );
+  assert.equal(player.photoFallback, 'https://a.espncdn.com/original.png');
+  assert.equal(player.photoSource, 'FotMob');
+});
 
 test('live lineup follows repeated substitutions by identity and retains initial lineup', () => {
   const lineup = {

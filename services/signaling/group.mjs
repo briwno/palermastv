@@ -1,3 +1,4 @@
+import { pulse } from './pulse.mjs';
 import { lounge } from './lounge.mjs';
 import { community } from './community.mjs';
 const response = (body, status = 200) =>
@@ -18,6 +19,7 @@ export function predictionPoints(vote, result) {
     : 0;
 }
 export async function handleGroup(room, data) {
+  if (data.action === 'pulse') return pulse(room, data);
   if (data.action?.startsWith('community-')) return community(room, data);
   if (data.action === 'lounge') return lounge(room, data);
   const store = room.ctx.storage;
@@ -35,7 +37,11 @@ export async function handleGroup(room, data) {
     const entries = await store.list({ prefix: 'pickgame:', limit: 400 });
     return response({
       games: [...entries.values()]
-        .filter((g) => Date.parse(g.date) < Date.now() && !g.result)
+        .filter(
+          (g) =>
+            Date.parse(g.date) < Date.now() &&
+            (!g.result || !g.periodCheckedAt),
+        )
         .sort((a, b) => a.date.localeCompare(b.date))
         .slice(0, 8)
         .map((g) => ({ league: g.league, id: g.id })),
@@ -59,6 +65,9 @@ export async function handleGroup(room, data) {
       const game = await store.get(key);
       if (game) {
         game.result = { home: item.home, away: item.away };
+        if (/^\d{4}$/.test(item.season || '')) game.season = item.season;
+        if (/^\d{1,3}$/.test(item.round || '')) game.round = item.round;
+        game.periodCheckedAt = Date.now();
         await store.put(key, game);
       }
     }
@@ -68,7 +77,13 @@ export async function handleGroup(room, data) {
     const entries = await store.list({ prefix: 'pickgame:', limit: 400 }),
       profiles = (await store.get('pickprofiles')) || {},
       scores = new Map();
-    for (const game of entries.values())
+    const games = [...entries.values()].filter(
+      (g) =>
+        (!data.season || (g.season || g.date.slice(0, 4)) === data.season) &&
+        (!data.league || g.league === data.league) &&
+        (!data.round || g.round === data.round),
+    );
+    for (const game of games)
       for (const [id, vote] of Object.entries(game.votes || {})) {
         if (!scores.has(id))
           scores.set(id, {
@@ -99,8 +114,28 @@ export async function handleGroup(room, data) {
           b.exact - a.exact ||
           a.name.localeCompare(b.name),
       ),
+      seasons: [
+        ...new Set(
+          [...entries.values()].map((g) => g.season || g.date.slice(0, 4)),
+        ),
+      ]
+        .sort()
+        .reverse(),
+      rounds: [
+        ...new Set(
+          [...entries.values()]
+            .filter(
+              (g) =>
+                (!data.season ||
+                  (g.season || g.date.slice(0, 4)) === data.season) &&
+                (!data.league || g.league === data.league),
+            )
+            .map((g) => g.round)
+            .filter(Boolean),
+        ),
+      ].sort((a, b) => Number(a) - Number(b)),
       rules: { exact: 5, result: 2 },
-      settled: [...entries.values()].filter((g) => g.result).length,
+      settled: games.filter((g) => g.result).length,
     });
   }
   const g = data.game;
@@ -158,6 +193,8 @@ export async function handleGroup(room, data) {
       id: g.id,
       league: g.league,
       date: g.date,
+      season: g.season,
+      round: g.round,
       homeName: g.homeName,
       awayName: g.awayName,
       votes: {},
@@ -168,6 +205,8 @@ export async function handleGroup(room, data) {
   const name = data.name.trim().slice(0, 24);
   profiles[id] = { ...profiles[id], name, updatedAt: Date.now() };
   game.votes[id] = { name, home: data.home, away: data.away };
+  if (g.season) game.season = g.season;
+  if (g.round) game.round = g.round;
   await store.put('pickprofiles', profiles);
   await store.put(key, game);
   return response({ ok: true, id });

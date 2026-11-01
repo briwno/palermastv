@@ -2,6 +2,7 @@ import { all, $ } from '../shared/dom.js';
 function navigate(page) {
   if (page === 'athletiba') page = 'clubes/classico';
   let route = page;
+  if (/^time\/\d{1,12}$/.test(page)) page = 'time';
   const parts = page.split('/');
   if (
     parts.length === 2 &&
@@ -25,6 +26,9 @@ function navigate(page) {
       'sala',
       'partida',
       'perfil',
+      'time',
+      'bolao',
+      'mercado',
     ].includes(page)
   ) {
     page = 'inicio';
@@ -45,6 +49,9 @@ function navigate(page) {
     partida: 'Central da partida',
     sala: 'Sala dos Palermas',
     perfil: 'Meu perfil',
+    time: 'Página do time',
+    bolao: 'Bolão dos Palermas',
+    mercado: 'Mercado e desfalques',
   }[page];
   if (location.hash !== '#' + route)
     history.replaceState(null, '', '#' + route);

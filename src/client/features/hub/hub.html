@@ -1,0 +1,109 @@
+<section id="page-time" class="page" hidden>
+  <a class="text-button" href="#clubes">← Clubes</a>
+  <div
+    id="team-page-content"
+    class="football-hub-content"
+    aria-live="polite"
+  ></div>
+</section>
+<section id="page-mercado" class="page" hidden>
+  <div class="heading">
+    <div>
+      <span class="eyebrow">CAP & CFC</span>
+      <h1>Mercado e desfalques</h1>
+      <p>
+        Notícias recentes, com fonte e data. Rumores ficam separados de
+        anúncios.
+      </p>
+    </div>
+    <button class="button subtle" id="market-refresh">Atualizar</button>
+  </div>
+  <div class="hub-tabs" id="market-filters" aria-label="Filtrar informações">
+    <button class="button subtle" data-market-filter="all" aria-pressed="true">
+      Tudo</button
+    ><button
+      class="button subtle"
+      data-market-filter="confirmed"
+      aria-pressed="false"
+    >
+      Anúncios</button
+    ><button
+      class="button subtle"
+      data-market-filter="rumors"
+      aria-pressed="false"
+    >
+      Rumores</button
+    ><button
+      class="button subtle"
+      data-market-filter="absences"
+      aria-pressed="false"
+    >
+      Desfalques
+    </button>
+  </div>
+  <p class="data-note">
+    Categorias identificadas pelo título da notícia. Abra a fonte para conferir
+    os detalhes. A ausência de notícia não confirma a disponibilidade do
+    jogador.
+  </p>
+  <div id="market-content" class="hub-two-columns" aria-live="polite"></div>
+</section>
+<section id="page-bolao" class="page" hidden>
+  <div class="heading">
+    <div>
+      <span class="eyebrow">VALENDO A RESENHA</span>
+      <h1>Bolão dos Palermas</h1>
+      <p>Placar exato: 5 pontos. Acertar vitória ou empate: 2 pontos.</p>
+    </div>
+    <button class="button subtle" id="bolao-refresh">
+      Atualizar resultados
+    </button>
+  </div>
+  <div class="hub-two-columns bolao-columns">
+    <section class="hub-panel">
+      <header class="section-head">
+        <h2>Seus palpites</h2>
+        <label
+          >Data <input class="text-input" id="bolao-date" type="date"
+        /></label>
+      </header>
+      <p class="data-note">
+        Você pode alterar até o início da partida. Os pontos são calculados
+        quando a fonte confirma o encerramento.
+      </p>
+      <div id="bolao-games"></div>
+    </section>
+    <section class="hub-panel">
+      <h2>Ranking do grupo</h2>
+      <div class="ranking-filters">
+        <label
+          >Temporada<select class="text-input" id="ranking-season">
+            <option value="">Todas</option>
+          </select></label
+        ><label
+          >Campeonato<select class="text-input" id="ranking-league">
+            <option value="">Todos</option>
+            <option value="bra.1">Brasileirão A</option>
+            <option value="bra.2">Brasileirão B</option>
+            <option value="bra.copa_do_brazil">Copa do Brasil</option>
+            <option value="conmebol.libertadores">Libertadores</option>
+            <option value="conmebol.sudamericana">Sul-Americana</option>
+            <option value="eng.1">Premier League</option>
+            <option value="esp.1">La Liga</option>
+            <option value="ita.1">Serie A</option>
+            <option value="uefa.champions">Champions League</option>
+          </select></label
+        ><label
+          >Rodada<select class="text-input" id="ranking-round" disabled>
+            <option value="">Todas</option>
+          </select></label
+        >
+      </div>
+      <p class="data-note">
+        Rodadas aparecem quando identificadas na fonte e com palpites
+        registrados. Selecione um campeonato para filtrar.
+      </p>
+      <div id="bolao-ranking" aria-live="polite"></div>
+    </section>
+  </div>
+</section>

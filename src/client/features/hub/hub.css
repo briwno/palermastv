@@ -1,0 +1,568 @@
+.football-hub-content {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+}
+.hub-panel,
+.matchday-panel {
+  min-width: 0;
+  padding: 24px;
+  background: #101f2d;
+  border: 1px solid #294050;
+  border-radius: 18px;
+}
+.hub-panel h2,
+.matchday-panel h2 {
+  margin: 0 0 18px;
+  font-size: 20px;
+}
+.hub-panel h3,
+.matchday-panel h3 {
+  font-size: 15px;
+  margin: 20px 0 12px;
+}
+.hub-two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.hub-empty {
+  color: #9bb0bf;
+  font-size: 14px;
+  padding: 16px 0;
+  line-height: 1.6;
+}
+.team-page-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 30px;
+  background: linear-gradient(120deg, #193548, #10212d);
+  border-radius: 20px;
+}
+.team-page-hero > img {
+  width: 86px;
+  height: 86px;
+  object-fit: contain;
+}
+.team-page-hero h1 {
+  margin: 8px 0;
+}
+.team-section-links,
+.hub-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+.team-section-links a {
+  padding: 10px 16px;
+  background: #192f40;
+  border-radius: 10px;
+  text-decoration: none;
+}
+.team-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+}
+.team-stat-strip > div {
+  padding: 18px 8px;
+  text-align: center;
+  background: #182c3b;
+  border-radius: 12px;
+}
+.team-stat-strip b {
+  display: block;
+  font-size: 26px;
+  color: #f4c76a;
+}
+.team-stat-strip span {
+  font-size: 12px;
+  color: #adbfcb;
+}
+.hub-fixture {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid #294050;
+  text-decoration: none;
+}
+.hub-fixture > span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.hub-fixture small {
+  color: #9fb6c8;
+  font-size: 12px;
+}
+.team-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+.team-roster-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #263e4d;
+  border-radius: 12px;
+  min-width: 0;
+}
+.team-roster-player img,
+.roster-avatar {
+  width: 48px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.team-roster-player small {
+  display: block;
+  margin-top: 5px;
+  color: #9bb0bf;
+}
+.hub-news-item {
+  display: grid;
+  gap: 10px;
+  padding: 18px 0;
+  border-bottom: 1px solid #294050;
+}
+.hub-news-item small {
+  font-size: 12px;
+  color: #9bb0bf;
+}
+.hub-news-item a {
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+}
+.hub-news-item a:hover,
+.team-section-links a:hover {
+  color: #f4c76a;
+}
+.market-category {
+  margin: 24px 0;
+}
+.market-badge {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #1b4437;
+  color: #99e1bf;
+  border-radius: 6px;
+}
+.category-rumors .market-badge {
+  background: #443a20;
+  color: #f4c76a;
+}
+.category-absences .market-badge {
+  background: #422b32;
+  color: #e5a8ae;
+}
+.absence-row {
+  display: grid;
+  gap: 6px;
+  border-bottom: 1px solid #294050;
+  padding: 14px 0;
+}
+.absence-row span {
+  color: #adbfcb;
+  font-size: 13px;
+}
+[data-market-filter][aria-pressed='true'] {
+  border-color: #f4c76a;
+  color: #f4c76a;
+  background: #383426;
+}
+[data-club-page] {
+  cursor: pointer;
+}
+[data-club-page]:focus-visible {
+  outline: 2px solid #f4c76a;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.bolao-columns {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: start;
+}
+.ranking-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ranking-filters label {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+  min-width: 100px;
+  font-size: 12px;
+  color: #adbfcb;
+}
+.ranking-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.ranking-person {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  border-bottom: 1px solid #294050;
+}
+.ranking-person small {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #9bb0bf;
+}
+.ranking-person > strong {
+  text-align: center;
+  font-size: 24px;
+  color: #f4c76a;
+}
+.bolao-game {
+  border: 1px solid #294050;
+  border-radius: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.bolao-game > summary {
+  display: grid;
+  gap: 9px;
+  cursor: pointer;
+  padding: 18px;
+  background: #152938;
+}
+.bolao-game > summary small {
+  font-size: 11px;
+  color: #9bb0bf;
+}
+.bolao-game > summary span {
+  color: #f4c76a;
+  font-size: 12px;
+}
+.bolao-pick-content {
+  padding: 0 18px;
+}
+.bolao-pick-form {
+  padding: 20px 0 6px;
+}
+.pick-score-fields {
+  display: grid;
+  grid-template-columns: 1fr 20px 1fr;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.pick-score-fields label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.pick-score-fields input {
+  width: 100%;
+}
+.bolao-votes {
+  font-size: 13px;
+}
+.bolao-votes b {
+  color: #f4c76a;
+  margin: 0 8px;
+}
+.matchday-panel {
+  margin-top: 20px;
+}
+.pulse-bars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.mood-meter > span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.mood-meter meter {
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 8px 0 16px;
+  accent-color: #f4c76a;
+}
+.mood-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.break-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 30px;
+}
+.break-stat {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  text-align: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #294050;
+  font-size: 13px;
+}
+.mvp-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+.mvp-controls select {
+  min-width: 0;
+  flex: 1;
+}
+#room-mvp-form {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #294050;
+}
+.field-count {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #92d6bc;
+}
+.football-athlete.player-entered .athlete-portrait {
+  box-shadow:
+    0 0 0 3px #68e8b4,
+    0 0 22px #68e8b480;
+}
+.football-athlete.player-left .athlete-portrait {
+  box-shadow: 0 0 0 3px #e3a16d;
+}
+.football-athlete.player-sent-off .athlete-portrait {
+  border: 2px solid #fb7380;
+  filter: saturate(0.35);
+}
+.football-athlete.player-sent-off .athlete-name::after {
+  content: ' EXPULSO';
+  display: block;
+  color: #fb8792;
+  font-size: 8px;
+}
+#player-placeholder.has-pregame > h2,
+#player-placeholder.has-pregame > p {
+  display: none;
+}
+#room-pregame {
+  max-width: 620px;
+  padding: 24px;
+  text-align: center;
+}
+#room-pregame h3 {
+  font-size: clamp(20px, 2vw, 32px);
+  margin: 18px 0;
+}
+#pregame-details,
+#pregame-lineups,
+#pregame-form {
+  line-height: 1.7;
+  color: #b0c2d1;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.pregame-form-teams {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+.form-chip {
+  display: inline-grid;
+  place-items: center;
+  background: #244438;
+  color: #a9e1c2;
+  border-radius: 5px;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  font-size: 10px;
+}
+.stream-recovery {
+  border-color: #b68a40;
+  background: #2c2a20;
+}
+#reconnect-feedback {
+  display: block;
+  font-size: 12px;
+  margin-top: 8px;
+}
+@media (max-width: 850px) {
+  .hub-two-columns,
+  .break-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .team-stat-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .hub-panel,
+  .matchday-panel {
+    padding: 16px;
+  }
+  .team-page-hero {
+    padding: 20px;
+    gap: 16px;
+  }
+  .team-page-hero > img {
+    width: 54px;
+    height: 54px;
+  }
+  .team-page-hero h1 {
+    font-size: 23px;
+  }
+  .team-roster-grid {
+    grid-template-columns: 1fr;
+  }
+  .pulse-bars {
+    gap: 8px;
+  }
+  .mood-meter > span {
+    font-size: 10px;
+  }
+  .mvp-controls {
+    flex-direction: column;
+  }
+  .matchday-panel .section-head {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+.hub-fixture .team-crest,
+.bolao-match-teams .team-crest {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.bolao-match-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.market-team-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.market-team-heading img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.market-team-heading a {
+  text-decoration: none;
+}
+#pregame-crests {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 20px;
+}
+#pregame-crests img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+.athlete-portrait img.athlete-fallback-crest {
+  width: 70%;
+  height: 70%;
+  inset: 15%;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  opacity: 0.35;
+}
+.roster-photo-missing {
+  opacity: 0.6;
+}
+@media (max-width: 520px) {
+  #pregame-crests img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+#page-sala #player:has(.has-pregame:not([hidden])) {
+  aspect-ratio: auto;
+  min-height: 430px;
+}
+#page-sala .player-placeholder.has-pregame {
+  padding: 24px;
+  max-width: 100%;
+}
+#page-sala .player-placeholder.has-pregame .large-play {
+  display: none;
+}
+#room-pregame {
+  padding: 0;
+  margin: 0 auto 20px;
+}
+.form-chip.form-D {
+  background: #344451;
+  color: #d4e1eb;
+}
+.form-chip.form-L {
+  background: #542d35;
+  color: #ffc2c8;
+}
+@media (max-width: 520px) {
+  #page-sala #player:has(.has-pregame:not([hidden])) {
+    min-height: 380px;
+  }
+  #page-sala .player-placeholder.has-pregame {
+    padding: 18px;
+  }
+}
+
+.absence-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.absence-row img {
+  width: 44px;
+  height: 48px;
+  object-fit: contain;
+}
+.absence-row > div {
+  display: grid;
+  gap: 6px;
+}
+#room-mvp-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.mvp-result-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #182c3b;
+  border-radius: 12px;
+}
+.mvp-result-player img {
+  width: 38px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+.mvp-result-player small {
+  display: block;
+  margin-top: 4px;
+}

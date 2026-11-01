@@ -24,7 +24,11 @@ export async function communityRequest(path, body) {
     {
       host_only: 'Só quem está transmitindo pode vincular ou remover o jogo.',
       awards_closed: 'A votação abre depois do fim da partida.',
-      invalid_award: 'Escolha dois jogadores diferentes que entraram em campo.',
+      invalid_award: path.startsWith('pulse')
+        ? 'Escolha um jogador que participou da partida.'
+        : 'Escolha dois jogadores diferentes que entraram em campo.',
+      game_changed: 'A partida vinculada mudou. Aguarde a atualização da sala.',
+      voting_closed: 'A votação abre no intervalo e após o apito final.',
       invalid_identity: 'Salve seu apelido no perfil para participar.',
       invalid_profile: 'Confira seu apelido, avatar e time.',
       try_later: 'Aguarde um segundo antes de enviar novamente.',

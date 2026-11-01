@@ -92,6 +92,7 @@ export function normalizeEvent(event, league) {
     clock: (event.status || c.status)?.displayClock || '',
     timeValid: c.timeValid !== false && event.timeValid !== false,
     venue: c.venue?.fullName || event.venue?.displayName || null,
+    season: Number(event.season?.year) || null,
     leagueId: league.id,
     league: league.name,
     region: league.region,

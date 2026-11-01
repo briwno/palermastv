@@ -21,6 +21,14 @@ export function currentLineup(lineup, events, initial = false) {
     outgoing.starter = false;
     outgoing.leftAt = e.clock;
   }
+  for (const event of events.filter(
+    (e) => e.type === 'red-card' && e.teamId === lineup.team.id,
+  )) {
+    for (const id of event.participantIds || []) {
+      const player = players.find((p) => p.id === id);
+      if (player) player.redCards = Math.max(1, Number(player.redCards) || 0);
+    }
+  }
   for (const p of players) if (Number(p.redCards) > 0) p.starter = false;
   return { ...lineup, players };
 }

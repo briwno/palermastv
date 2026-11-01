@@ -3,6 +3,7 @@ import { teamKey } from './ge.mjs';
 export const fotmobLeagues = {
   'bra.1': 268,
   'bra.2': 8814,
+  'bra.copa_do_brazil': 9067,
   'eng.1': 47,
   'esp.1': 87,
   'ita.1': 55,
@@ -135,6 +136,11 @@ export function normalizeAbsences(team) {
       .filter((p) => p.injury || p.injured || p.suspended)
       .map((p) => ({
         name: p.name,
+        ...(/^\d+$/.test(String(p.id || ''))
+          ? {
+              photo: `https://images.fotmob.com/image_resources/playerimages/${p.id}.png`,
+            }
+          : {}),
         reason: p.suspended ? 'Suspensão informada' : 'Lesão informada',
         return: p.injury?.expectedReturn || null,
       })),

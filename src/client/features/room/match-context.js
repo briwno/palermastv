@@ -1,3 +1,4 @@
+import { initMatchday, updateMatchday, resetMatchday } from './matchday.js';
 import { $, esc } from '../../shared/dom.js';
 import { api } from '../../shared/football-api.js';
 import { agendas, clubGames } from '../football/game-store.js';
@@ -124,7 +125,7 @@ function renderLineup(lineup, team) {
         .map((n) => n[0])
         .slice(0, 2)
         .join(''),
-    )}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
+    )}${team.logo ? `<img class="athlete-fallback-crest" src="${esc(team.logo)}" alt="" aria-hidden="true">` : ''}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
   const row = (list) =>
     `<div class="football-pitch-row">${list.map(athlete).join('')}</div>`;
   return `<header class="football-team-heading">${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}<div><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Aguardando escalação')}</span></div></header>${
@@ -170,6 +171,7 @@ function renderRoomLineups() {
     panel.dataset.rendered = html;
     if (open === false) panel.querySelector('details').open = false;
   }
+  updateMatchday(latestMatch);
 }
 let linked = null,
   chosen = null,
@@ -282,6 +284,7 @@ function applyGame(game) {
     ratingsAt = 0;
     recentScorers.clear();
     resetFootballExperience();
+    resetMatchday();
     generation++;
     $('#room-match-details').textContent = game
       ? 'Consultando dados da partida…'
@@ -314,6 +317,7 @@ async function loadRoomGame() {
 }
 export function initRoomMatch() {
   initFootballExperience();
+  initMatchday();
   $('#room-initial-lineup').addEventListener('change', (event) => {
     initialLineup = event.target.checked;
     renderRoomLineups();

@@ -373,6 +373,17 @@ async function share(takeover = false) {
 }
 
 function renderStats(samples) {
+  const stalled =
+    !capture &&
+    !!video.srcObject &&
+    !video.paused &&
+    !document.hidden &&
+    samples.some((s) => s.stalled);
+
+  const recovery = el('#stream-recovery');
+
+  if (recovery) recovery.hidden = !stalled;
+
   const warning = el('#quality-warning'),
     weak = samples.filter(
       (s) =>
@@ -461,6 +472,40 @@ function renderStats(samples) {
 }
 
 export async function initRoom() {
+  el('#quality-warning').insertAdjacentHTML(
+    'beforebegin',
+    '<div id="stream-recovery" class="matchday-panel stream-recovery" hidden role="status"><strong>A transmissão parou de receber quadros.</strong><p>Reconecte só o vídeo. O chat e sua entrada na sala continuam ativos.</p><button type="button" class="button lime" id="reconnect-video">Reconectar transmissão</button><span id="reconnect-feedback"></span></div>',
+  );
+
+  el('#reconnect-video').addEventListener('click', async () => {
+    const button = el('#reconnect-video');
+
+    if (!client || client.closed || capture) return;
+
+    button.disabled = true;
+
+    el('#reconnect-feedback').textContent = 'Tentando restabelecer o vídeo…';
+
+    try {
+      client.send({ type: 'repair' });
+
+      await video.play();
+
+      recordDiagnostic('manual-video-reconnect');
+    } catch {
+      el('#reconnect-feedback').textContent =
+        'Não foi possível reconectar agora. Tente novamente.';
+    } finally {
+      setTimeout(() => {
+        button.disabled = false;
+      }, 6000);
+    }
+  });
+
+  window.addEventListener('palermas:media', () => {
+    el('#stream-recovery').hidden = true;
+  });
+
   window.addEventListener('palermas:site-error', (event) =>
     recordDiagnostic('site-error', event.detail),
   );

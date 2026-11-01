@@ -45,6 +45,7 @@ function setRoomGame(game) {
     ? game.home.name + ' × ' + game.away.name
     : 'Escolha um jogo na agenda';
   updateScore();
+  window.dispatchEvent(new CustomEvent('palermas:roomgame', { detail: game }));
 }
 
 export function initRoomPreferences() {

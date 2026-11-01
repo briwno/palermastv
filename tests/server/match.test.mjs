@@ -97,6 +97,50 @@ test('match center aligns teams by id, preserves zero stats, separates starters 
   assert.equal(d.events[1].type, 'goal');
   assert.equal(d.game.attendance, null);
 });
+test('goal events carry narration, running score and the matching ESPN video', () => {
+  const d = normalizeMatch(
+    {
+      ...fixture,
+      keyEvents: [
+        {
+          ...fixture.keyEvents[0],
+          text: 'Gol! Atacante finaliza de pé esquerdo.',
+          participants: [
+            { athlete: { id: '9', displayName: 'João Atacante' } },
+          ],
+        },
+      ],
+      videos: [
+        {
+          headline: 'Outro lance do jogo',
+          links: { web: { href: 'https://www.espn.com.br/video/1' } },
+        },
+        {
+          headline: 'Atacante abre o placar',
+          duration: 48,
+          links: { web: { href: 'https://www.espn.com.br/video/2' } },
+        },
+      ],
+    },
+    league,
+  );
+  const goal = d.events[0];
+  assert.equal(goal.text, 'Gol! Atacante finaliza de pé esquerdo.');
+  assert.equal(goal.video.url, 'https://www.espn.com.br/video/2');
+  assert.equal(goal.video.duration, 48);
+  assert.equal(goal.scoreAfter, '1 × 0');
+});
+test('running score is dropped when goal events do not add up to the final score', () => {
+  const d = normalizeMatch(
+    {
+      ...fixture,
+      keyEvents: [fixture.keyEvents[0], { ...fixture.keyEvents[0], id: 'g2' }],
+    },
+    league,
+  );
+  assert.equal(d.events[0].scoreAfter, undefined);
+  assert.equal(d.events[1].scoreAfter, undefined);
+});
 test('upcoming games do not invent lineups, scores, statistics or events', () => {
   const d = normalizeMatch(
     {

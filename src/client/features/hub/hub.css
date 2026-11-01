@@ -345,12 +345,7 @@
   border: 2px solid #fb7380;
   filter: saturate(0.35);
 }
-.football-athlete.player-sent-off .athlete-name::after {
-  content: ' EXPULSO';
-  display: block;
-  color: #fb8792;
-  font-size: 8px;
-}
+
 #player-placeholder.has-pregame > h2,
 #player-placeholder.has-pregame > p {
   display: none;

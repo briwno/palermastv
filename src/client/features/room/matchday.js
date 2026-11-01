@@ -188,7 +188,7 @@ export function updateMatchday(data) {
       count.className = 'field-count';
       panel.querySelector('.football-team-heading div')?.append(count);
     }
-    count.textContent = `${current.players.filter((p) => p.starter).length} em campo${lineup.players.some((p) => p.redCards > 0) ? ' · 🟥 Expulsão' : ''}`;
+    count.textContent = `${current.players.filter((p) => p.starter && !p.sentOff).length} em campo${lineup.players.some((p) => p.redCards > 0) ? ' · 🟥 Expulsão' : ''}`;
     panel.querySelectorAll('[data-room-player]').forEach((el) => {
       const id = el.dataset.roomPlayer.split('/')[1],
         p = current.players.find((p) => p.id === id),

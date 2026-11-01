@@ -1,3 +1,4 @@
+import { markFreshness } from '../../shared/freshness.js';
 import { navigate } from '../../shell/navigation.js';
 import { formBadges } from '../../shared/football-visuals.js';
 import { timezone, dateText } from '../../shared/dates.js';
@@ -53,6 +54,7 @@ function renderHub() {
     (hubData.clubs.some((c) => c.newsUnavailable)
       ? ' · Parte das notícias está indisponível'
       : '');
+  markFreshness('#news-data', hubData, 600);
   $('#club-profiles').innerHTML = hubData.clubs
     .filter((c) => newsFilter === 'todos' || c.key === newsFilter)
     .map(

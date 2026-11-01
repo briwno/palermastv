@@ -1,3 +1,4 @@
+import { spoilerProtected } from '../room/sync-settings.js';
 import { $, esc } from '../../shared/dom.js';
 import { favorites, today } from '../football/dashboard.js';
 import { clubKey } from '../football/presentation.js';
@@ -46,6 +47,7 @@ function renderNotices() {
 }
 
 function addNotice(n, popup = false) {
+  if (n.gameId && spoilerProtected(n.gameId)) return;
   if (noticeItems.has(n.id)) return;
   noticeItems.set(n.id, n);
   renderNotices();
@@ -208,6 +210,13 @@ export function initAlerts() {
       setAlertsOpen(false);
       $('#important-popup').hidden = true;
     }
+  });
+  window.addEventListener('palermas:sync-reset', () => {
+    for (const [id, notice] of noticeItems)
+      if (notice.gameId && spoilerProtected(notice.gameId))
+        noticeItems.delete(id);
+    renderNotices();
+    $('#important-popup').hidden = true;
   });
   window.addEventListener('football:games', (e) => {
     if (e.detail.date === today) processGames(e.detail.data);

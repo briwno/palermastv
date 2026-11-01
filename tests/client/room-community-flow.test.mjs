@@ -36,6 +36,7 @@ test('live chat and match updates appear once and survive an older pending read'
     pretendToBeVisual: true,
   });
   const w = dom.window;
+  w.structuredClone = structuredClone;
   Object.defineProperty(w, 'crypto', { value: webcrypto });
   w.AbortSignal.timeout = () => undefined;
   w.document.querySelector('#page-sala').hidden = false;
@@ -127,6 +128,7 @@ test('signed-in user sends chat and publisher assigns, switches and clears a mat
     pretendToBeVisual: true,
   });
   const w = dom.window;
+  w.structuredClone = structuredClone;
   Object.defineProperty(w, 'crypto', { value: webcrypto });
   w.AbortSignal.timeout = () => undefined;
   w.document.querySelector('#page-sala').hidden = false;
@@ -285,6 +287,7 @@ test('a delayed chat read cannot erase a newly acknowledged message and failed s
     pretendToBeVisual: true,
   });
   const w = dom.window;
+  w.structuredClone = structuredClone;
   Object.defineProperty(w, 'crypto', { value: webcrypto });
   w.AbortSignal.timeout = () => undefined;
   w.document.querySelector('#page-sala').hidden = false;

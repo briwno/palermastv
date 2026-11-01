@@ -1,3 +1,4 @@
+import { upcomingGames } from './upcoming.mjs';
 import { teamPage, marketCenter } from '../clubs/team.mjs';
 import {
   dailyGames,
@@ -17,7 +18,12 @@ export async function footballRoute(url, env, fetcher) {
 
   try {
     let value;
-    if (path === '/api/football/team')
+    if (path === '/api/football/upcoming')
+      value = await upcomingGames(
+        url.searchParams.get('league') || 'bra.1',
+        fetcher,
+      );
+    else if (path === '/api/football/team')
       value = await teamPage(url.searchParams.get('id'), fetcher);
     else if (path === '/api/football/market')
       value = await marketCenter(fetcher);

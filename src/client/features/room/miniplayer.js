@@ -174,6 +174,12 @@ export function initMiniplayer() {
     syncControls();
     update();
   });
+  window.addEventListener('palermas:sync-reset', () => {
+    lastScore = null;
+    clearTimeout(goalTimer);
+    for (const el of [$('#miniplayer-goal'), pipEl('pip-goal')])
+      if (el) el.hidden = true;
+  });
   window.addEventListener('palermas:roomgame', (e) => {
     game = e.detail;
     const score = game && {

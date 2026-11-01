@@ -1,3 +1,4 @@
+import { initRoomSync } from './sync-controls.js';
 import { initMatchday, updateMatchday, resetMatchday } from './matchday.js';
 import { $, esc } from '../../shared/dom.js';
 import { api } from '../../shared/football-api.js';
@@ -40,16 +41,15 @@ function athleteEvents(p) {
       ? '<i class="event-card event-red" title="Cartão vermelho"></i>'
       : p.yellowCards > 0 &&
         '<i class="event-card event-yellow" title="Cartão amarelo"></i>',
-    p.subbedIn &&
-      `<i class="event-sub-in" title="Entrou${p.inClock ? ' aos ' + esc(p.inClock) : ''}">▲${esc(p.inClock || '')}</i>`,
-    p.subbedOut &&
-      `<i class="event-sub-out" title="Saiu${p.outClock ? ' aos ' + esc(p.outClock) : ''}">▼${esc(p.outClock || '')}</i>`,
   ].filter(Boolean);
   return marks.length
     ? `<span class="athlete-events">${marks.join('')}</span>`
     : '';
 }
 
+let ratingsRaw = null,
+  latestRaw = null,
+  sync = null;
 let ratings = null,
   ratingsAt = 0,
   ratingsBusy = false;
@@ -86,7 +86,7 @@ async function loadRatings() {
   if (
     !game ||
     ratingsBusy ||
-    game.state === 'pre' ||
+    latestRaw?.game.state === 'pre' ||
     Date.now() - ratingsAt < 60000
   )
     return;
@@ -97,10 +97,11 @@ async function loadRatings() {
       `insights?league=${encodeURIComponent(game.leagueId)}&id=${encodeURIComponent(game.id)}`,
     );
     if (current !== generation || d.state !== 'available') return;
-    ratings = d.lineups.map((l) => ({
+    ratingsRaw = d.lineups.map((l) => ({
       players: l.players.filter((p) => p.rating !== null),
     }));
-    renderRoomLineups();
+    if (latestRaw)
+      sync.push({ ...latestRaw, roomRatings: ratingsRaw }, { fresh: false });
   } catch {
     /* Ratings are optional; the ESPN lineup stays as is. */
   } finally {
@@ -129,18 +130,18 @@ function renderLineup(lineup, team) {
   const players = lineup?.players || [];
   const lines = lineup && tacticalLines(lineup);
   const athlete = (p) =>
-    `<button type="button" class="football-athlete${p.sentOff ? ' sent-off' : ''}" data-room-player="${esc(team.id + '/' + p.id)}" aria-label="Ver ${esc(p.name)}${p.sentOff ? ' (expulso)' : ''}" title="${esc(p.name)}${p.sentOff ? ' · Expulso' : ''}"><span class="athlete-portrait">${athleteEvents(p)}<span>${esc(
+    `<button type="button" class="football-athlete${p.sentOff ? ' sent-off' : ''}" data-room-player="${esc(team.id + '/' + p.id)}" aria-label="Ver ${esc(p.name)}${p.sentOff ? ' (expulso)' : ''}" title="${esc(p.name)}${p.sentOff ? ' · Expulso' : ''}"><span class="athlete-portrait"><span>${esc(
       (p.shortName || p.name || '?')
         .split(' ')
         .map((n) => n[0])
         .slice(0, 2)
         .join(''),
-    )}${team.logo ? `<img class="athlete-fallback-crest" src="${esc(team.logo)}" alt="" aria-hidden="true">` : ''}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}<b>${esc(p.jersey || '—')}</b></span><span class="athlete-name">${esc(p.shortName || p.name)}${p.sentOff ? '<small class="sub-out">Expulso</small>' : p.enteredAt ? '<small class="sub-in">↑ ' + esc(p.enteredAt) + '</small>' : p.leftAt ? '<small class="sub-out">↓ ' + esc(p.leftAt) + '</small>' : ''}</span></button>`;
+    )}${team.logo ? `<img class="athlete-fallback-crest" src="${esc(team.logo)}" alt="" aria-hidden="true">` : ''}</span>${p.photo ? `<img src="${esc(p.photo)}" data-photo-fallback="${esc(p.photoFallback || '')}" alt="" loading="lazy" data-player-photo>` : ''}</span><span class="athlete-identity"><span class="athlete-name">${esc(p.shortName || p.name)}</span></span><span class="athlete-meta"><b class="athlete-jersey">#${esc(p.jersey || '—')}</b>${p.rating !== null && p.rating !== undefined ? `<em class="athlete-rating ${ratingClass(p.rating)}" title="Nota FotMob">${p.rating.toFixed(1)}</em>` : ''}${athleteEvents(p)}${p.sentOff ? '<small class="sub-out">Expulso</small>' : p.enteredAt || p.inClock ? '<small class="sub-in" title="Entrou">↑ ' + esc(p.enteredAt || p.inClock) + '</small>' : p.leftAt || p.outClock ? '<small class="sub-out" title="Saiu">↓ ' + esc(p.leftAt || p.outClock) + '</small>' : ''}</span></button>`;
   const row = (list) =>
     `<div class="football-pitch-row">${list.map(athlete).join('')}</div>`;
   return `<header class="football-team-heading">${team.logo ? `<img src="${esc(team.logo)}" alt="">` : ''}<div><h3>${esc(team.name)}</h3><span>${esc(lineup?.formation || 'Aguardando escalação')}</span></div></header>${
     lines
-      ? `<div class="football-pitch"><div class="football-pitch-lines" aria-hidden="true"><i></i></div><div class="football-pitch-players">${[...lines].reverse().map(row).join('')}</div></div>`
+      ? `<div class="football-pitch" style="--pitch-rows:${lines.length}"><div class="football-pitch-lines" aria-hidden="true"><i></i></div><div class="football-pitch-players">${[...lines].reverse().map(row).join('')}</div></div>`
       : `<div class="football-unplaced">${
           players
             .filter((p) => p.starter)
@@ -221,6 +222,37 @@ function gameOptions(preferred) {
         ? linked.leagueId + '/' + linked.id
         : '');
 }
+function renderSnapshot(data) {
+  setRoomGame(data.game, { released: true });
+  ratings = data.roomRatings || null;
+  latestMatch = data;
+  renderRoomLineups();
+  updateFootballExperience(data);
+  const crest = (t) => (t.logo ? `<img src="${esc(t.logo)}" alt="">` : '');
+  $('#room-match-details').innerHTML =
+    `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
+      data.statistics.length
+        ? `<div class="room-stat-teams"><span class="home">${crest(data.game.home)}${esc(data.game.home.name)}</span><span class="away">${esc(data.game.away.name)}${crest(data.game.away)}</span></div>${data.statistics
+            .slice(0, 8)
+            .map(statRow)
+            .join('')}`
+        : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
+    }</section><section><h3>Últimos lances</h3>${recentEventsHTML(6)}</section></div><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
+}
+function waitForSnapshot(game) {
+  latestMatch = null;
+  ratings = null;
+  resetFootballExperience();
+  resetMatchday();
+  setRoomGame(game);
+  for (const side of ['home', 'away']) {
+    const panel = $('#room-' + side + '-lineup');
+    panel.innerHTML = renderLineup(null, game[side]);
+    delete panel.dataset.rendered;
+  }
+  $('#room-match-details').textContent =
+    'Sincronizando a partida com o vídeo. Os dados aparecerão após o atraso escolhido.';
+}
 async function details() {
   if (
     !linked ||
@@ -237,24 +269,14 @@ async function details() {
       `match?league=${encodeURIComponent(game.leagueId)}&id=${encodeURIComponent(game.id)}`,
     );
     if (current !== generation) return;
-    setRoomGame(data.game);
-    latestMatch = data;
-    renderRoomLineups();
+    latestRaw = { ...data, roomRatings: ratingsRaw };
+    sync.push(latestRaw);
     loadRatings();
-    updateFootballExperience(data);
-    const crest = (t) => (t.logo ? `<img src="${esc(t.logo)}" alt="">` : '');
-    $('#room-match-details').innerHTML =
-      `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
-        data.statistics.length
-          ? `<div class="room-stat-teams"><span class="home">${crest(data.game.home)}${esc(data.game.home.name)}</span><span class="away">${esc(data.game.away.name)}${crest(data.game.away)}</span></div>${data.statistics
-              .slice(0, 8)
-              .map(statRow)
-              .join('')}`
-          : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
-      }</section><section><h3>Últimos lances</h3>${recentEventsHTML(6)}</section></div><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
   } catch (e) {
-    if (current === generation)
-      $('#room-match-details').textContent = e.message;
+    if (current === generation) {
+      sync.failed();
+      if (!latestMatch) $('#room-match-details').textContent = e.message;
+    }
   } finally {
     detailsBusy = false;
     if (current !== generation) details();
@@ -275,10 +297,16 @@ function applyGame(game) {
   for (const side of ['home', 'away']) {
     const panel = $('#room-' + side + '-lineup');
     panel.hidden = !game;
-    if (changed && game) panel.innerHTML = renderLineup(null, game[side]);
+    if (changed && game) {
+      panel.innerHTML = renderLineup(null, game[side]);
+      delete panel.dataset.rendered;
+    }
   }
   if (changed) {
     latestMatch = null;
+    latestRaw = null;
+    ratingsRaw = null;
+    sync.reset(game);
     ratings = null;
     ratingsAt = 0;
     recentScorers.clear();
@@ -317,6 +345,14 @@ async function loadRoomGame() {
 export function initRoomMatch() {
   initFootballExperience();
   initMatchday();
+  sync = initRoomSync({
+    render: renderSnapshot,
+    waiting: waitForSnapshot,
+    resetEffects: () => {
+      resetFootballExperience();
+      resetMatchday();
+    },
+  });
   $('#room-initial-lineup').addEventListener('change', (event) => {
     initialLineup = event.target.checked;
     renderRoomLineups();

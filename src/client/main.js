@@ -1,3 +1,4 @@
+import { initFreshness } from './shared/freshness.js';
 import { initFootballHub } from './features/hub/hub.js';
 import { initRoomPreferences } from './features/room/preferences.js';
 import { initNavigation } from './shell/navigation.js';
@@ -21,6 +22,7 @@ import { initMatchInsights } from './features/match/insights.js';
 import { initErrorReporting } from './shared/feedback.js';
 
 initErrorReporting();
+initFreshness();
 initNavigation();
 initFootballHub();
 initRoomPreferences();

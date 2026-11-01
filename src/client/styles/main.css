@@ -12,3 +12,5 @@
 @import '../features/room/football-room.css';
 @import '../features/home/home-design.css';
 @import '../features/hub/hub.css';
+
+@import './design-system.css';

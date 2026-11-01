@@ -84,6 +84,14 @@ Perfis, votos, chat e vínculo da partida ficam no Durable Object do Worker. O a
 - Vídeo sem novos quadros oferece recuperação manual da conexão de mídia; chat, presença e qualidade escolhida são preservados. Sem transmissão, o quadro mostra o confronto e os dados pré-jogo disponíveis.
 - `/api/group/pulse` mantém reações e votos no Worker, vinculados à partida atual; a fase e os participantes da votação são validados no servidor. Publicar essas funções exige atualizar também o Worker. Não há novas variáveis de ambiente.
 
+## Design e sincronização
+
+A interface compartilha cores, navegação, cartões e tipografia em `src/client/styles/design-system.css`. As escalações mantêm camisa, nota e acontecimentos abaixo dos retratos; clicar no atleta abre os detalhes.
+
+Na sala, **Sincronizar com o vídeo** permite atrasar os dados de 0 a 180 segundos, em passos de 5 segundos. A preferência fica apenas neste navegador (`palermas-score-delay`). O buffer retém snapshots completos para que placar, estatísticas, escalações, lances e efeitos avancem juntos, inclusive no miniplayer. Trocar o atraso reinicia a comparação de gols para não comemorar um resultado antigo. O início da proteção exige acumular dados; sair e voltar depois de muito tempo pode exigir formar o buffer novamente. O vídeo e o chat continuam sem esse atraso. Outras páginas exibem dados atuais; avisos de placar do jogo vinculado ficam suspensos durante a proteção.
+
+Os selos mostram o tempo desde a última consulta bem-sucedida e destacam falhas ou consultas antigas. Eles não medem a latência interna do provedor ou da transmissão. A coluna **Próximo jogo** consulta agendas oficiais da ESPN por clube e inclui as competições acompanhadas pelo site, com cache de cinco minutos e horizonte de 60 dias. Ausência de agenda não gera um adversário estimado.
+
 ## Colaborar
 
 O dono concede acesso em GitHub → Settings → Collaborators. Cada amigo clona o projeto, cria uma branch e abre um pull request. Execute testes e build antes de integrar à main. O responsável pela hospedagem acompanha os deploys; permissões de previews dependem do plano Vercel. Usem segredos locais e contas individuais.

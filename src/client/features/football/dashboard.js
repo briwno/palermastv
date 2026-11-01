@@ -1,3 +1,4 @@
+import { markFreshness } from '../../shared/freshness.js';
 import { relativeDate, timeText, dateText } from '../../shared/dates.js';
 
 import { clubKey, gameState, crest } from './presentation.js';
@@ -86,7 +87,21 @@ function render() {
   renderList('#agenda-fixtures', agendaFilter, day);
   $('#today-count').textContent = agendas.get(today)?.games?.length ?? '—';
   $('#home-data').textContent = sourceNote(agendas.get(today));
+  markFreshness(
+    '#home-data',
+    agendas.get(today)?.refreshError || agendas.get(today)?.error
+      ? null
+      : agendas.get(today),
+    60,
+  );
   $('#agenda-data').textContent = sourceNote(agendas.get(day));
+  markFreshness(
+    '#agenda-data',
+    agendas.get(day)?.refreshError || agendas.get(day)?.error
+      ? null
+      : agendas.get(day),
+    60,
+  );
   $('#agenda-date-label').textContent = 'Jogos · ' + dateText(day);
   all('.favorite').forEach((b) => {
     const active = favorites.includes(b.dataset.team);
@@ -112,7 +127,13 @@ async function loadGames(date, force = false) {
         for (const key of agendas.keys())
           if (key !== today && key !== day) agendas.delete(key);
     } catch (error) {
-      agendas.set(date, { error: error.message });
+      const previous = agendas.get(date);
+      agendas.set(
+        date,
+        previous && !previous.error
+          ? { ...previous, refreshError: error.message }
+          : { error: error.message },
+      );
     } finally {
       pending.delete(date);
       render();

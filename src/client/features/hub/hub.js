@@ -1,3 +1,4 @@
+import { markFreshness } from '../../shared/freshness.js';
 import { $, esc } from '../../shared/dom.js';
 import { api } from '../../shared/football-api.js';
 import { communityRequest } from '../group/api.js';
@@ -48,7 +49,8 @@ async function loadTeam(id) {
             )
             .join('')}</div>`
         : empty('Classificação indisponível para este time.')
-    }</section><div class="hub-two-columns" id="team-fixtures"><section class="hub-panel"><h2>Próximos jogos</h2>${d.upcoming.map(gameRow).join('') || empty('Nenhum próximo jogo informado.')}</section><section class="hub-panel"><h2>Últimos resultados</h2>${d.results.map(gameRow).join('') || empty('Resultados indisponíveis.')}</section></div><section id="team-roster" class="hub-panel"><h2>Elenco</h2><div class="team-roster-grid">${d.squad.map((p) => `<article class="team-roster-player">${p.photo ? `<img src="${esc(p.photo)}" alt="Foto de ${esc(p.name)}" loading="lazy" data-roster-photo data-photo-fallback="${esc(p.photoFallback || '')}" data-team-fallback="${esc(d.logo || '')}">` : '<span class="roster-avatar">⚽</span>'}<div><b>${esc(p.name)}</b><small>${esc(p.jersey || '—')} · ${esc(p.position || 'Posição não informada')}</small></div></article>`).join('') || empty('A fonte não disponibilizou o elenco.')}</div></section><section id="team-news" class="hub-panel"><h2>Notícias</h2><div class="hub-two-columns">${d.articles.map(article).join('') || empty('Sem notícias recentes na fonte.')}</div></section><p class="data-note">Dados: ${esc(d.source)} · Consultado em ${date(d.checkedAt)}${!d.scheduleAvailable ? ' · Parte da agenda não pôde ser consultada.' : ''}</p>`;
+    }</section><div class="hub-two-columns" id="team-fixtures"><section class="hub-panel"><h2>Próximos jogos</h2>${d.upcoming.map(gameRow).join('') || empty('Nenhum próximo jogo informado.')}</section><section class="hub-panel"><h2>Últimos resultados</h2>${d.results.map(gameRow).join('') || empty('Resultados indisponíveis.')}</section></div><section id="team-roster" class="hub-panel"><h2>Elenco</h2><div class="team-roster-grid">${d.squad.map((p) => `<article class="team-roster-player">${p.photo ? `<img src="${esc(p.photo)}" alt="Foto de ${esc(p.name)}" loading="lazy" data-roster-photo data-photo-fallback="${esc(p.photoFallback || '')}" data-team-fallback="${esc(d.logo || '')}">` : '<span class="roster-avatar">⚽</span>'}<div><b>${esc(p.name)}</b><small>${esc(p.jersey || '—')} · ${esc(p.position || 'Posição não informada')}</small></div></article>`).join('') || empty('A fonte não disponibilizou o elenco.')}</div></section><section id="team-news" class="hub-panel"><h2>Notícias</h2><div class="hub-two-columns">${d.articles.map(article).join('') || empty('Sem notícias recentes na fonte.')}</div></section><p class="data-note" id="team-page-updated">Dados: ${esc(d.source)} · Consultado em ${date(d.checkedAt)}${!d.scheduleAvailable ? ' · Parte da agenda não pôde ser consultada.' : ''}</p>`;
+    markFreshness('#team-page-updated', d, 600);
   } catch (e) {
     if (revision === teamRevision)
       box.innerHTML =
@@ -72,8 +74,10 @@ async function loadMarket() {
   $('#market-content').innerHTML = empty('Consultando notícias e desfalques…');
   try {
     market = await api('market');
+    markFreshness('#market-data', market, 600);
     renderMarket();
   } catch (e) {
+    markFreshness('#market-data', null, 600);
     $('#market-content').innerHTML = empty(e.message);
   }
 }

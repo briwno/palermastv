@@ -1,3 +1,4 @@
+import { markFreshness } from '../../shared/freshness.js';
 import { all, esc, $ } from '../../shared/dom.js';
 import { timeText, dateText } from '../../shared/dates.js';
 import { crest } from '../football/presentation.js';
@@ -101,6 +102,7 @@ function renderMatch() {
   $('#match-scoreboard').innerHTML = matchScoreboard(g);
   $('#match-source').textContent =
     sourceNote(d) + (g.state === 'in' ? ' · Atualiza a cada minuto' : '');
+  markFreshness('#match-source', d, 60);
   $('#match-watch').disabled = false;
   const goals = d.events.filter((e) =>
     ['goal', 'own-goal', 'penalty-goal'].includes(e.type),
@@ -172,6 +174,7 @@ async function loadMatch(quiet = false) {
     renderMatch();
   } catch (error) {
     if (generation !== matchGeneration) return;
+    markFreshness('#match-source', null, 60);
     if (quiet && activeMatch)
       $('#match-source').textContent =
         'Falha ao atualizar. ' + sourceNote(activeMatch);

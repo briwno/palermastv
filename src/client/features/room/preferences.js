@@ -1,3 +1,4 @@
+import { roomDelay } from './sync-settings.js';
 import { $, esc } from '../../shared/dom.js';
 import { toast } from '../../shared/feedback.js';
 import { save } from '../../shared/storage.js';
@@ -23,9 +24,11 @@ function updateScore() {
     board.innerHTML = `<div class="scoreboard-competition">${esc(fresh.league || 'Partida')}</div><div class="scoreboard-main">${team('home')}<div class="scoreboard-result"><strong>${esc(fresh.homeScore ?? '–')}<span>:</span>${esc(fresh.awayScore ?? '–')}</strong><small>${esc(gameState(fresh) || timeText(fresh))}</small></div>${team('away')}</div>`;
   }
   $('#room-score').textContent =
-    fresh.homeScore !== null && fresh.awayScore !== null
-      ? fresh.homeScore + ' × ' + fresh.awayScore + ' · ' + gameState(fresh)
-      : 'Jogo agendado · ' + timeText(fresh);
+    fresh.status === 'Sincronizando dados'
+      ? 'Sincronizando dados'
+      : fresh.homeScore !== null && fresh.awayScore !== null
+        ? fresh.homeScore + ' × ' + fresh.awayScore + ' · ' + gameState(fresh)
+        : 'Jogo agendado · ' + timeText(fresh);
 }
 
 function updateNickname(name) {
@@ -39,13 +42,25 @@ try {
   updateNickname(nick);
 } catch {}
 
-function setRoomGame(game) {
-  roomGame = game;
+function setRoomGame(game, { released = false } = {}) {
+  roomGame =
+    game && roomDelay() > 0 && !released
+      ? {
+          ...game,
+          homeScore: null,
+          awayScore: null,
+          clock: '',
+          state: 'pre',
+          status: 'Sincronizando dados',
+        }
+      : game;
   $('#selected-game').textContent = game
     ? game.home.name + ' × ' + game.away.name
     : 'Escolha um jogo na agenda';
   updateScore();
-  window.dispatchEvent(new CustomEvent('palermas:roomgame', { detail: game }));
+  window.dispatchEvent(
+    new CustomEvent('palermas:roomgame', { detail: roomGame }),
+  );
 }
 
 export function initRoomPreferences() {

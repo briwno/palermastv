@@ -35,19 +35,109 @@
         <p id="room-game-feedback" role="status"></p>
         <div class="room-match-tools">
           <details class="room-match-settings">
-            <summary>Escolher ou trocar partida</summary>
-            <p id="room-game-host-note" class="data-note">
-              Qualquer pessoa do grupo pode escolher a partida da sala.
-            </p>
-            <label class="field-label" for="room-game-select">Partida</label>
-            <select id="room-game-select" class="text-input"></select>
-            <div class="community-actions">
-              <button id="room-game-save" class="button lime">
-                Vincular para a sala
-              </button>
-              <button id="room-game-clear" class="button subtle">
-                Remover vínculo
-              </button>
+            <summary>
+              <span class="room-picker-icon" aria-hidden="true">⚽</span
+              ><span
+                >Escolher ou trocar partida<small
+                  >Escudos, placares e agenda</small
+                ></span
+              ><span class="room-picker-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="room-picker-content">
+              <div class="room-picker-heading">
+                <div>
+                  <span class="eyebrow">O JOGO DA SALA</span>
+                  <h3>Qual é a partida?</h3>
+                  <p id="room-game-host-note" class="data-note">
+                    Qualquer pessoa do grupo pode escolher. A transmissão
+                    continua.
+                  </p>
+                </div>
+                <span class="status-pill">Horário de Brasília</span>
+              </div>
+              <div class="room-picker-toolbar">
+                <label class="room-game-search"
+                  ><span aria-hidden="true">⌕</span
+                  ><input
+                    id="room-game-search"
+                    type="search"
+                    placeholder="Buscar time ou campeonato"
+                    aria-label="Buscar partida"
+                /></label>
+                <div class="room-picker-date">
+                  <button
+                    type="button"
+                    class="button subtle"
+                    data-room-date-step="-1"
+                    aria-label="Jogos do dia anterior"
+                  >
+                    ‹</button
+                  ><input
+                    type="date"
+                    id="room-game-date"
+                    aria-label="Data das partidas"
+                  /><button
+                    type="button"
+                    class="button subtle"
+                    data-room-date-step="1"
+                    aria-label="Jogos do dia seguinte"
+                  >
+                    ›</button
+                  ><button
+                    type="button"
+                    class="button subtle"
+                    id="room-game-today"
+                  >
+                    Hoje
+                  </button>
+                </div>
+              </div>
+              <div
+                class="room-picker-filters"
+                role="group"
+                aria-label="Filtrar partidas"
+              >
+                <button
+                  type="button"
+                  data-room-game-filter="all"
+                  aria-pressed="true"
+                >
+                  Todos</button
+                ><button
+                  type="button"
+                  data-room-game-filter="live"
+                  aria-pressed="false"
+                >
+                  <span class="live-dot"></span>Ao vivo</button
+                ><button
+                  type="button"
+                  data-room-game-filter="clubs"
+                  aria-pressed="false"
+                >
+                  CAP & CFC</button
+                ><span id="room-game-count" role="status"></span>
+              </div>
+              <div
+                id="room-game-list"
+                class="room-game-list"
+                aria-label="Partidas disponíveis"
+              ></div>
+              <select
+                id="room-game-select"
+                hidden
+                aria-label="Partida selecionada"
+              ></select>
+              <div class="room-picker-footer">
+                <div id="room-game-preview" aria-live="polite"></div>
+                <div class="community-actions">
+                  <button id="room-game-save" class="button lime">
+                    Vincular para a sala
+                  </button>
+                  <button id="room-game-clear" class="button subtle">
+                    Remover vínculo
+                  </button>
+                </div>
+              </div>
             </div>
           </details>
           <button

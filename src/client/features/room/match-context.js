@@ -16,6 +16,7 @@ import {
 } from './football-experience.js';
 import { save } from '../../shared/storage.js';
 import { playerFloating } from './miniplayer.js';
+import { initGamePicker } from './game-picker.js';
 
 const lineupsPreference = 'palermas-room-lineups';
 const nameKey = (s) =>
@@ -184,12 +185,14 @@ let linked = null,
   detailsBusy = false;
 let assigning = false,
   roomRevision = 0;
+let picker = null;
 function gameOptions(preferred) {
   const games = [
     ...new Map(
       [...agendas.values()]
         .flatMap((d) => d.games || [])
         .concat(
+          picker?.games() || [],
           [...clubGames.values()],
           chosen ? [chosen] : [],
           linked ? [linked] : [],
@@ -214,6 +217,7 @@ function gameOptions(preferred) {
       : linked
         ? linked.leagueId + '/' + linked.id
         : '');
+  picker?.update(games, linked);
 }
 function renderSnapshot(data) {
   setRoomGame(data.game, { released: true });
@@ -392,6 +396,8 @@ export function initRoomMatch() {
         clear,
       });
       applyGame(d.game);
+      $('.room-match-settings').open = false;
+      $('.room-match-settings > summary').focus({ preventScroll: true });
       $('#room-game-feedback').textContent = clear
         ? 'Vínculo removido para todos.'
         : 'Partida vinculada para todos na sala.';
@@ -405,6 +411,7 @@ export function initRoomMatch() {
   }
   $('#room-game-save').addEventListener('click', () => assign());
   $('#room-game-clear').addEventListener('click', () => assign(true));
+  picker = initGamePicker(gameOptions);
   window.addEventListener('palermas:room', loadRoomGame);
   window.addEventListener('palermas:roomselection', (e) => {
     chosen = e.detail;

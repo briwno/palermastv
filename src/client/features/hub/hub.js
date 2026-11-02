@@ -85,6 +85,7 @@ function prepareCrests(root = document) {
     if (
       !match ||
       img.dataset.clubPage ||
+      img.closest('[data-room-pick]') ||
       img.matches('[data-roster-photo], .athlete-fallback-crest')
     )
       continue;

@@ -350,16 +350,12 @@
   gap: 12px;
   margin-top: 10px;
 }
-.form-chip {
-  display: inline-grid;
-  place-items: center;
-  background: #244438;
-  color: #a9e1c2;
-  border-radius: 5px;
-  width: 24px;
-  height: 24px;
-  margin-left: 4px;
-  font-size: 10px;
+.pregame-form-teams > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .stream-recovery {
   border-color: #b68a40;
@@ -478,14 +474,6 @@
 #room-pregame {
   padding: 0;
   margin: 0 auto 20px;
-}
-.form-chip.form-D {
-  background: #344451;
-  color: #d4e1eb;
-}
-.form-chip.form-L {
-  background: #542d35;
-  color: #ffc2c8;
 }
 @media (max-width: 520px) {
   #page-sala #player:has(.has-pregame:not([hidden])) {

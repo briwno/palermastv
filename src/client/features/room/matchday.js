@@ -1,4 +1,5 @@
 import { statisticsView } from '../../shared/match-statistics.js';
+import { formBadges } from '../../shared/football-visuals.js';
 import { $, esc } from '../../shared/dom.js';
 import { api } from '../../shared/football-api.js';
 import { communityRequest } from '../group/api.js';
@@ -175,7 +176,11 @@ export function updateMatchday(data) {
   $('#room-pregame').hidden = false;
   $('#player-placeholder').classList.add('has-pregame');
   $('#pregame-label').textContent =
-    game.state === 'pre' ? 'PRÉ-JOGO' : 'AGUARDANDO TRANSMISSÃO';
+    game.state === 'post'
+      ? 'PARTIDA ENCERRADA'
+      : game.state === 'pre'
+        ? 'PRÉ-JOGO'
+        : 'AGUARDANDO TRANSMISSÃO';
   const crests = [game.home, game.away]
     .map((t) =>
       t.logo ? `<img src="${esc(t.logo)}" alt="Escudo de ${esc(t.name)}">` : '',
@@ -203,16 +208,10 @@ export function updateMatchday(data) {
         if (key() !== requested) return;
         const form = d.form || [];
         $('#pregame-form').innerHTML = form.length
-          ? `<small>Últimos jogos · FotMob</small><div class="pregame-form-teams">${form
+          ? `<small>Jogos anteriores a esta partida · mais recente à esquerda · FotMob</small><div class="pregame-form-teams">${form
               .map(
                 (list, i) =>
-                  `<span>${esc(game[i ? 'away' : 'home'].name)} ${list
-                    .slice(0, 5)
-                    .map(
-                      (g) =>
-                        `<b class="form-chip form-${esc(g.result)}" title="${esc(g.opponent || '')}">${esc({ W: 'V', D: 'E', L: 'D' }[g.result] || g.result)}</b>`,
-                    )
-                    .join('')}</span>`,
+                  `<div><span>${esc(game[i ? 'away' : 'home'].name)}</span>${formBadges(list)}</div>`,
               )
               .join('')}</div>`
           : 'Retrospecto não disponível nesta fonte.';

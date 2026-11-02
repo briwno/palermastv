@@ -20,7 +20,16 @@ test('matchday keeps video and chat, highlights only new substitutions, counts r
     Response.json(
       String(url).includes('pulse')
         ? { moods: [], reactions: [], ranking: [] }
-        : { form: [] },
+        : {
+            form: [
+              [
+                { result: 'D', own: 0, against: 2, opponent: 'Rival' },
+                { result: 'E', own: 1, against: 1, opponent: 'Outro' },
+                { result: 'V', own: 3, against: 0, opponent: 'Terceiro' },
+              ],
+              [],
+            ],
+          },
     );
   d.querySelector('#page-sala').hidden = false;
   const video = d.querySelector('#local-video');
@@ -70,6 +79,22 @@ test('matchday keeps video and chat, highlights only new substitutions, counts r
       })),
     };
     w.matchday.updateMatchday(data);
+    await new Promise(setImmediate);
+    assert.deepEqual(
+      [...d.querySelectorAll('#pregame-form .form-badge')].map((el) => [
+        el.textContent,
+        el.className,
+      ]),
+      [
+        ['D', 'form-badge form-d'],
+        ['E', 'form-badge form-e'],
+        ['V', 'form-badge form-v'],
+      ],
+    );
+    assert.match(
+      d.querySelector('#pregame-form .form-d').title,
+      /Derrota · 0 × 2 contra Rival/,
+    );
     const event = {
       id: 'sub1',
       type: 'substitution',
@@ -123,6 +148,10 @@ test('matchday keeps video and chat, highlights only new substitutions, counts r
     data.game.state = 'post';
     w.matchday.updateMatchday(data);
     assert.equal(d.querySelector('#break-heading').textContent, 'Apito final');
+    assert.equal(
+      d.querySelector('#pregame-label').textContent,
+      'PARTIDA ENCERRADA',
+    );
     w.matchday.resetMatchday();
     assert.equal(d.querySelector('#room-pulse'), null);
     assert.equal(d.querySelector('#room-pregame').hidden, true);

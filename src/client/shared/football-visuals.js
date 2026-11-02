@@ -4,14 +4,19 @@ export function formBadges(form = []) {
     form
       .slice(0, 5)
       .map((item) => {
-        const raw = typeof item === 'string' ? item : item.result;
+        const raw = typeof item === 'string' ? item : item?.result;
         const value =
           { W: 'V', L: 'D', D: 'E', V: 'V', E: 'E' }[raw] ||
           (raw === 'd' ? 'D' : '');
         // Normalized form objects already use Portuguese V/E/D.
-        const result = typeof item === 'object' ? item.result : value;
+        const result = typeof item === 'object' ? item?.result : value;
+        const label = { V: 'Vitória', E: 'Empate', D: 'Derrota' }[result];
+        const detail =
+          item && typeof item === 'object'
+            ? `${label} · ${item.own} × ${item.against} contra ${item.opponent}`
+            : label;
         return ['V', 'E', 'D'].includes(result)
-          ? `<span class="form-badge form-${result.toLowerCase()}" title="${esc(typeof item === 'object' ? `${item.own} × ${item.against} contra ${item.opponent}` : result)}">${esc(result)}</span>`
+          ? `<span class="form-badge form-${result.toLowerCase()}" title="${esc(detail)}" aria-label="${esc(detail)}">${esc(result)}</span>`
           : '';
       })
       .join('') || '<span class="data-note">Forma indisponível</span>'

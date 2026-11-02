@@ -1,16 +1,12 @@
+import { initBolao } from './bolao.js';
 import { markFreshness } from '../../shared/freshness.js';
 import { $, esc } from '../../shared/dom.js';
 import { api } from '../../shared/football-api.js';
-import { communityRequest } from '../group/api.js';
-import { groupIdentity, groupPlayerId } from '../group/identity.js';
 import { crest } from '../football/presentation.js';
 import { navigate } from '../../shell/navigation.js';
 let teamRevision = 0,
   market = null,
-  marketFilter = 'all',
-  games = [],
-  gamesRevision = 0,
-  rankingRevision = 0;
+  marketFilter = 'all';
 const date = (value) =>
   Number.isFinite(Date.parse(value))
     ? new Date(value).toLocaleString('pt-BR', {
@@ -81,81 +77,6 @@ async function loadMarket() {
     $('#market-content').innerHTML = empty(e.message);
   }
 }
-async function loadGames() {
-  const revision = ++gamesRevision;
-  $('#bolao-games').innerHTML = empty('Consultando os jogos…');
-  try {
-    const d = await api(
-      'games?date=' + encodeURIComponent($('#bolao-date').value),
-    );
-    if (revision !== gamesRevision) return;
-    games = d.games || [];
-    $('#bolao-games').innerHTML =
-      games
-        .map(
-          (g) =>
-            `<details class="bolao-game" data-bolao-game="${esc(g.leagueId + '/' + g.id)}"><summary aria-label="Palpite: ${esc(g.home.name)} × ${esc(g.away.name)}"><small>${esc(g.league)} · ${date(g.date)}</small><b class="bolao-match-teams">${crest(g.home)}${esc(g.home.name)} <span>×</span> ${crest(g.away)}${esc(g.away.name)}</b><span>${g.state === 'pre' && Date.parse(g.date) > Date.now() ? 'Dar palpite' : 'Palpites encerrados'}</span></summary><div class="bolao-pick-content"></div></details>`,
-        )
-        .join('') || empty('Sem jogos informados para esta data.');
-  } catch (e) {
-    if (revision === gamesRevision)
-      $('#bolao-games').innerHTML = empty(e.message);
-  }
-}
-async function loadPick(details) {
-  if (details.dataset.loading) return;
-  details.dataset.loading = 'true';
-  const [league, id] = details.dataset.bolaoGame.split('/'),
-    box = details.querySelector('.bolao-pick-content');
-  box.innerHTML = empty('Carregando palpites…');
-  try {
-    await groupIdentity;
-    const d = await communityRequest(
-      `predictions?league=${encodeURIComponent(league)}&id=${id}`,
-    );
-    const own = d.votes.find((v) => v.id === groupPlayerId),
-      g = games.find((g) => g.id === id && g.leagueId === league);
-    if (!g || !box.isConnected) return;
-    box.innerHTML = `${!d.locked ? `<form class="bolao-pick-form"><div class="pick-score-fields"><label>${esc(g.home.name)}<input class="text-input" name="home" type="number" min="0" max="20" required value="${own?.home ?? 0}"></label><span>×</span><label>${esc(g.away.name)}<input class="text-input" name="away" type="number" min="0" max="20" required value="${own?.away ?? 0}"></label></div><button class="button lime">${own ? 'Alterar' : 'Salvar'} palpite</button><p role="status"></p></form>` : empty('Este jogo já começou. Novos palpites estão bloqueados.')}<div class="bolao-votes">${d.votes.map((v) => `<p>${esc(v.name)} <b>${v.home} × ${v.away}</b> ${v.points === null ? '· Aguardando resultado' : '· ' + v.points + ' pontos'}</p>`).join('') || empty('Nenhum palpite registrado.')}</div>`;
-  } catch (e) {
-    box.innerHTML =
-      empty(e.message) +
-      '<button class="button subtle" data-retry-pick>Tentar novamente</button>';
-  } finally {
-    delete details.dataset.loading;
-  }
-}
-async function loadRanking() {
-  const revision = ++rankingRevision;
-  const params = new URLSearchParams({
-    season: $('#ranking-season').value,
-    league: $('#ranking-league').value,
-    round: $('#ranking-round').value,
-  });
-  try {
-    const d = await communityRequest('ranking?' + params);
-    if (revision !== rankingRevision) return;
-    for (const [id, values, label] of [
-      ['#ranking-season', d.seasons || [], ''],
-      ['#ranking-round', d.rounds || [], 'Rodada '],
-    ]) {
-      const select = $(id),
-        value = select.value;
-      select.innerHTML =
-        '<option value="">Todas</option>' +
-        values
-          .map((v) => `<option value="${esc(v)}">${label}${esc(v)}</option>`)
-          .join('');
-      select.value = values.includes(value) ? value : '';
-    }
-    $('#ranking-round').disabled = !$('#ranking-league').value;
-    $('#bolao-ranking').innerHTML =
-      `<p class="data-note">${d.settled} jogo(s) apurado(s)</p>${d.ranking.map((p, i) => `<div class="ranking-person"><span>${i + 1}</span><div><b>${esc(p.avatar || '⚽')} ${esc(p.name)}</b><small>${p.exact} exatos · ${p.results} resultados · ${p.pending} pendentes</small></div><strong>${p.points}<small>pontos</small></strong></div>`).join('') || empty('O ranking aparece quando o grupo registrar palpites.')}`;
-  } catch (e) {
-    if (revision === rankingRevision)
-      $('#bolao-ranking').innerHTML = empty(e.message);
-  }
-}
 function prepareCrests(root = document) {
   for (const img of root.querySelectorAll('img[src*="teamlogos/soccer/"]')) {
     const match = img
@@ -175,16 +96,10 @@ function prepareCrests(root = document) {
   }
 }
 export function initFootballHub() {
-  $('#bolao-date').value = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Sao_Paulo',
-  }).format(new Date());
+  initBolao();
   window.addEventListener('palermas:navigate', (e) => {
     if (e.detail.page === 'time') loadTeam(e.detail.route.split('/')[1]);
     if (e.detail.page === 'mercado') loadMarket();
-    if (e.detail.page === 'bolao') {
-      loadGames();
-      loadRanking();
-    }
   });
   document.addEventListener(
     'click',
@@ -219,8 +134,6 @@ export function initFootballHub() {
     }
     if (e.target.closest('[data-retry-team]'))
       loadTeam(location.hash.split('/')[1]);
-    if (e.target.closest('[data-retry-pick]'))
-      loadPick(e.target.closest('[data-bolao-game]'));
     const filter = e.target.closest('[data-market-filter]');
     if (filter) {
       marketFilter = filter.dataset.marketFilter;
@@ -231,54 +144,6 @@ export function initFootballHub() {
     }
   });
   $('#market-refresh').addEventListener('click', loadMarket);
-  $('#bolao-date').addEventListener('change', loadGames);
-  $('#bolao-refresh').addEventListener('click', () => {
-    loadGames();
-    loadRanking();
-  });
-  for (const id of ['#ranking-season', '#ranking-league', '#ranking-round'])
-    $(id).addEventListener('change', () => {
-      if (id !== '#ranking-round') $('#ranking-round').value = '';
-      loadRanking();
-    });
-  $('#bolao-games').addEventListener(
-    'toggle',
-    (e) => {
-      if (
-        e.target.matches('[data-bolao-game]') &&
-        e.target.open &&
-        !e.target.querySelector('.bolao-pick-content').children.length
-      )
-        loadPick(e.target);
-    },
-    true,
-  );
-  $('#bolao-games').addEventListener('submit', async (e) => {
-    if (!e.target.matches('.bolao-pick-form')) return;
-    e.preventDefault();
-    const form = e.target,
-      details = form.closest('[data-bolao-game]'),
-      [league, id] = details.dataset.bolaoGame.split('/'),
-      button = form.querySelector('button');
-    button.disabled = true;
-    try {
-      await communityRequest('predictions', {
-        league,
-        id,
-        home: Number(form.elements.home.value),
-        away: Number(form.elements.away.value),
-      });
-      await loadPick(details);
-      loadRanking();
-    } catch (err) {
-      form.querySelector('[role=status]').textContent = err.message;
-    } finally {
-      button.disabled = false;
-    }
-  });
-  setInterval(() => {
-    if (!document.hidden && !$('#page-bolao').hidden) loadRanking();
-  }, 60000);
   prepareCrests();
   let crestQueued = false;
   new MutationObserver(() => {

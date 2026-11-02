@@ -27,6 +27,7 @@ export async function communityRequest(path, body) {
       invalid_award: path.startsWith('pulse')
         ? 'Escolha um jogador que participou da partida.'
         : 'Escolha dois jogadores diferentes que entraram em campo.',
+      picks_closed: 'Os palpites fecharam: a partida já começou.',
       game_changed: 'A partida vinculada mudou. Aguarde a atualização da sala.',
       voting_closed: 'A votação abre no intervalo e após o apito final.',
       invalid_identity: 'Salve seu apelido no perfil para participar.',

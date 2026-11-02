@@ -14,3 +14,7 @@
 @import '../features/hub/hub.css';
 
 @import './design-system.css';
+
+@import './controls.css';
+@import '../features/match/statistics.css';
+@import '../features/hub/bolao.css';

@@ -1,3 +1,4 @@
+import { statisticsView } from '../../shared/match-statistics.js';
 import { $, esc } from '../../shared/dom.js';
 import { api } from '../../shared/football-api.js';
 import { communityRequest } from '../group/api.js';
@@ -6,13 +7,8 @@ let match = null,
   seen = null,
   lastUpdate = 0,
   formKey = '',
-  pulseBusy = false;
+  mvpBusy = false;
 let highlights = new Map();
-const labels = {
-  pressao: '🔥 Pressão',
-  sofrimento: '😰 Sofrimento',
-  ganhou: '😎 Já ganhou',
-};
 const key = () => (match ? `${match.game.leagueId}/${match.game.id}` : '');
 const at = (value) =>
   new Date(value).toLocaleString('pt-BR', {
@@ -28,42 +24,43 @@ export function resetMatchday() {
   lastUpdate = 0;
   formKey = '';
   highlights.clear();
-  for (const id of ['#room-pulse', '#room-break-summary', '#room-pregame'])
+  for (const id of ['#room-break-summary', '#room-pregame'])
     if ($(id)) $(id).hidden = true;
   $('#player-placeholder')?.classList.remove('has-pregame');
   if ($('.room-match-summary')) $('.room-match-summary').hidden = false;
   if ($('#pregame-form')) $('#pregame-form').textContent = '';
 }
-async function loadPulse() {
-  if (!match || pulseBusy || document.hidden || $('#page-sala').hidden) return;
+async function loadMvp() {
+  if (
+    !match ||
+    mvpBusy ||
+    document.hidden ||
+    $('#page-sala').hidden ||
+    $('#room-break-summary').hidden
+  )
+    return;
   const context = key();
-  pulseBusy = true;
+  mvpBusy = true;
   try {
     const data = await communityRequest(
       'pulse?context=' + encodeURIComponent(context),
     );
     if (context !== key()) return;
-    renderPulse(data);
-    $('#pulse-feedback').textContent = '';
+    renderMvp(data);
+    if ($('#room-mvp-feedback').dataset.error) {
+      $('#room-mvp-feedback').textContent = '';
+      delete $('#room-mvp-feedback').dataset.error;
+    }
   } catch (e) {
-    if (context === key()) $('#pulse-feedback').textContent = e.message;
+    if (context === key()) {
+      $('#room-mvp-feedback').textContent = e.message;
+      $('#room-mvp-feedback').dataset.error = 'true';
+    }
   } finally {
-    pulseBusy = false;
+    mvpBusy = false;
   }
 }
-function renderPulse(data) {
-  const total = data.moods.reduce((sum, item) => sum + item.count, 0);
-  $('#pulse-bars').innerHTML = data.moods
-    .map(
-      (item) =>
-        `<div class="mood-meter mood-${item.mood}"><span>${labels[item.mood]} <b>${item.count}</b></span><meter min="0" max="${Math.max(1, total)}" value="${item.count}" aria-label="${labels[item.mood]}"></meter></div>`,
-    )
-    .join('');
-  $('#pulse-reactions').textContent =
-    data.reactions
-      .slice(0, 6)
-      .map((r) => `${r.name}: ${labels[r.mood]}`)
-      .join(' · ') || 'Como está a torcida?';
+function renderMvp(data) {
   $('#room-mvp-result').innerHTML = data.ranking.length
     ? data.ranking
         .slice(0, 3)
@@ -85,39 +82,8 @@ export function initMatchday() {
   );
   $('.room-match-summary').insertAdjacentHTML(
     'beforebegin',
-    `<section id="room-pulse" class="matchday-panel" hidden><div class="section-head"><h2>Termômetro da torcida</h2><small>Último minuto · um voto por pessoa</small></div><div id="pulse-bars" class="pulse-bars"></div><div class="mood-actions">${Object.entries(
-      labels,
-    )
-      .map(
-        ([k, v]) =>
-          `<button class="button subtle" data-mood="${k}">${v}</button>`,
-      )
-      .join(
-        '',
-      )}</div><p id="pulse-reactions" class="data-note"></p><p id="pulse-feedback" role="status"></p></section><section id="room-break-summary" class="matchday-panel" hidden><header class="section-head"><h2 id="break-heading"></h2><strong id="break-score"></strong></header><div class="break-grid"><div id="break-events"></div><div id="break-stats"></div></div><form id="room-mvp-form"><label for="room-mvp">Quem foi o melhor até aqui?</label><div class="mvp-controls"><select id="room-mvp" class="text-input" required></select><button class="button lime">Votar</button></div><p id="room-mvp-feedback" role="status"></p></form><p id="room-mvp-result" class="data-note"></p></section>`,
+    `<section id="room-break-summary" class="matchday-panel" hidden><header class="section-head"><h2 id="break-heading"></h2><div id="break-score" class="break-scoreboard"></div></header><div class="break-grid"><div class="break-left"><div id="break-events"></div><form id="room-mvp-form" class="mvp-vote-card"><label for="room-mvp">Quem foi o melhor até aqui?</label><div class="mvp-controls"><select id="room-mvp" class="text-input" required></select><button class="button lime">Votar</button></div><p id="room-mvp-feedback" role="status"></p></form><p id="room-mvp-result" class="data-note"></p></div><div id="break-stats"></div></div></section>`,
   );
-  document.addEventListener('click', async (e) => {
-    const button = e.target.closest('[data-mood]');
-    if (!button || !match || button.disabled) return;
-    const context = key();
-    button.disabled = true;
-    try {
-      const data = await communityRequest('pulse', {
-        context,
-        mood: button.dataset.mood,
-      });
-      if (context === key()) {
-        renderPulse(data);
-        $('#pulse-feedback').textContent = 'Reação enviada por 60 segundos.';
-      }
-    } catch (err) {
-      if (context === key()) $('#pulse-feedback').textContent = err.message;
-    } finally {
-      setTimeout(() => {
-        button.disabled = false;
-      }, 2000);
-    }
-  });
   $('#room-mvp-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!match) return;
@@ -130,7 +96,8 @@ export function initMatchday() {
         mvp: $('#room-mvp').value,
       });
       if (context === key()) {
-        renderPulse(data);
+        renderMvp(data);
+        delete $('#room-mvp-feedback').dataset.error;
         $('#room-mvp-feedback').textContent =
           'Voto salvo. Você pode mudar sua escolha.';
       }
@@ -140,7 +107,7 @@ export function initMatchday() {
       button.disabled = false;
     }
   });
-  setInterval(loadPulse, 5000);
+  setInterval(loadMvp, 30000);
   setInterval(() => {
     for (const [id, value] of highlights)
       if (value.until < Date.now()) {
@@ -205,7 +172,6 @@ export function updateMatchday(data) {
       if (Number(p?.redCards) > 0) el.title = p.name + ' · Expulso';
     });
   }
-  $('#room-pulse').hidden = false;
   $('#room-pregame').hidden = false;
   $('#player-placeholder').classList.add('has-pregame');
   $('#pregame-label').textContent =
@@ -259,40 +225,47 @@ export function updateMatchday(data) {
   }
   const isBreak = /half.?time|intervalo/i.test(game.status),
     summary = $('#room-break-summary');
+  const wasHidden = summary.hidden;
   summary.hidden = !isBreak && game.state !== 'post';
   $('.room-match-summary').hidden = !summary.hidden;
   if (!summary.hidden) {
     $('#break-heading').textContent =
       game.state === 'post' ? 'Apito final' : 'Resumo do intervalo';
-    $('#break-score').textContent =
-      `${game.home.name} ${score(game)} ${game.away.name}`;
-    $('#break-events').innerHTML = `<h3>Principais lances</h3>${
-      events
-        .filter((e) =>
-          [
-            'goal',
-            'own-goal',
-            'penalty',
-            'red-card',
-            'yellow-red-card',
-          ].includes(e.type),
-        )
-        .slice(0, 8)
-        .map(
-          (e) =>
-            `<p><b>${esc(e.clock)}</b> ${esc(e.label)} · ${esc(e.participants.join(', '))}</p>`,
-        )
-        .join('') || '<p>Nenhum lance informado pela fonte.</p>'
-    }`;
-    $('#break-stats').innerHTML = `<h3>O jogo em números</h3>${
-      data.statistics
-        .slice(0, 5)
-        .map(
-          (s) =>
-            `<div class="break-stat"><b>${esc(s.home ?? '—')}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}</b></div>`,
-        )
-        .join('') || '<p>Estatísticas não disponíveis.</p>'
-    }`;
+    const summaryTeam = (team) =>
+      `<span>${team.logo ? `<img src="${esc(team.logo)}" alt="Escudo de ${esc(team.name)}">` : ''}<b>${esc(team.name)}</b></span>`;
+    $('#break-score').innerHTML =
+      `${summaryTeam(game.home)}<strong>${esc(score(game))}</strong>${summaryTeam(game.away)}`;
+    $('#break-events').innerHTML =
+      `<h3>Lances decisivos</h3><div class="break-event-list">${
+        events
+          .filter((e) =>
+            [
+              'goal',
+              'own-goal',
+              'penalty-goal',
+              'penalty',
+              'red-card',
+              'yellow-red-card',
+            ].includes(e.type),
+          )
+          .slice(0, 8)
+          .map((e) => {
+            const team = data.lineups.find((l) => l.team.id === e.teamId),
+              player = team?.players.find((p) =>
+                e.participantIds?.includes(p.id),
+              );
+            const icon = e.type.includes('card') ? '🟥' : '⚽';
+            return `<button type="button" class="break-event" data-room-event="${esc(e.id)}"><time>${esc(e.clock)}</time><span class="break-event-icon">${icon}</span>${player?.photo ? `<img src="${esc(player.photo)}" alt="Foto de ${esc(player.name)}" data-player-photo data-photo-fallback="${esc(player.photoFallback || '')}">` : team?.team.logo ? `<img src="${esc(team.team.logo)}" alt="Escudo do time">` : ''}<span><b>${esc(e.label)}</b><small>${esc(e.participants.join(' · ') || e.teamName || '')}</small></span><span aria-hidden="true">↗</span></button>`;
+          })
+          .join('') ||
+        '<p class="data-note">Nenhum lance decisivo informado pela fonte.</p>'
+      }</div>`;
+    $('#break-stats').innerHTML =
+      `<h3>O jogo em números</h3>${statisticsView(data.statistics, game.home, game.away, 8)}`;
+    $('#room-mvp-form label').textContent =
+      game.state === 'post'
+        ? 'Quem foi o craque da partida?'
+        : 'Quem foi o melhor do primeiro tempo?';
     const select = $('#room-mvp'),
       previous = select.value;
     const html =
@@ -312,5 +285,5 @@ export function updateMatchday(data) {
       select.value = previous;
     }
   }
-  if (changed) loadPulse();
+  if (!summary.hidden && (changed || wasHidden)) loadMvp();
 }

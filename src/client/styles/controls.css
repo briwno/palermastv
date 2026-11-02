@@ -1,0 +1,203 @@
+:root {
+  color-scheme: dark;
+  --scroll-track: #0c1722;
+  --scroll-thumb: #917c50;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+  border-radius: 20px;
+}
+*::-webkit-scrollbar-thumb {
+  border: 3px solid var(--scroll-track);
+  border-radius: 20px;
+  background: linear-gradient(#a28b58, #78633e);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #d8bb77;
+}
+*::-webkit-scrollbar-corner {
+  background: var(--scroll-track);
+}
+*::-webkit-scrollbar-button {
+  display: none;
+}
+::selection {
+  color: #fff;
+  background: #b6954e66;
+}
+body
+  :is(
+    .text-input,
+    input[type='text'],
+    input[type='search'],
+    input[type='password'],
+    input[type='number'],
+    input[type='date'],
+    input[type='url'],
+    input[type='email'],
+    input[type='tel'],
+    input:not([type]),
+    textarea,
+    select
+  ) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid #385066;
+  border-radius: 12px;
+  outline: none;
+  background: #0c1b29;
+  color: #eaf1f8;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: inset 0 1px 3px #0002;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s,
+    background 0.18s;
+}
+body :is(.text-input, input, textarea, select)::placeholder {
+  color: #7e95a9;
+  opacity: 1;
+}
+body
+  :is(
+    .text-input,
+    input:not([type='range']):not([type='checkbox']):not([type='radio']),
+    textarea,
+    select
+  ):hover:not(:disabled) {
+  border-color: #5a7289;
+}
+body
+  :is(
+    .text-input,
+    input:not([type='range']):not([type='checkbox']):not([type='radio']),
+    textarea,
+    select
+  ):focus {
+  border-color: #d6b977;
+  background-color: #102233;
+  box-shadow: 0 0 0 3px #e9c7771c;
+  outline: none;
+}
+body :is(input, textarea, select):user-invalid {
+  border-color: #c97677;
+}
+body :is(.text-input, input, textarea, select):disabled {
+  background-color: #13222e;
+  color: #778b9c;
+  border-color: #293d4e;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+body :is(select, select.text-input),
+#table-league,
+#room-game-select,
+#stream-quality {
+  appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c4d3df' stroke-width='1.8'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+}
+body select option {
+  background: #142638;
+  color: #ecf3fa;
+  padding: 10px;
+}
+body input[type='date'] {
+  color-scheme: dark;
+  font-variant-numeric: tabular-nums;
+}
+body input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+body input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+body textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+#chat-text {
+  min-height: 96px;
+  max-height: 220px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #385066;
+  border-radius: 14px;
+  background: #0c1b29;
+  color: #eaf1f8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+#chat-text:focus {
+  border-color: #d6b977;
+  box-shadow: 0 0 0 3px #e9c7771c;
+  outline: none;
+}
+.field-label,
+.field-hint {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a3b8ca;
+}
+.field-label {
+  margin: 14px 0 7px;
+  font-weight: 600;
+}
+.field-hint {
+  margin: 9px 0 0;
+}
+.league-field select,
+.quality-controls select {
+  width: auto;
+  min-width: 175px;
+}
+.room-match-settings .text-input {
+  margin: 10px 0;
+}
+.room-chat-form:focus-within .field-label {
+  color: #efd49b;
+}
+@media (max-width: 600px) {
+  body
+    :is(
+      .text-input,
+      input[type='text'],
+      input[type='search'],
+      input[type='password'],
+      input[type='number'],
+      input[type='date'],
+      input[type='url'],
+      input[type='email'],
+      textarea,
+      select
+    ) {
+    font-size: 16px;
+  }
+  .league-field select {
+    min-width: 0;
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body :is(input, textarea, select) {
+    transition: none;
+  }
+}

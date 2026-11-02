@@ -11,7 +11,7 @@ const labels = {
   ranking: 'Ranking',
   predictions: 'Palpites',
   status: 'Estado da sala',
-  pulse: 'Torcida e votação',
+  pulse: 'Votação da partida',
 };
 
 export async function requestJSON(

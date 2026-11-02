@@ -1,3 +1,4 @@
+import { statisticsView } from '../../shared/match-statistics.js';
 import { initRoomSync } from './sync-controls.js';
 import { initMatchday, updateMatchday, resetMatchday } from './matchday.js';
 import { $, esc } from '../../shared/dom.js';
@@ -107,14 +108,6 @@ async function loadRatings() {
   } finally {
     ratingsBusy = false;
   }
-}
-function statRow(s) {
-  const h = Number(String(s.home).replace('%', '')),
-    a = Number(String(s.away).replace('%', '')),
-    valid =
-      s.home !== null && s.away !== null && Number.isFinite(h + a) && h + a > 0;
-  const lead = !valid || h === a ? '' : h > a ? 'home' : 'away';
-  return `<div class="room-stat lead-${lead || 'none'}"><b class="home">${esc(s.home ?? '—')}${s.home !== null ? esc(s.unit) : ''}</b><span>${esc(s.label)}</span><b class="away">${esc(s.away ?? '—')}${s.away !== null ? esc(s.unit) : ''}</b>${valid ? `<div class="room-stat-track" aria-hidden="true"><i style="width:${((h / (h + a)) * 100).toFixed(1)}%"></i></div>` : ''}</div>`;
 }
 function setLineupsHidden(hidden) {
   $('#room-match-stage').classList.toggle('lineups-collapsed', hidden);
@@ -228,14 +221,10 @@ function renderSnapshot(data) {
   latestMatch = data;
   renderRoomLineups();
   updateFootballExperience(data);
-  const crest = (t) => (t.logo ? `<img src="${esc(t.logo)}" alt="">` : '');
   $('#room-match-details').innerHTML =
     `<div class="room-summary-grid"><section><h3>Estatísticas</h3>${
       data.statistics.length
-        ? `<div class="room-stat-teams"><span class="home">${crest(data.game.home)}${esc(data.game.home.name)}</span><span class="away">${esc(data.game.away.name)}${crest(data.game.away)}</span></div>${data.statistics
-            .slice(0, 8)
-            .map(statRow)
-            .join('')}`
+        ? statisticsView(data.statistics, data.game.home, data.game.away, 8)
         : '<p>Estatísticas ainda não disponíveis na fonte.</p>'
     }</section><section><h3>Últimos lances</h3>${recentEventsHTML(6)}</section></div><p class="data-note">Fonte: ${esc(data.source)} · Atualização a cada 15 segundos.</p>`;
 }

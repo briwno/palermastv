@@ -1,3 +1,4 @@
+import { statisticsView } from '../../shared/match-statistics.js';
 import { markFreshness } from '../../shared/freshness.js';
 import { all, esc, $ } from '../../shared/dom.js';
 import { timeText, dateText } from '../../shared/dates.js';
@@ -56,20 +57,12 @@ function matchScoreboard(g) {
 }
 
 function statRows(stats, limit) {
-  return stats
-    .slice(0, limit || stats.length)
-    .map((s) => {
-      const h = Number(s.home?.replace('%', '')),
-        a = Number(s.away?.replace('%', '')),
-        valid =
-          s.home !== null &&
-          s.away !== null &&
-          Number.isFinite(h) &&
-          Number.isFinite(a),
-        ratio = valid && h + a > 0 ? (h / (h + a)) * 100 : 50;
-      return `<div class="match-stat"><div><b>${esc(s.home ?? '—')}${s.home !== null ? s.unit : ''}</b><span>${esc(s.label)}</span><b>${esc(s.away ?? '—')}${s.away !== null ? s.unit : ''}</b></div>${valid ? `<div class="stat-track" aria-hidden="true"><span style="width:${Math.max(0, Math.min(100, ratio))}%"></span></div>` : ''}</div>`;
-    })
-    .join('');
+  return statisticsView(
+    stats,
+    activeMatch.game.home,
+    activeMatch.game.away,
+    limit || stats.length,
+  );
 }
 
 function timeline(events, limit) {

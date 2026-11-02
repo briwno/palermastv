@@ -80,9 +80,9 @@ Perfis, votos, chat e vínculo da partida ficam no Durable Object do Worker. O a
 - `#time/ID_ESPN` abre elenco com fotos, agenda, resultados, classificação e notícias. Escudos levam à página do clube. Fotos usam ESPN e, quando a identidade pode ser associada com segurança, FotMob; falhas mostram escudo e identificação, nunca uma foto inventada.
 - `#bolao` reúne palpites e ranking por temporada, campeonato e rodada. O servidor fecha os palpites no início do jogo e apura resultados ao consultar o ranking (atualização de um minuto enquanto a página está aberta). Rodadas dependem da associação exata da partida na FotMob; registros sem cobertura continuam no total da temporada.
 - `#mercado` separa anúncios reportados, rumores e notícias de desfalques de CAP/CFC. As categorias são inferidas do título, com link e data da fonte; não substituem a leitura da notícia. A lista de disponibilidade distingue falta de cobertura de uma lista vazia.
-- A sala destaca substituições novas por 12 segundos, conta os atletas no campo e marca expulsões. O termômetro compartilha uma reação por identidade por 60 segundos. Resumos do intervalo/final e votação de craque aparecem abaixo do vídeo.
+- A sala destaca substituições novas por 12 segundos, conta os atletas no campo e marca expulsões. Resumos do intervalo/final e votação de craque aparecem abaixo do vídeo.
 - Vídeo sem novos quadros oferece recuperação manual da conexão de mídia; chat, presença e qualidade escolhida são preservados. Sem transmissão, o quadro mostra o confronto e os dados pré-jogo disponíveis.
-- `/api/group/pulse` mantém reações e votos no Worker, vinculados à partida atual; a fase e os participantes da votação são validados no servidor. Publicar essas funções exige atualizar também o Worker. Não há novas variáveis de ambiente.
+- `/api/group/pulse` mantém votos de craque no Worker, vinculados à partida atual; a fase e os participantes da votação são validados no servidor. Publicar essas funções exige atualizar também o Worker. Não há novas variáveis de ambiente.
 
 ## Design e sincronização
 
@@ -91,6 +91,12 @@ A interface compartilha cores, navegação, cartões e tipografia em `src/client
 Na sala, **Sincronizar com o vídeo** permite atrasar os dados de 0 a 180 segundos, em passos de 5 segundos. A preferência fica apenas neste navegador (`palermas-score-delay`). O buffer retém snapshots completos para que placar, estatísticas, escalações, lances e efeitos avancem juntos, inclusive no miniplayer. Trocar o atraso reinicia a comparação de gols para não comemorar um resultado antigo. O início da proteção exige acumular dados; sair e voltar depois de muito tempo pode exigir formar o buffer novamente. O vídeo e o chat continuam sem esse atraso. Outras páginas exibem dados atuais; avisos de placar do jogo vinculado ficam suspensos durante a proteção.
 
 Os selos mostram o tempo desde a última consulta bem-sucedida e destacam falhas ou consultas antigas. Eles não medem a latência interna do provedor ou da transmissão. A coluna **Próximo jogo** consulta agendas oficiais da ESPN por clube e inclui as competições acompanhadas pelo site, com cache de cinco minutos e horizonte de 60 dias. Ausência de agenda não gera um adversário estimado.
+
+## Formulários, bolão e estatísticas
+
+Os controles usam o tema escuro compartilhado em `controls.css`, incluindo foco, estados desabilitados e barras de rolagem. O bolão tem placares com botões, sugestões, filtros e rascunhos durante a navegação entre jogos. O servidor continua determinando quando os palpites fecham; os controles são desabilitados durante o envio.
+
+`match-statistics.js` gera a mesma comparação visual na sala e na central, ao vivo, no intervalo e no encerramento. Cada time tem uma cor na legenda e nas barras; valores ausentes não viram zero. O termômetro foi retirado da interface, preservando a votação de craque e a compatibilidade do serviço com clientes anteriores.
 
 ## Colaborar
 

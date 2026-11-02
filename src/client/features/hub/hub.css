@@ -278,28 +278,6 @@
 .matchday-panel {
   margin-top: 20px;
 }
-.pulse-bars {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-.mood-meter > span {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.mood-meter meter {
-  display: block;
-  width: 100%;
-  height: 18px;
-  margin: 8px 0 16px;
-  accent-color: #f4c76a;
-}
-.mood-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
 .break-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -419,12 +397,6 @@
   }
   .team-roster-grid {
     grid-template-columns: 1fr;
-  }
-  .pulse-bars {
-    gap: 8px;
-  }
-  .mood-meter > span {
-    font-size: 10px;
   }
   .mvp-controls {
     flex-direction: column;

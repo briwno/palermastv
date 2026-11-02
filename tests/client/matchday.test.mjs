@@ -124,7 +124,7 @@ test('matchday keeps video and chat, highlights only new substitutions, counts r
     w.matchday.updateMatchday(data);
     assert.equal(d.querySelector('#break-heading').textContent, 'Apito final');
     w.matchday.resetMatchday();
-    assert.equal(d.querySelector('#room-pulse').hidden, true);
+    assert.equal(d.querySelector('#room-pulse'), null);
     assert.equal(d.querySelector('#room-pregame').hidden, true);
     w.matchday.updateMatchday(data);
     assert.equal(

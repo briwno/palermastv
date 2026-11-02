@@ -50,61 +50,138 @@
   <div id="market-content" class="hub-two-columns" aria-live="polite"></div>
 </section>
 <section id="page-bolao" class="page" hidden>
-  <div class="heading">
+  <header class="heading bolao-heading">
     <div>
-      <span class="eyebrow">VALENDO A RESENHA</span>
+      <span class="eyebrow">PALERMAS FC</span>
       <h1>Bolão dos Palermas</h1>
-      <p>Placar exato: 5 pontos. Acertar vitória ou empate: 2 pontos.</p>
+      <p>Monte seu placar e acompanhe o ranking do grupo.</p>
     </div>
-    <button class="button subtle" id="bolao-refresh">
-      Atualizar resultados
-    </button>
-  </div>
-  <div class="hub-two-columns bolao-columns">
-    <section class="hub-panel">
-      <header class="section-head">
-        <h2>Seus palpites</h2>
-        <label
-          >Data <input class="text-input" id="bolao-date" type="date"
-        /></label>
+    <div class="bolao-heading-actions">
+      <button
+        class="button subtle bolao-mobile-only"
+        type="button"
+        data-bolao-jump="bolao-board"
+      >
+        Ranking ↓</button
+      ><button class="button subtle" id="bolao-refresh">↻ Atualizar</button>
+    </div>
+  </header>
+  <section class="bolao-overview" aria-label="Resumo do bolão">
+    <div class="bolao-rules">
+      <img src="/logo.png" alt="Palermas FC" />
+      <div>
+        <strong>Palpite até o apito inicial</strong>
+        <p>
+          <b>5 pts</b> pelo placar exato <span>·</span> <b>2 pts</b> pelo
+          resultado
+        </p>
+      </div>
+    </div>
+    <div class="bolao-metrics">
+      <div><b id="bolao-total-count">—</b><span>Jogos na data</span></div>
+      <div><b id="bolao-open-count">—</b><span>Abertos</span></div>
+      <div><b id="bolao-your-points">—</b><span>Seus pontos</span></div>
+    </div>
+  </section>
+  <div class="bolao-layout">
+    <section
+      class="bolao-fixtures"
+      id="bolao-fixtures"
+      tabindex="-1"
+      aria-label="Jogos e palpites"
+    >
+      <header class="bolao-fixtures-heading">
+        <h2>Escolha o jogo</h2>
+        <div class="bolao-date-nav">
+          <button
+            class="date-arrow"
+            type="button"
+            data-bolao-date-step="-1"
+            aria-label="Dia anterior"
+          >
+            ‹</button
+          ><input
+            class="text-input"
+            id="bolao-date"
+            type="date"
+            aria-label="Data dos jogos"
+          /><button
+            class="date-arrow"
+            type="button"
+            data-bolao-date-step="1"
+            aria-label="Dia seguinte"
+          >
+            ›</button
+          ><button class="bolao-today" id="bolao-today" type="button">
+            Hoje
+          </button>
+        </div>
       </header>
-      <p class="data-note">
-        Você pode alterar até o início da partida. Os pontos são calculados
-        quando a fonte confirma o encerramento.
-      </p>
+      <div class="bolao-segments" aria-label="Filtrar jogos">
+        <button type="button" data-bolao-filter="all" aria-pressed="true">
+          Todos</button
+        ><button type="button" data-bolao-filter="open" aria-pressed="false">
+          Para palpitar</button
+        ><button type="button" data-bolao-filter="closed" aria-pressed="false">
+          Encerrados
+        </button>
+      </div>
       <div id="bolao-games"></div>
     </section>
-    <section class="hub-panel">
-      <h2>Ranking do grupo</h2>
-      <div class="ranking-filters">
-        <label
-          >Temporada<select class="text-input" id="ranking-season">
-            <option value="">Todas</option>
-          </select></label
-        ><label
-          >Campeonato<select class="text-input" id="ranking-league">
-            <option value="">Todos</option>
-            <option value="bra.1">Brasileirão A</option>
-            <option value="bra.2">Brasileirão B</option>
-            <option value="bra.copa_do_brazil">Copa do Brasil</option>
-            <option value="conmebol.libertadores">Libertadores</option>
-            <option value="conmebol.sudamericana">Sul-Americana</option>
-            <option value="eng.1">Premier League</option>
-            <option value="esp.1">La Liga</option>
-            <option value="ita.1">Serie A</option>
-            <option value="uefa.champions">Champions League</option>
-          </select></label
-        ><label
-          >Rodada<select class="text-input" id="ranking-round" disabled>
-            <option value="">Todas</option>
-          </select></label
+    <aside
+      class="bolao-board"
+      id="bolao-board"
+      tabindex="-1"
+      aria-label="Ranking do grupo"
+    >
+      <header class="bolao-board-heading">
+        <span aria-hidden="true">🏆</span>
+        <div>
+          <span class="eyebrow">CLASSIFICAÇÃO</span>
+          <h2>Ranking dos Palermas</h2>
+        </div>
+        <button
+          class="text-button bolao-mobile-only"
+          type="button"
+          data-bolao-jump="bolao-fixtures"
         >
-      </div>
-      <p class="data-note">
-        Rodadas aparecem quando identificadas na fonte e com palpites
-        registrados. Selecione um campeonato para filtrar.
+          ↑ Jogos
+        </button>
+      </header>
+      <details class="bolao-ranking-options">
+        <summary>Filtrar ranking <span aria-hidden="true">⌄</span></summary>
+        <div class="ranking-filters">
+          <label
+            >Temporada<select class="text-input" id="ranking-season">
+              <option value="">Todas</option>
+            </select></label
+          ><label
+            >Campeonato<select class="text-input" id="ranking-league">
+              <option value="">Todos</option>
+              <option value="bra.1">Brasileirão A</option>
+              <option value="bra.2">Brasileirão B</option>
+              <option value="bra.copa_do_brazil">Copa do Brasil</option>
+              <option value="conmebol.libertadores">Libertadores</option>
+              <option value="conmebol.sudamericana">Sul-Americana</option>
+              <option value="eng.1">Premier League</option>
+              <option value="esp.1">La Liga</option>
+              <option value="ita.1">Serie A</option>
+              <option value="uefa.champions">Champions League</option>
+            </select></label
+          ><label
+            >Rodada<select class="text-input" id="ranking-round" disabled>
+              <option value="">Todas</option>
+            </select></label
+          >
+        </div>
+        <p class="field-hint">
+          Selecione um campeonato para filtrar as rodadas disponíveis.
+        </p>
+      </details>
+      <p id="bolao-ranking-scope" class="ranking-scope">
+        Todas as temporadas · Todos os campeonatos
       </p>
       <div id="bolao-ranking" aria-live="polite"></div>
-    </section>
+    </aside>
   </div>
 </section>
